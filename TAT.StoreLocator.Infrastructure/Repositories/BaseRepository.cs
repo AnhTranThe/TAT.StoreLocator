@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 using TAT.StoreLocator.Core.Exceptions;
 using TAT.StoreLocator.Core.Interface.IRepositories;
 using TAT.StoreLocator.Core.Models.Pagination;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TAT.StoreLocator.Infrastructure.Repositories
 {
@@ -45,9 +47,7 @@ namespace TAT.StoreLocator.Infrastructure.Repositories
             T? data = await _dbContext.Set<T>().FindAsync(id);
             return data ?? throw new NotFoundException($"Entity with ID {id} not found.");
         }
-
-
-
+       
         public async Task<bool> IsExists<Tvalue>(string key, Tvalue value)
         {
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
@@ -106,6 +106,7 @@ namespace TAT.StoreLocator.Infrastructure.Repositories
         {
             _ = await _dbContext.SaveChangesAsync();
         }
+
 
 
     }

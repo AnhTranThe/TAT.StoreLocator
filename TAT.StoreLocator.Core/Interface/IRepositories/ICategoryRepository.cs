@@ -4,5 +4,6 @@ namespace TAT.StoreLocator.Core.Interface.IRepositories
 {
     public interface ICategoryRepository : IBaseRepository<Category>
     {
+
     }
 }

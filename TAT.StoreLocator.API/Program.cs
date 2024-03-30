@@ -14,6 +14,7 @@ namespace TAT.StoreLocator.API
 
             _ = builder.Services.AddCore();
             _ = builder.Services.AddInfrastructure();
+
             _ = builder.Services.AddAutoMapper(typeof(Program));
 
             // Add services to the container.

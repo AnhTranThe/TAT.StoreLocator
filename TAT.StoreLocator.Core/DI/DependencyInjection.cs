@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TAT.StoreLocator.Core.Repositores;
 
 namespace TAT.StoreLocator.Core.DI
 {
@@ -11,7 +12,7 @@ namespace TAT.StoreLocator.Core.DI
 
 
 
-
+            
 
             return services;
         }
