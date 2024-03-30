@@ -1,5 +1,4 @@
 ﻿using TAT.StoreLocator.Core.Interface.IRepositories;
-using TAT.StoreLocator.Core.Repositores;
 
 namespace TAT.StoreLocator.Core.Interface.IUnitOfWork
 {
@@ -9,7 +8,6 @@ namespace TAT.StoreLocator.Core.Interface.IUnitOfWork
         #region IReponstiroy<Entity>
         IProductRepository ProductRepository { get; } 
         ICategoryRepository CategoryRepository { get; }
-        
         IStoreRepository StoreRepository { get; }
         #endregion
 
