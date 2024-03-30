@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TAT.StoreLocator.Domain.Common;
-using TAT.StoreLocator.Domain.Entities;
+using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Infrastructure.Persistence.Configuration;
 
 namespace TAT.StoreLocator.Infrastructure.Persistence.EF
 {
-    public class AppDbContext : IdentityDbContext<User, Role, Guid>
+    public class AppDbContext : IdentityDbContext<User, Role, string>
     {
-
-
-
 
 
         public AppDbContext(DbContextOptions<AppDbContext> options)

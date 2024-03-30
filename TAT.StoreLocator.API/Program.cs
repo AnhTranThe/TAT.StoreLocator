@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using TAT.StoreLocator.Core.DI;
 using TAT.StoreLocator.Infrastructure.DI;
 
 
@@ -11,8 +12,9 @@ namespace TAT.StoreLocator.API
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             //ConfigureServices
 
-
-            _ = builder.Services.AddInfrastructureLayer(builder.Configuration);
+            _ = builder.Services.AddCore();
+            _ = builder.Services.AddInfrastructure();
+            _ = builder.Services.AddAutoMapper(typeof(Program));
 
             // Add services to the container.
 

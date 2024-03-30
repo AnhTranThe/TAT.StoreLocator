@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
 {
-    public class AppUserTokenConfiguration : IEntityTypeConfiguration<IdentityUserToken<Guid>>
+    public class AppUserTokenConfiguration : IEntityTypeConfiguration<IdentityUserToken<string>>
     {
-        public void Configure(EntityTypeBuilder<IdentityUserToken<Guid>> builder)
+        public void Configure(EntityTypeBuilder<IdentityUserToken<string>> builder)
         {
             _ = builder.ToTable("UserTokens");
             _ = builder.HasKey(x => x.UserId);
