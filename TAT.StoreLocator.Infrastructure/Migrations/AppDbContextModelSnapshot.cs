@@ -22,7 +22,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,8 +36,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -46,7 +47,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.ToTable("RoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -60,8 +61,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -70,7 +72,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.ToTable("UserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("ProviderKey")
                         .HasColumnType("text");
@@ -81,8 +83,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("ProviderKey", "LoginProvider");
 
@@ -91,13 +94,13 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.ToTable("UserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.HasKey("RoleId", "UserId");
 
@@ -106,10 +109,10 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.ToTable("UserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("text");
@@ -127,11 +130,10 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Address", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -149,7 +151,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("RoadName")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
@@ -165,11 +167,10 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Category", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -178,11 +179,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("GalleryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("HomeFlag")
-                        .HasColumnType("boolean");
+                    b.Property<string>("GalleryId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -190,13 +189,14 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ParentCategoryId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ParentCategoryId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Slug")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
@@ -213,11 +213,10 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Gallery", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -226,10 +225,10 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<int?>("FileStatus")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("StoreId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("StoreId")
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
@@ -248,20 +247,20 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Location", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("AddressId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("AddressId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
@@ -283,18 +282,19 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.MapProductGallery", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("GalleryId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("GalleryId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsThumbnail")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -307,15 +307,16 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.MapProductWishlist", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("WishlistId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("WishlistId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -328,15 +329,16 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.MapStoreWishlist", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("StoreId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("StoreId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("WishlistId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("WishlistId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -349,20 +351,20 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Product", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<string>("Brand")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("CategoryId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -380,9 +382,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<bool>("IsDiscountAllowed")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsGuarantee")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("MetaDescription")
                         .HasColumnType("text");
 
@@ -397,9 +396,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
-
-                    b.Property<int>("ProductSalesCount")
-                        .HasColumnType("integer");
 
                     b.Property<int>("ProductViewCount")
                         .HasColumnType("integer");
@@ -416,13 +412,14 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("Slug")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("StoreId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("StoreId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Thumb")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
@@ -439,22 +436,22 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Review", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("RatingValue")
                         .HasColumnType("integer");
@@ -462,14 +459,15 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -482,9 +480,8 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Role", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -512,11 +509,10 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Schedule", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -531,10 +527,11 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("StartTime")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("StoreId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("StoreId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
@@ -549,14 +546,14 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Store", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("AddressId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("AddressId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -574,7 +571,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("Thumb")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
@@ -590,27 +587,27 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.User", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("AddressId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("AddressId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreateAt")
+                    b.Property<DateTimeOffset>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreateBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("Dob")
+                    b.Property<DateTimeOffset>("Dob")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
@@ -634,7 +631,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset?>("LastLogin")
+                    b.Property<DateTimeOffset>("LastLogin")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LastName")
@@ -644,7 +641,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset?>("LockoutEnd")
+                    b.Property<DateTimeOffset>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NormalizedEmail")
@@ -670,7 +667,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset?>("UpdateAt")
+                    b.Property<DateTimeOffset>("UpdateAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdateBy")
@@ -697,24 +694,24 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Domain.Entities.Wishlist", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -723,7 +720,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.ToTable("Wishlists");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("TAT.StoreLocator.Domain.Entities.Role", null)
                         .WithMany()
@@ -732,7 +729,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.HasOne("TAT.StoreLocator.Domain.Entities.User", null)
                         .WithMany()
@@ -741,7 +738,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.HasOne("TAT.StoreLocator.Domain.Entities.User", null)
                         .WithMany()
@@ -750,7 +747,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.HasOne("TAT.StoreLocator.Domain.Entities.Role", null)
                         .WithMany()
@@ -765,7 +762,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.HasOne("TAT.StoreLocator.Domain.Entities.User", null)
                         .WithMany()
@@ -873,7 +870,8 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.HasOne("TAT.StoreLocator.Domain.Entities.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("TAT.StoreLocator.Domain.Entities.Store", "Store")
                         .WithMany("Products")

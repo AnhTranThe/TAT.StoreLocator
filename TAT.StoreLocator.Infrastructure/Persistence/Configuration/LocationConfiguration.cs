@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TAT.StoreLocator.Domain.Entities;
+using TAT.StoreLocator.Core.Entities;
 
 namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
 {
