@@ -77,5 +77,6 @@ namespace TAT.StoreLocator.Infrastructure.Repositories
         {
             throw new NotImplementedException();
         }
+
     }
 }
