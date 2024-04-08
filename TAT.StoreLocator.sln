@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAT.StoreLocator.Test", "TA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAT.StoreLocator.Core", "TAT.StoreLocator.Core\TAT.StoreLocator.Core.csproj", "{D51B8AFB-CB4F-472C-AFE9-E3B4909A4DAD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAT.StoreLocator.AdminApp", "TAT.StoreLocator.AdminApp\TAT.StoreLocator.AdminApp.csproj", "{33222AD8-B14A-4A63-AD5F-A357B382F632}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{D51B8AFB-CB4F-472C-AFE9-E3B4909A4DAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D51B8AFB-CB4F-472C-AFE9-E3B4909A4DAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D51B8AFB-CB4F-472C-AFE9-E3B4909A4DAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33222AD8-B14A-4A63-AD5F-A357B382F632}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33222AD8-B14A-4A63-AD5F-A357B382F632}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33222AD8-B14A-4A63-AD5F-A357B382F632}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33222AD8-B14A-4A63-AD5F-A357B382F632}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +58,7 @@ Global
 		{5EF81E1A-5E32-4129-A3E5-B19A092FACDC} = {E453909A-4066-464E-BEFE-A8ABA96BBADF}
 		{AF14BD22-DAB6-4305-A295-34DBA2D79FE9} = {A373E290-3F0B-44E2-A138-46CB7A7C6695}
 		{D51B8AFB-CB4F-472C-AFE9-E3B4909A4DAD} = {E453909A-4066-464E-BEFE-A8ABA96BBADF}
+		{33222AD8-B14A-4A63-AD5F-A357B382F632} = {E453909A-4066-464E-BEFE-A8ABA96BBADF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E939948-ACAA-42D4-B1B3-7C7F3C6BED13}
