@@ -15,10 +15,10 @@ namespace TAT.StoreLocator.Core.Entities
         public EReviewStatus Status { get; set; } = EReviewStatus.Pending;
 
         // relationship
-        [Required]
+
         public string? ProductId { get; set; }
         public Product? Product { get; set; }
-        [Required]
+
         public string? UserId { get; set; }
         public User? User { get; set; }
 

@@ -9,8 +9,8 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
         public void Configure(EntityTypeBuilder<MapProductWishlist> builder)
         {
 
-            _ = builder.HasOne(x => x.Product).WithMany(x => x.MapProductWishlists).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
-            _ = builder.HasOne(x => x.Wishlist).WithMany(x => x.MapProductWishlists).HasForeignKey(x => x.WishlistId).OnDelete(DeleteBehavior.Restrict);
+            _ = builder.HasOne(x => x.Product).WithMany(x => x.MapProductWishlists).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
+            _ = builder.HasOne(x => x.Wishlist).WithMany(x => x.MapProductWishlists).HasForeignKey(x => x.WishlistId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

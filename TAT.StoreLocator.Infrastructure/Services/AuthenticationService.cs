@@ -1,73 +1,44 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
+using System.Security.Claims;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
+using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
-using TAT.StoreLocator.Core.Models.Request.User;
+using TAT.StoreLocator.Core.Models.Request.Authentication;
+using TAT.StoreLocator.Core.Models.Response.Authentication;
 using TAT.StoreLocator.Core.Models.Response.User;
-using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
 namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
         private readonly UserManager<User> _userManager;
-        private readonly AppDbContext _dbContext;
+        private readonly SignInManager<User> _signInManager;
+        private readonly IMapper _mapper;
+        private readonly ILogger _logger;
 
 
-        public AuthenticationService(UserManager<User> userManager, AppDbContext appDbContext)
+        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, ILogger logger, IMapper mapper)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger;
+            _mapper = mapper;
 
-            _dbContext = appDbContext;
 
         }
-
-        public async Task<ChangePasswordUserResponseModel> ChangePasswordAsync(ChangePasswordRequestModel model)
+        public async Task<RegisterResponseModel> RegisterUserAsync(RegisterRequestModel model)
         {
-            ChangePasswordUserResponseModel response = new();
+
+
+            RegisterResponseModel response = new();
             BaseResponse baseResponse = response.BaseResponse;
             baseResponse.Success = false;
-            try
-            {
-                User user = await _userManager.FindByIdAsync(model.RequestId);
 
-                if (user == null)
-                {
-                    baseResponse.Message = "User not found";
-                    return response;
-                }
-                if (model.NewPassword != model.ConfirmNewPassword)
-                {
-                    baseResponse.Message = "The new password and confirmation password do not match.";
-                    return response;
-                }
-
-                Task<IdentityResult> result = _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-                if (!result.Result.Succeeded)
-                {
-                    baseResponse.Message = "Error while changing password";
-                    return response;
-
-                }
-                baseResponse.Success = true;
-                baseResponse.Message = "Change password success";
-
-            }
-            catch (Exception ex)
-            {
-                baseResponse.Message = $"An error occurred while check existed the entity: {ex.Message}";
-            }
-
-            return response;
-        }
-
-        public async Task<RegisterUserResponseModel> RegisterUserAsync(RegisterUserRequestModel model)
-        {
-            RegisterUserResponseModel response = new();
-            BaseResponse baseResponse = response.BaseResponse;
-            baseResponse.Success = false;
             try
             {
 
@@ -84,40 +55,36 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     return response;
                 }
 
-
+                MailAddress address = new(model.Email ?? "");
+                string userName = address.User;
                 User newUser = new()
                 {
-
+                    Id = Guid.NewGuid().ToString(),
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     FullName = model.LastName + " " + model.FirstName,
                     Email = model.Email,
+                    UserName = userName,
+
+
                 };
 
-                IdentityResult result = await _userManager.CreateAsync(newUser, model.Password?.Trim());
+                IdentityResult createUserResult = await _userManager.CreateAsync(newUser, model.Password?.Trim());
 
-                if (!result.Succeeded)
+                if (!createUserResult.Succeeded)
                 {
                     baseResponse.Message = "Error while creating user";
+                    return response;
                 }
-
-                //add user by default in user role
-                Role? appUserRole = await _dbContext.Roles.FirstOrDefaultAsync(x => x.Name == GlobalConstants.CustomerRoleName);
-                if (appUserRole != null)
+                IdentityResult addRoleResult = await _userManager.AddToRoleAsync(newUser, GlobalConstants.RoleUserName);
+                if (!addRoleResult.Succeeded)
                 {
-
-                    IdentityUserRole<string> userRole = new()
-                    {
-                        RoleId = appUserRole.Id,
-                        UserId = newUser.Id
-                    };
-
-                    _ = await _dbContext.UserRoles.AddAsync(userRole);
-
+                    baseResponse.Message = "Error while adding role";
+                    return response;
                 }
 
-                _ = await _dbContext.SaveChangesAsync();
 
+                response.UserResponseModel = _mapper.Map<UserResponseModel>(newUser);
                 baseResponse.Success = true;
                 baseResponse.Message = "Register success";
 
@@ -125,16 +92,17 @@ namespace TAT.StoreLocator.Infrastructure.Services
             catch (Exception ex)
             {
                 baseResponse.Message = $"An error occurred while check existed the entity: {ex.Message}";
+                _logger.LogError(ex.Message);
+
             }
 
             return response;
 
         }
 
-        public async Task<LoginUserResponseModel> ValidatePasswordAsync(LoginUserRequestModel model)
+        public async Task<LoginResponseModel> LoginUserAsync(LoginRequestModel model)
         {
-
-            LoginUserResponseModel response = new();
+            LoginResponseModel response = new();
             BaseResponse baseResponse = response.BaseResponse;
             baseResponse.Success = false;
             try
@@ -147,13 +115,27 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 }
                 else
                 {
-                    bool isValidPassword = await _userManager.CheckPasswordAsync(user, model.Password);
+                    SignInResult signInResult = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
 
-                    if (!isValidPassword)
+                    if (!signInResult.Succeeded)
                     {
                         // Invalid password
                         baseResponse.Message = "Invalid password";
                     }
+
+                    response.UserResponseModel = _mapper.Map<UserResponseModel>(user);
+                    IList<string> roles = await _userManager.GetRolesAsync(user);
+                    Claim[] claims = new[]
+           {
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim(UserClaims.Id, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(UserClaims.FirstName, user.FirstName??""),
+                    new Claim(UserClaims.Roles, string.Join(";", roles)),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+                    response.claims = claims;
                     baseResponse.Success = true;
                     baseResponse.Message = "Login success";
 
@@ -163,11 +145,55 @@ namespace TAT.StoreLocator.Infrastructure.Services
             catch (Exception ex)
             {
                 baseResponse.Message = $"An error occurred while check existed the entity: {ex.Message}";
+                _logger.LogError(ex.Message);
             }
 
             return response;
 
         }
+
+        public async Task<BaseResponse> LogoutUserAsync(string UserId)
+        {
+            BaseResponse response = new()
+            {
+                Success = false
+            };
+
+            try
+            {
+                User user = await _userManager.FindByIdAsync(UserId);
+                if (user == null)
+                {
+                    response.Message = GlobalConstants.MessageUserNotFound;
+                    return response;
+                }
+
+                await _signInManager.SignOutAsync();
+
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+                IdentityResult result = await _userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    response.Message = "Can not update refresh token ${user.Email}";
+                    return response;
+
+                }
+
+                response.Success = true;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error occurred during user logout: {ex.Message}");
+
+            }
+            return response;
+
+
+        }
+
 
 
     }

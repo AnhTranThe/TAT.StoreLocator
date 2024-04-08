@@ -10,7 +10,7 @@ namespace TAT.StoreLocator.Core.Entities
         [Required]
         public string? UserId { get; set; }
 
-        public User User { get; set; } = new User();
+        public User? User { get; set; }
 
         public virtual ICollection<MapProductWishlist>? MapProductWishlists { get; set; }// this wishlist contains these products
 

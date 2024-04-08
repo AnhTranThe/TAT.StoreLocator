@@ -10,10 +10,6 @@ namespace TAT.StoreLocator.Core.DI
         public static IServiceCollection AddCore(this IServiceCollection services)
         {
 
-
-
-            
-
             return services;
         }
 

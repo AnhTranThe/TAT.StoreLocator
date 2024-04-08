@@ -1,20 +1,27 @@
-﻿using TAT.StoreLocator.Core.Models.Pagination;
+﻿using System.Linq.Expressions;
+using TAT.StoreLocator.Core.Common;
 
 namespace TAT.StoreLocator.Core.Interface.IRepositories
 {
     //Unit of Work Pattern
     public interface IBaseRepository<T> where T : class
     {
+        Task<T?> GetById(string id);
         Task<IEnumerable<T>> GetAll();
-        Task<PaginationResponseModel<T>> GetPaginatedData(PaginationRequestModel request);
-        Task<T> GetById<Tid>(Tid id);
+        IQueryable<T> GetAllQuery();
+        Task<IEnumerable<T>> GetAllPaging(BasePaginationRequest request);
+        IQueryable<T> GetAllPagingQuery(BasePaginationRequest request);
+        Task Add(T entity);
+        Task AddRange(IEnumerable<T> entities);
+        void Update(T entity);
+        int Count();
+        Task<int> CountAsync();
+        IEnumerable<T> Find(Expression<Func<T, bool>> expression);
+        void Remove(T entity);
+        void RemoveRange(IEnumerable<T> entities);
 
-        Task<bool> IsExists<Tvalue>(string key, Tvalue value);
-        Task<bool> IsExistsForUpdate<Tid>(Tid id, string key, string value);
-        Task<T> Create(T model);
-        Task CreateRange(List<T> model);
-        Task Update(T model);
-        Task Delete(T model);
-        Task SaveChangeAsync();
+
+
+
     }
 }
