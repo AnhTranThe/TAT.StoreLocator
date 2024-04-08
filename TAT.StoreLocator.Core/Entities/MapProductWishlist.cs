@@ -11,10 +11,10 @@ namespace TAT.StoreLocator.Core.Entities
 
         public string? WishlistId { get; set; }
 
-        public Wishlist Wishlist { get; set; } = new Wishlist();
+        public Wishlist? Wishlist { get; set; }
 
         public string? ProductId { get; set; }
 
-        public Product Product { get; set; } = new Product();
+        public Product? Product { get; set; }
     }
 }

@@ -8,8 +8,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<Gallery> builder)
         {
-
-
+            _ = builder.HasOne(x => x.Product).WithMany(x => x.Galleries).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using TAT.StoreLocator.Core.Exceptions;
+using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IRepositories;
-using TAT.StoreLocator.Core.Models.Pagination;
+using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
 namespace TAT.StoreLocator.Infrastructure.Repositories
@@ -11,102 +12,92 @@ namespace TAT.StoreLocator.Infrastructure.Repositories
     public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         protected readonly AppDbContext _dbContext;
-        protected DbSet<T> DbSet => _dbContext.Set<T>();
+        public IMapper _mapper { get; }
+        public IPhotoService _photoService { get; }
 
-        public BaseRepository(AppDbContext dbContext)
+        public BaseRepository(AppDbContext dbContext, IMapper mapper, IPhotoService photoService)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
+            _photoService = photoService;
         }
 
         public async Task<IEnumerable<T>> GetAll()
         {
-            List<T> data = await _dbContext.Set<T>()
-                .AsNoTracking()
-                .ToListAsync();
-
-            return data;
+            return await _dbContext.Set<T>().ToListAsync();
         }
 
-        public virtual async Task<PaginationResponseModel<T>> GetPaginatedData(PaginationRequestModel request)
+        public IQueryable<T> GetAllQuery()
         {
-            IQueryable<T> query = _dbContext.Set<T>()
-                   .Skip((request.PageIndex - 1) * request.PageSize)
-                   .Take(request.PageSize)
-                   .AsNoTracking();
-
-            List<T> data = await query.ToListAsync();
-            int totalCount = await _dbContext.Set<T>().CountAsync();
-
-            return new PaginationResponseModel<T>(data, totalCount, request.PageSize, request.PageIndex);
+            return _dbContext.Set<T>().AsNoTracking();
         }
 
-        public async Task<T> GetById<Tid>(Tid id)
+        public async Task<IEnumerable<T>> GetAllPaging(BasePaginationRequest request)
         {
-            T? data = await _dbContext.Set<T>().FindAsync(id);
-            return data ?? throw new NotFoundException($"Entity with ID {id} not found.");
+            IQueryable<T> queryable = _dbContext.Set<T>().AsQueryable();
+
+            // Apply pagination
+            queryable = queryable.Skip((request.PageIndex - 1) * request.PageSize)
+                                 .Take(request.PageSize);
+
+            return await queryable.ToListAsync();
         }
 
-
-
-        public async Task<bool> IsExists<Tvalue>(string key, Tvalue value)
+        public IQueryable<T> GetAllPagingQuery(BasePaginationRequest request)
         {
-            ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
-            MemberExpression property = Expression.Property(parameter, key);
-            ConstantExpression constant = Expression.Constant(value);
-            BinaryExpression equality = Expression.Equal(property, constant);
-            Expression<Func<T, bool>> lambda = Expression.Lambda<Func<T, bool>>(equality, parameter);
+            IQueryable<T> queryable = _dbContext.Set<T>().AsQueryable();
 
-            return await _dbContext.Set<T>().AnyAsync(lambda);
+            // Apply pagination
+            queryable = queryable.Skip((request.PageIndex - 1) * request.PageSize)
+                                 .Take(request.PageSize);
+
+            return queryable;
         }
 
-        //Before update existence check
-        public async Task<bool> IsExistsForUpdate<Tid>(Tid id, string key, string value)
+        public async Task<T?> GetById(string id)
         {
-            ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
-            MemberExpression property = Expression.Property(parameter, key);
-            ConstantExpression constant = Expression.Constant(value);
-            BinaryExpression equality = Expression.Equal(property, constant);
-
-            MemberExpression idProperty = Expression.Property(parameter, "Id");
-            BinaryExpression idEquality = Expression.NotEqual(idProperty, Expression.Constant(id));
-
-            BinaryExpression combinedExpression = Expression.AndAlso(equality, idEquality);
-            Expression<Func<T, bool>> lambda = Expression.Lambda<Func<T, bool>>(combinedExpression, parameter);
-
-            return await _dbContext.Set<T>().AnyAsync(lambda);
+            return await _dbContext.Set<T>().FindAsync(id);
         }
 
-
-        public async Task<T> Create(T model)
+        public IEnumerable<T> Find(Expression<Func<T, bool>> expression)
         {
-            _ = await _dbContext.Set<T>().AddAsync(model);
-            _ = await _dbContext.SaveChangesAsync();
-            return model;
+            return _dbContext.Set<T>().Where(expression).AsNoTracking();
         }
 
-        public async Task CreateRange(List<T> model)
+        public async Task Add(T entity)
         {
-            await _dbContext.Set<T>().AddRangeAsync(model);
-            _ = await _dbContext.SaveChangesAsync();
+            _ = await _dbContext.Set<T>().AddAsync(entity);
         }
 
-        public async Task Update(T model)
+        public async Task AddRange(IEnumerable<T> entities)
         {
-            _ = _dbContext.Set<T>().Update(model);
-            _ = await _dbContext.SaveChangesAsync();
+            await _dbContext.Set<T>().AddRangeAsync(entities);
         }
 
-        public async Task Delete(T model)
+        public void Update(T entity)
         {
-            _ = _dbContext.Set<T>().Remove(model);
-            _ = await _dbContext.SaveChangesAsync();
+            _ = _dbContext.Set<T>().Update(entity);
         }
 
-        public async Task SaveChangeAsync()
+        public void Remove(T entity)
         {
-            _ = await _dbContext.SaveChangesAsync();
+            _ = _dbContext.Set<T>().Remove(entity);
         }
 
+        public void RemoveRange(IEnumerable<T> entities)
+        {
+            _dbContext.Set<T>().RemoveRange(entities);
+        }
+
+        public int Count()
+        {
+            return _dbContext.Set<T>().Count();
+        }
+
+        public async Task<int> CountAsync()
+        {
+            return await _dbContext.Set<T>().CountAsync();
+        }
 
     }
 }

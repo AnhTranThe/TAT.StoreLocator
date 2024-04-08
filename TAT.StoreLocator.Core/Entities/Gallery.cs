@@ -15,9 +15,13 @@ namespace TAT.StoreLocator.Core.Entities
         public bool IsThumbnail { get; set; } = false;
         public string? FileBelongsTo { get; set; }
         public EUploadFileStatus? FileStatus { get; set; } = EUploadFileStatus.Active;
-        public ICollection<Category>? Categories { get; set; } //Categories which has this image as cover
-        public ICollection<MapProductGallery>? MapProductGalleries { get; set; } //Categories which has this image as cover
+        public Store? Store { get; set; }
+        public string? StoreId { get; set; }
 
+        public string? CategoryId { get; set; }
+        public Category? Category { get; set; }
+        public Product? Product { get; set; }
+        public string? ProductId { get; set; }
 
     }
 }

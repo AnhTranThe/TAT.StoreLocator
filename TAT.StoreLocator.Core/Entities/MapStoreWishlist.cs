@@ -8,14 +8,14 @@ namespace TAT.StoreLocator.Core.Entities
     {
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        [Required]
+
         public string? WishlistId { get; set; }
 
-        public Wishlist Wishlist { get; set; } = new Wishlist();
-        [Required]
+        public Wishlist? Wishlist { get; set; }
+
         public string? StoreId { get; set; }
 
-        public Store Store { get; set; } = new Store();
+        public Store? Store { get; set; }
 
     }
 }
