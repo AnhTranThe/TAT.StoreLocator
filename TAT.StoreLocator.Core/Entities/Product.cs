@@ -30,6 +30,8 @@ namespace TAT.StoreLocator.Core.Entities
 
         public virtual ICollection<Gallery>? Galleries { get; set; }
         public virtual ICollection<MapProductWishlist>? MapProductWishlists { get; set; }
+
+        public virtual ICollection<MapGalleryProduct>? MapGalleryProducts { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }
 
         public string? StoreId { get; set; }

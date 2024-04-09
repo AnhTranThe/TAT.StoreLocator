@@ -5,37 +5,34 @@ using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.ILogger;
-using TAT.StoreLocator.Core.Interface.IRepositories;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Authentication;
 using TAT.StoreLocator.Core.Models.Request.User;
 using TAT.StoreLocator.Core.Models.Response.Role;
 using TAT.StoreLocator.Core.Models.Response.User;
+using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
 namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
-        private readonly IUserRepository _userRepository;
-        private readonly IRoleRepository _roleRepository;
         private readonly ILogger _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly AppDbContext _dbContext;
 
 
         public UserService(UserManager<User> userManager,
-        IUserRepository userRepository,
-        IRoleRepository roleRepository,
         ILogger logger,
-        IHttpContextAccessor httpContextAccessor
+        IHttpContextAccessor httpContextAccessor,
+         AppDbContext dbContext
         )
 
         {
-            _userRepository = userRepository;
             _userManager = userManager;
-            _roleRepository = roleRepository;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
+            _dbContext = dbContext;
 
         }
 
@@ -143,6 +140,52 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 // Log the exception if needed
             }
 
+            return response;
+
+        }
+
+        public async Task<EditUserResponseModel> UpdateUserAsync(EditUserRequestModel request)
+        {
+            EditUserResponseModel response = new();
+            BaseResponse baseResponse = new()
+            {
+                Success = false
+            };
+            using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction = _dbContext.Database.BeginTransaction();
+            try
+            {
+                User user = await _userManager.FindByIdAsync(request.RequestId);
+                if (user == null)
+                {
+                    baseResponse.Message = GlobalConstants.MessageUserNotFound;
+                    response.BaseResponse = baseResponse;
+                    return response;
+                }
+                if (request.File != null && request.File.Length > 0 && _dbContext != null && _dbContext.Galleries != null)
+                {
+
+                    Gallery photo = await _dbContext.Galleries.FirstOrDefaultAsync(p => p.UserId == user.Id) ?? new Gallery
+                    {
+                        User = new User { Id = user.Id }
+                    };
+
+                }
+
+                transaction.Commit();
+
+                baseResponse.Success = true;
+                baseResponse.Message = "Role assign to User succesfully";
+                response.BaseResponse = baseResponse;
+
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                baseResponse.Message = $"An error occurred: {ex.Message}";
+                _logger.LogError(ex);
+
+            }
+            response.BaseResponse = baseResponse;
             return response;
 
         }

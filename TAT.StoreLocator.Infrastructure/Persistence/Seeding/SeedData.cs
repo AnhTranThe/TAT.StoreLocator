@@ -124,15 +124,13 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
 
                 }
 
-
-
                 logger?.LogInfo("Data initialization completed successfully.");
 
 
             }
             catch (Exception ex)
             {
-                logger?.LogError(ex.Message);
+                logger?.LogError(ex);
             }
 
         }

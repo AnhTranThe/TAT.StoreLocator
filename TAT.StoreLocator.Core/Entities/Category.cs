@@ -16,10 +16,9 @@ namespace TAT.StoreLocator.Core.Entities
         public string? ParentCategoryId { get; set; }
         public Category? ParentCategory { get; set; }
         public Gallery? Gallery { get; set; }
+        public string? GalleryId { get; set; }
         public virtual ICollection<Category>? ChildrenCategories { get; set; }
-
         public virtual ICollection<Product>? Products { get; set; }
-
 
 
     }

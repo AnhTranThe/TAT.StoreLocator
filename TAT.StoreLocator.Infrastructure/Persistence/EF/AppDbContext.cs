@@ -26,14 +26,14 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
             _ = builder.ApplyConfiguration(new AppUserLoginConfiguration());
             _ = builder.ApplyConfiguration(new AppUserRoleConfiguration());
             _ = builder.ApplyConfiguration(new AppUserTokenConfiguration());
-
             _ = builder.ApplyConfiguration(new AddressConfiguration());
             _ = builder.ApplyConfiguration(new CategoryConfiguration());
             _ = builder.ApplyConfiguration(new GalleryConfiguration());
 
-
             _ = builder.ApplyConfiguration(new MapProductWishlistConfiguration());
             _ = builder.ApplyConfiguration(new MapStoreWishlistConfiguration());
+            _ = builder.ApplyConfiguration(new MapGalleryStoreConfiguration());
+            _ = builder.ApplyConfiguration(new MapGalleryProductConfiguration());
             _ = builder.ApplyConfiguration(new ProductConfiguration());
             _ = builder.ApplyConfiguration(new ReviewConfiguration());
 
@@ -70,6 +70,9 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
 
         public DbSet<MapProductWishlist>? MapProductWishlists { get; set; }
         public DbSet<MapStoreWishlist>? mapStoreWishlists { get; set; }
+
+        public DbSet<MapGalleryProduct>? mapGalleryProducts { get; set; }
+        public DbSet<MapGalleryStore>? mapGalleryStores { get; set; }
         public DbSet<Product>? Products { get; set; }
         public DbSet<Review>? Reviews { get; set; }
         public DbSet<Store>? Stores { get; set; }

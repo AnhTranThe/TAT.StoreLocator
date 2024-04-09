@@ -10,6 +10,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     {
         Task<BasePaginationResult<UserResponseModel>> GetUsersPaging(GetUserPagingRequestModel request);
         Task<BaseResponseResult<UserResponseModel>> GetById(string id);
+        Task<EditUserResponseModel> UpdateUserAsync(EditUserRequestModel request);
         Task<AssignRoleResponseModel> RoleAssign(AssignRoleRequestModel request);
         Task<BaseResponse> Delete(string id);
         Task<BaseResponse> ChangePasswordAsync(ChangePasswordRequestModel request);

@@ -17,9 +17,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
         /// LogError
         /// </summary>
         /// <param name="exception"></param>
-        public void LogError(string message)
+        public void LogError(Exception ex)
         {
-            _logger.Error(message);
+            _logger.Error(ex);
         }
         /// <summary>
         /// LogInfo

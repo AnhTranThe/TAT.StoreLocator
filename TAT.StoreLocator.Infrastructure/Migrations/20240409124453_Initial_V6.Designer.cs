@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -11,9 +12,10 @@ using TAT.StoreLocator.Infrastructure.Persistence.EF;
 namespace TAT.StoreLocator.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240409124453_Initial_V6")]
+    partial class Initial_V6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,9 +193,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("GalleryId")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -215,9 +214,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GalleryId")
-                        .IsUnique();
-
                     b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
@@ -226,6 +222,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Gallery", b =>
                 {
                     b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CategoryId")
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -239,6 +238,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.Property<string>("FileName")
                         .HasColumnType("text");
+
+                    b.Property<int?>("FileStatus")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsThumbnail")
                         .HasColumnType("boolean");
@@ -266,6 +268,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId")
+                        .IsUnique();
+
                     b.HasIndex("ProductId");
 
                     b.HasIndex("StoreId");
@@ -276,45 +281,20 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.ToTable("Galleries");
                 });
 
-            modelBuilder.Entity("TAT.StoreLocator.Core.Entities.MapGalleryProduct", b =>
-                {
-                    b.Property<string>("ProductId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("GalleryId")
-                        .HasColumnType("text");
-
-                    b.HasKey("ProductId", "GalleryId");
-
-                    b.HasIndex("GalleryId");
-
-                    b.ToTable("MapGalleryProducts");
-                });
-
-            modelBuilder.Entity("TAT.StoreLocator.Core.Entities.MapGalleryStore", b =>
-                {
-                    b.Property<string>("StoreId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("GalleryId")
-                        .HasColumnType("text");
-
-                    b.HasKey("StoreId", "GalleryId");
-
-                    b.HasIndex("GalleryId");
-
-                    b.ToTable("MapGalleryStores");
-                });
-
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.MapProductWishlist", b =>
                 {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
                     b.Property<string>("ProductId")
                         .HasColumnType("text");
 
                     b.Property<string>("WishlistId")
                         .HasColumnType("text");
 
-                    b.HasKey("ProductId", "WishlistId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("WishlistId");
 
@@ -323,13 +303,18 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.MapStoreWishlist", b =>
                 {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
                     b.Property<string>("StoreId")
                         .HasColumnType("text");
 
                     b.Property<string>("WishlistId")
                         .HasColumnType("text");
 
-                    b.HasKey("StoreId", "WishlistId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoreId");
 
                     b.HasIndex("WishlistId");
 
@@ -709,29 +694,28 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Category", b =>
                 {
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Gallery", "Gallery")
-                        .WithOne("Category")
-                        .HasForeignKey("TAT.StoreLocator.Core.Entities.Category", "GalleryId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("TAT.StoreLocator.Core.Entities.Category", "ParentCategory")
                         .WithMany("ChildrenCategories")
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Gallery");
-
                     b.Navigation("ParentCategory");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Gallery", b =>
                 {
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Product", null)
-                        .WithMany("Galleries")
-                        .HasForeignKey("ProductId");
+                    b.HasOne("TAT.StoreLocator.Core.Entities.Category", "Category")
+                        .WithOne("Gallery")
+                        .HasForeignKey("TAT.StoreLocator.Core.Entities.Gallery", "CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Store", null)
+                    b.HasOne("TAT.StoreLocator.Core.Entities.Product", "Product")
+                        .WithMany("Galleries")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("TAT.StoreLocator.Core.Entities.Store", "Store")
                         .WithMany("Galleries")
                         .HasForeignKey("StoreId");
 
@@ -740,45 +724,13 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .HasForeignKey("TAT.StoreLocator.Core.Entities.Gallery", "UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TAT.StoreLocator.Core.Entities.MapGalleryProduct", b =>
-                {
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Gallery", "Gallery")
-                        .WithMany("MapGalleryProducts")
-                        .HasForeignKey("GalleryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Product", "Product")
-                        .WithMany("MapGalleryProducts")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Gallery");
+                    b.Navigation("Category");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("TAT.StoreLocator.Core.Entities.MapGalleryStore", b =>
-                {
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Gallery", "Gallery")
-                        .WithMany("MapGalleryStores")
-                        .HasForeignKey("GalleryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Store", "Store")
-                        .WithMany("MapGalleryStores")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Gallery");
 
                     b.Navigation("Store");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.MapProductWishlist", b =>
@@ -786,14 +738,12 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.HasOne("TAT.StoreLocator.Core.Entities.Product", "Product")
                         .WithMany("MapProductWishlists")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("TAT.StoreLocator.Core.Entities.Wishlist", "Wishlist")
                         .WithMany("MapProductWishlists")
                         .HasForeignKey("WishlistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Product");
 
@@ -805,14 +755,12 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.HasOne("TAT.StoreLocator.Core.Entities.Store", "Store")
                         .WithMany("MapStoreWishlists")
                         .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("TAT.StoreLocator.Core.Entities.Wishlist", "Wishlist")
                         .WithMany("MapStoreWishlists")
                         .HasForeignKey("WishlistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Store");
 
@@ -883,23 +831,14 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 {
                     b.Navigation("ChildrenCategories");
 
+                    b.Navigation("Gallery");
+
                     b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Gallery", b =>
-                {
-                    b.Navigation("Category");
-
-                    b.Navigation("MapGalleryProducts");
-
-                    b.Navigation("MapGalleryStores");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Product", b =>
                 {
                     b.Navigation("Galleries");
-
-                    b.Navigation("MapGalleryProducts");
 
                     b.Navigation("MapProductWishlists");
 
@@ -909,8 +848,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Store", b =>
                 {
                     b.Navigation("Galleries");
-
-                    b.Navigation("MapGalleryStores");
 
                     b.Navigation("MapStoreWishlists");
 
