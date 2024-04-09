@@ -26,7 +26,6 @@ namespace TAT.StoreLocator.API.Controllers
         private readonly IJwtService _jwtService;
         private readonly IMapper _mapper;
 
-
         public AuthenticationController(
             Core.Interface.IServices.IAuthenticationService authenticationService,
             UserManager<User> userManager,
@@ -112,7 +111,6 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-
         [HttpPost, Route(nameof(Logout))]
         [Authorize] // Only authenticated users can log out
         public async Task<ActionResult> Logout()
@@ -131,6 +129,7 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
 
         [HttpGet(nameof(RefreshToken))]
         public async Task<ActionResult<AuthenticationResponseModel>> RefreshToken()

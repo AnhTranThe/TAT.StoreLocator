@@ -2,17 +2,16 @@
 
 namespace TAT.StoreLocator.Core.Entities
 {
-    [Table("MapStoreWishlists")]
-    public class MapStoreWishlist
+    [Table("MapGalleryStores")]
+    public class MapGalleryStore
     {
 
-        public string? WishlistId { get; set; }
+        public string? GalleryId { get; set; }
 
-        public Wishlist? Wishlist { get; set; }
+        public Gallery? Gallery { get; set; }
 
         public string? StoreId { get; set; }
 
         public Store? Store { get; set; }
-
     }
 }

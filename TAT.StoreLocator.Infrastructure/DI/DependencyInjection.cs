@@ -8,13 +8,9 @@ using System.Text;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.ILogger;
-using TAT.StoreLocator.Core.Interface.IRepositories;
 using TAT.StoreLocator.Core.Interface.IServices;
-using TAT.StoreLocator.Core.Interface.IUnitOfWork;
 using TAT.StoreLocator.Infrastructure.Mapper;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
-using TAT.StoreLocator.Infrastructure.Repositories;
-using TAT.StoreLocator.Infrastructure.SeedWorks;
 using TAT.StoreLocator.Infrastructure.Services;
 
 namespace TAT.StoreLocator.Infrastructure.DI
@@ -110,17 +106,10 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddTransient(typeof(IAuthenticationService), typeof(AuthenticationService));
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();
             _ = services.AddTransient<UserManager<User>, UserManager<User>>();
-            _ = services.AddScoped<RoleManager<Role>, RoleManager<Role>>();
+            _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
 
             #endregion
 
-            #region Repositories
-            _ = services.AddScoped<IUnitOfWork, UnitOfWork>();
-            _ = services.AddScoped<IUserRepository, UserRepository>();
-            _ = services.AddScoped<IRoleRepository, RoleRepository>();
-            _ = services.AddScoped<IProductRepository, ProductRepository>();
-
-            #endregion
 
             #region Mapper
             _ = services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);

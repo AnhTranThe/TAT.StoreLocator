@@ -34,6 +34,7 @@ namespace TAT.StoreLocator.Core.Entities
         public DateTimeOffset? RefreshTokenExpiryTime { get; set; }
         // relationship 
         public Address? Address { get; set; }
+        public Gallery? Gallery { get; set; }
         public virtual ICollection<Wishlist>? Wishlists { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }
 

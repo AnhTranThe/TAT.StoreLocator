@@ -10,8 +10,11 @@ namespace TAT.StoreLocator.Core.Entities
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public Address? Address { get; set; }
+        public string? AddressId { get; set; }
         public virtual ICollection<Gallery>? Galleries { get; set; }
         public virtual ICollection<Product>? Products { get; set; }
         public virtual ICollection<MapStoreWishlist>? MapStoreWishlists { get; set; }
+        public virtual ICollection<MapGalleryStore>? MapGalleryStores { get; set; }
+
     }
 }

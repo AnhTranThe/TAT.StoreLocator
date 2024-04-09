@@ -9,8 +9,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<Store> builder)
         {
-
-            _ = builder.HasOne(x => x.Address).WithOne(x => x.Store).HasForeignKey<Address>(x => x.StoreId).OnDelete(DeleteBehavior.Cascade);
+            _ = builder.HasOne(x => x.Address).WithOne(x => x.Store).HasForeignKey<Store>(x => x.AddressId).OnDelete(DeleteBehavior.Cascade);
 
         }
     }

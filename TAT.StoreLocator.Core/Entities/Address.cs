@@ -15,7 +15,6 @@ namespace TAT.StoreLocator.Core.Entities
         public decimal longitude { get; set; }
         public string? UserId { get; set; }
         public User? User { get; set; }
-        public string? StoreId { get; set; }
         public Store? Store { get; set; }
 
 

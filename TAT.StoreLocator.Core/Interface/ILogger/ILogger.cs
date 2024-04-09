@@ -6,7 +6,7 @@
         /// LogError
         /// </summary>
         /// <param name="exception"></param>
-        void LogError(string message);
+        void LogError(Exception ex);
         /// <summary>
         /// LogInfo
         /// </summary>

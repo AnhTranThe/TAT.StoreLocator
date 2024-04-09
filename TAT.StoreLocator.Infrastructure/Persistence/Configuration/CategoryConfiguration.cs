@@ -10,7 +10,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
         {
 
             _ = builder.HasOne(x => x.ParentCategory).WithMany(x => x.ChildrenCategories).HasForeignKey(x => x.ParentCategoryId).OnDelete(DeleteBehavior.Cascade);
-            _ = builder.HasOne(x => x.Gallery).WithOne(x => x.Category).HasForeignKey<Gallery>(x => x.CategoryId).OnDelete(DeleteBehavior.Cascade);
+            _ = builder.HasOne(x => x.Gallery).WithOne(x => x.Category).HasForeignKey<Category>(x => x.GalleryId).OnDelete(DeleteBehavior.Cascade);
 
         }
     }

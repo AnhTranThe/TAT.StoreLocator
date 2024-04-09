@@ -92,7 +92,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             catch (Exception ex)
             {
                 baseResponse.Message = $"An error occurred while check existed the entity: {ex.Message}";
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex);
 
             }
 
@@ -145,7 +145,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             catch (Exception ex)
             {
                 baseResponse.Message = $"An error occurred while check existed the entity: {ex.Message}";
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex);
             }
 
             return response;
@@ -186,7 +186,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error occurred during user logout: {ex.Message}");
+                _logger.LogError(ex);
 
             }
             return response;
