@@ -46,7 +46,27 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             );
                         _ = await context.SaveChangesAsync();
                     }
+                    if (context.Addresses != null && !context.Addresses.Any())
 
+                    {
+                        // Create address entities
+                        List<Address> addresses = new()
+                        {
+                            new Address
+                            {
+                                Id = GlobalConstants.AddressAdminId
+
+                            },
+                            new Address
+                            {
+                                Id = GlobalConstants.AddressUserId
+                            }
+                        };
+                        await context.Addresses.AddRangeAsync(addresses);
+
+                        _ = await context.SaveChangesAsync();
+
+                    }
 
                     if (!context.Users.Any())
                     {
@@ -66,6 +86,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             IsActive = true,
                             SecurityStamp = Guid.NewGuid().ToString(),
                             LockoutEnabled = false,
+                            AddressId = GlobalConstants.AddressAdminId,
 
                         },
 
@@ -82,12 +103,14 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             IsActive = true,
                             SecurityStamp = Guid.NewGuid().ToString(),
                             LockoutEnabled = false,
+                            AddressId = GlobalConstants.AddressUserId,
 
                         }
                         };
                         foreach (User user in UserLs)
                         {
                             user.PasswordHash = passwordHasher.HashPassword(user, "Admin@123");
+
                         }
 
 

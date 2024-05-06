@@ -2,7 +2,7 @@
 
 namespace TAT.StoreLocator.Core.Models.Response.User
 {
-    public class EditUserResponseModel
+    public class UpdateUserResponseModel
     {
         public BaseResponse BaseResponse { get; set; } = new BaseResponse();
         public UserResponseModel OldUserResponseModel { get; set; } = new UserResponseModel();

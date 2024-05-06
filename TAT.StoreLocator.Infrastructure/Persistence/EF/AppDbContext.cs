@@ -64,19 +64,19 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
             return await base.SaveChangesAsync();
 
         }
-        public DbSet<Address>? Addresses { get; set; }
-        public DbSet<Category>? Categories { get; set; }
-        public DbSet<Gallery>? Galleries { get; set; }
+        public DbSet<Address> Addresses { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Gallery> Galleries { get; set; }
 
-        public DbSet<MapProductWishlist>? MapProductWishlists { get; set; }
-        public DbSet<MapStoreWishlist>? mapStoreWishlists { get; set; }
+        public DbSet<MapProductWishlist> MapProductWishlists { get; set; }
+        public DbSet<MapStoreWishlist> mapStoreWishlists { get; set; }
 
-        public DbSet<MapGalleryProduct>? mapGalleryProducts { get; set; }
-        public DbSet<MapGalleryStore>? mapGalleryStores { get; set; }
-        public DbSet<Product>? Products { get; set; }
-        public DbSet<Review>? Reviews { get; set; }
-        public DbSet<Store>? Stores { get; set; }
-        public DbSet<Wishlist>? Wishlists { get; set; }
+        public DbSet<MapGalleryProduct> mapGalleryProducts { get; set; }
+        public DbSet<MapGalleryStore> mapGalleryStores { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Store> Stores { get; set; }
+        public DbSet<Wishlist> Wishlists { get; set; }
 
     }
 

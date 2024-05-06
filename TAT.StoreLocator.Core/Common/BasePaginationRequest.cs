@@ -2,23 +2,23 @@
 {
     public class BasePaginationRequest
     {
-        public int PageSize { get; set; }
 
-        public int PageIndex { get; set; }
+        private const int DefaultPageSize = 10;
+        private const int DefaultPageIndex = 1;
 
-        public BasePaginationRequest()
+        private int _pageSize = DefaultPageSize;
+        public int PageSize
         {
-            PageSize = 10;
-            PageIndex = 1;
+            get => _pageSize;
+            set => _pageSize = value > 0 ? value : DefaultPageSize;
         }
 
-
-        public BasePaginationRequest(int pageIndex, int pageSize)
+        private int _pageIndex = DefaultPageIndex;
+        public int PageIndex
         {
-            PageIndex = pageIndex;
-            PageSize = pageSize;
+            get => _pageIndex;
+            set => _pageIndex = value > 0 ? value : DefaultPageIndex;
         }
-
 
 
 

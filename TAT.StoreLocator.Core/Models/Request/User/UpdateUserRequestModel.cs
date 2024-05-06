@@ -5,13 +5,13 @@ using static TAT.StoreLocator.Core.Helpers.Enums;
 
 namespace TAT.StoreLocator.Core.Models.Request.User
 {
-    public class EditUserRequestModel : BaseRequest
+    public class UpdateUserRequestModel : BaseRequest
     {
 
         [Required]
         [MinLength(2)]
         public string? Username { get; set; }
-
+        [Required]
         [EmailAddress]
         public string? Email { get; set; }
 
@@ -20,12 +20,13 @@ namespace TAT.StoreLocator.Core.Models.Request.User
         [Required]
         public string? LastName { get; set; }
 
-        public IFormFile? File { get; set; }
+        public IFormFile? NewFile { get; set; }
 
         public EGenderType Gender { get; set; }
 
-        public DateTimeOffset Dob { get; set; }
-
+        public DateTimeOffset? Dob { get; set; }
+        public string? ImgUrl { get; set; }
+        public bool IsActiveAddress { get; set; } = false;
         public string? RoadName { get; set; } = string.Empty;
         public string? Province { get; set; } = string.Empty;
         public string? District { get; set; } = string.Empty;
@@ -33,8 +34,6 @@ namespace TAT.StoreLocator.Core.Models.Request.User
         public string? PostalCode { get; set; } = string.Empty;
         public decimal latitude { get; set; } = 0;
         public decimal longitude { get; set; } = 0;
-
-
 
     }
 }

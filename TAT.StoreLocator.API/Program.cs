@@ -57,6 +57,8 @@ namespace TAT.StoreLocator.API
                         new string[]{}
                     }
     });
+                //string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                //opt.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
             WebApplication app = builder.Build();

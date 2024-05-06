@@ -7,6 +7,8 @@
         public const string RoleUserId = "D0C7A5D9-9F7B-4B7B-9C6F-8D6F6F6F6F6F";
         public const string UserId = "F0C7A5D9-9F7B-4B7B-9C6F-8D6F6F6F6F6F";
         public const string AdminId = "4D921CC6-5349-46FB-B62C-EBF293B217A5";
+        public const string AddressUserId = "0C2CCCBB-7326-45FE-B800-F348CF4C37CF";
+        public const string AddressAdminId = "C0FE97C7-918F-4E48-97A6-2B081D56372C";
         public const string EmailAdmin = "admin@gmail.com";
         public const string RoleAdminName = "Admin";
         public const string RoleUserName = "User";

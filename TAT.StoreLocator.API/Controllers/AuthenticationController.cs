@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,14 +22,13 @@ namespace TAT.StoreLocator.API.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
-        private readonly IMapper _mapper;
+
 
         public AuthenticationController(
             Core.Interface.IServices.IAuthenticationService authenticationService,
             UserManager<User> userManager,
             IUserService userService,
-            IJwtService jwtService,
-            IMapper mapper
+            IJwtService jwtService
 
             )
         {
@@ -39,9 +36,11 @@ namespace TAT.StoreLocator.API.Controllers
             _authenticationService = authenticationService;
             _userService = userService;
             _jwtService = jwtService;
-            _mapper = mapper;
+
 
         }
+
+
 
         [HttpPost, Route(nameof(Register))]
         [AllowAnonymous]
@@ -131,59 +130,11 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
 
-        [HttpGet(nameof(RefreshToken))]
-        public async Task<ActionResult<AuthenticationResponseModel>> RefreshToken()
-        {
-            try
-            {
-                string id = HttpContext.User.GetClaimUserId();
-                User user = await _userManager.Users
-                    .SingleAsync(u => u.Id == id);
+        //[HttpGet(nameof(RefreshToken))]
+        //[Authorize]
 
-                if (user == null)
-                {
-                    return BadRequest("User not found");
-                }
-
-                string? accessToken = await HttpContext.GetTokenAsync("access_token");
-
-                if (string.IsNullOrEmpty(accessToken))
-                {
-                    return BadRequest("Access token not found");
-                }
-
-                System.Security.Claims.ClaimsPrincipal principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
-                string newAccessToken = _jwtService.GenerateAccessToken(principal.Claims);
-                string newRefreshToken = _jwtService.GenerateRefreshToken();
-                UpdateJwtUserInfoRequestModel updateJwtUserInfoRequestModel = new()
-                {
-                    UserId = id,
-                    RefreshToken = newRefreshToken,
-
-
-                };
-                BaseResponse updateJwtResponse = await _userService.UpdateJwtUserInfo(updateJwtUserInfoRequestModel);
-                return !updateJwtResponse.Success
-                  ? BadRequest(updateJwtResponse.Message)
-                  : Ok(new AuthenticationResponseModel
-                  {
-                      Token = newAccessToken,
-                      RefreshToken = newRefreshToken
-                  });
-
-
-            }
-            catch (Exception ex)
-            {
-
-                return StatusCode(500, ex.Message);
-
-            }
-
-        }
-
-        [HttpPost, Authorize]
-        [Route("revoke")]
+        [HttpPost, Route(nameof(Revoke))]
+        [Authorize]
         public async Task<ActionResult> Revoke()
         {
             string id = HttpContext.User.GetClaimUserId();

@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
-using TAT.StoreLocator.Core.Entities;
+using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
+using TAT.StoreLocator.Core.Models.Request.Authentication;
+using TAT.StoreLocator.Core.Models.Request.User;
 using TAT.StoreLocator.Core.Models.Response.User;
 
 namespace TAT.StoreLocator.API.Controllers
@@ -14,18 +15,16 @@ namespace TAT.StoreLocator.API.Controllers
     public class UserController : Controller
     {
 
-        private readonly UserManager<User> _userManager;
+
         private readonly IUserService _userService;
-        private readonly IJwtService _jwtService;
-        public UserController(UserManager<User> userManager, IUserService userService, IJwtService jwtService)
+        public UserController(IUserService userService)
         {
-            _userManager = userManager;
             _userService = userService;
-            _jwtService = jwtService;
 
         }
         [HttpGet("get-user-by-id/{userId}")]
-        public async Task<IActionResult> getUserById(string userId)
+        [Authorize(Roles = GlobalConstants.RoleUserName)]
+        public async Task<IActionResult> GetUserById(string userId)
         {
 
 
@@ -47,32 +46,51 @@ namespace TAT.StoreLocator.API.Controllers
 
             }
         }
+        [HttpPut("update-user/{userId}")]
+        [Authorize(Roles = GlobalConstants.RoleUserName)]
+        public async Task<IActionResult> Update([FromBody] UpdateUserRequestModel request)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                if (string.IsNullOrWhiteSpace(request.RequestId))
+                {
+                    return BadRequest("User not found");
+                }
 
 
-        //[HttpPut]
-        //public async Task<IActionResult> Update([FromForm] EditUserRequestModel request)
-        //{
-        //    EditUserResponseModel response = await _userService.UpdateUserAsync(request);
-        //    if (userId == null)
-        //    {
-        //        return BadRequest();
+                UpdateUserResponseModel Response = await _userService.UpdateUserAsync(request);
 
-        //    }
+                return !Response.BaseResponse.Success ? BadRequest(Response.BaseResponse.Message) : Ok(Response);
+            }
+            catch (Exception ex)
+            {
 
-        //    return Ok(new { message = "Cập nhập user thành công!", user });
-        //}
+                return StatusCode(500, ex.Message);
 
+            }
 
+        }
+        [HttpPost("ResetPassword")]
+        [Authorize(Roles = GlobalConstants.RoleUserName)]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequestModel request)
+        {
+            BaseResponse check = await _userService.ResetPasswordAsync(request);
+            return Ok(check);
+        }
+        [HttpPost("ChangePassword")]
+        [Authorize(Roles = GlobalConstants.RoleUserName)]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequestModel request)
+        {
+            BaseResponse check = await _userService.ChangePasswordAsync(request);
+            return Ok(check);
+        }
 
-
-
-
-        //[HttpPost("ForgetPassword")]
-        //public async Task<IActionResult> ForgetPassword(ForgotPasswordRequestModel request)
-        //{
-        //    var check = await _userService.ResetPasswordAsync(request);
-        //    return Ok(check);
-        //}
 
     }
 }

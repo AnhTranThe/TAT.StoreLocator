@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TAT.StoreLocator.Core.Models.Request.Category
 {
-    public class EditCategoryRequestModel
+    public class UpdateCategoryRequestModel
     {
         [Required]
         public string? Id { get; set; }

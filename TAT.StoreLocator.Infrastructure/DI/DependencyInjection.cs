@@ -12,7 +12,6 @@ using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Infrastructure.Mapper;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 using TAT.StoreLocator.Infrastructure.Services;
-using TAT.StoreLocator.Infrastructure.UnitOfWork;
 
 
 namespace TAT.StoreLocator.Infrastructure.DI
@@ -40,6 +39,7 @@ namespace TAT.StoreLocator.Infrastructure.DI
             {
                 _ = options.UseNpgsql(config.GetConnectionString("DefaultConnection"));
             });
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             #endregion
 
@@ -111,7 +111,6 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
 
             #endregion
-
 
             #region Mapper
             _ = services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);

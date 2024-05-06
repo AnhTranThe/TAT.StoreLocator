@@ -11,6 +11,7 @@ using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Authentication;
 using TAT.StoreLocator.Core.Models.Response.Authentication;
 using TAT.StoreLocator.Core.Models.Response.User;
+using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
 namespace TAT.StoreLocator.Infrastructure.Services
 {
@@ -20,14 +21,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
         private readonly SignInManager<User> _signInManager;
         private readonly IMapper _mapper;
         private readonly ILogger _logger;
+        private readonly AppDbContext _context;
 
 
-        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, ILogger logger, IMapper mapper)
+        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, ILogger logger, IMapper mapper, AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _mapper = mapper;
+            _context = context;
 
 
         }
@@ -65,10 +68,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     FullName = model.LastName + " " + model.FirstName,
                     Email = model.Email,
                     UserName = userName,
-
+                    AddressId = Guid.NewGuid().ToString()
 
                 };
+                Address newAddress = new()
+                {
+                    Id = newUser.AddressId // Use the same Id for Address as assigned to AddressId of User
+                };
 
+                _ = await _context.Addresses.AddAsync(newAddress);
+                _ = await _context.SaveChangesAsync(newUser.Id);
                 IdentityResult createUserResult = await _userManager.CreateAsync(newUser, model.Password?.Trim());
 
                 if (!createUserResult.Succeeded)
