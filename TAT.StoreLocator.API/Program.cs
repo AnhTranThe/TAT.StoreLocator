@@ -3,14 +3,13 @@ using log4net.Config;
 using Microsoft.OpenApi.Models;
 using TAT.StoreLocator.Core.DI;
 using TAT.StoreLocator.Infrastructure.DI;
-using TAT.StoreLocator.Infrastructure.Persistence.Seeding;
 
 
 namespace TAT.StoreLocator.API
 {
     public static class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -64,12 +63,16 @@ namespace TAT.StoreLocator.API
             WebApplication app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                await SeedData.InitializeAsync(app);
-                _ = app.UseSwagger();
-                _ = app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    await SeedData.InitializeAsync(app);
+            //    _ = app.UseSwagger();
+            //    _ = app.UseSwaggerUI();
+            //}
+
+
+            _ = app.UseSwagger();
+            _ = app.UseSwaggerUI();
             _ = app.UseStaticFiles();
             _ = app.UseCors("CorsPolicy");
             _ = app.UseHttpsRedirection();
