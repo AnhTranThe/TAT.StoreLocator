@@ -77,7 +77,6 @@ namespace TAT.StoreLocator.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-
                 LoginResponseModel loginResponse = await _authenticationService.LoginUserAsync(request);
                 if (!loginResponse.BaseResponse.Success)
                 {
@@ -90,8 +89,6 @@ namespace TAT.StoreLocator.API.Controllers
                 {
                     UserId = loginResponse.UserResponseModel.Id,
                     RefreshToken = refreshToken,
-
-
                 };
                 BaseResponse updateJwtResponse = await _userService.UpdateJwtUserInfo(updateJwtUserInfoRequestModel);
                 return !updateJwtResponse.Success
