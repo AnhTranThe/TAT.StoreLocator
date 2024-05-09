@@ -5,12 +5,12 @@ using Microsoft.Extensions.Options;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 
-namespace TAT.StoreLocator.Infrastructure.Services
+namespace TAT.StoreLocator.Infrastructure.Management
 {
-    public class PhotoService : IPhotoService
+    public class PhotoManagement : IPhotoService
     {
         private readonly Cloudinary _cloudinary;
-        public PhotoService(IOptions<CloudinarySettings> config)
+        public PhotoManagement(IOptions<CloudinarySettings> config)
         {
             Account account = new(config.Value.CloudName, config.Value.ApiKey, config.Value.ApiSecret);
             _cloudinary = new Cloudinary(account);

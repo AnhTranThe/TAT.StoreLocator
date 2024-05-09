@@ -9,6 +9,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
+using TAT.StoreLocator.Infrastructure.Management;
 using TAT.StoreLocator.Infrastructure.Mapper;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 using TAT.StoreLocator.Infrastructure.Services;
@@ -101,11 +102,12 @@ namespace TAT.StoreLocator.Infrastructure.DI
             #endregion
 
             #region Services
-            _ = services.AddTransient(typeof(IJwtService), typeof(JwtService));
-            _ = services.AddTransient(typeof(IUserService), typeof(UserService));
+            _ = services.AddScoped(typeof(IJwtService), typeof(JwtService));
+            _ = services.AddScoped(typeof(IUserService), typeof(UserService));
             _ = services.AddTransient(typeof(ILogger), typeof(LoggerService));
-            _ = services.AddTransient(typeof(IPhotoService), typeof(PhotoService));
-            _ = services.AddTransient(typeof(IAuthenticationService), typeof(AuthenticationService));
+            _ = services.AddTransient(typeof(IPhotoService), typeof(PhotoManagement));
+            _ = services.AddScoped(typeof(IAuthenticationService), typeof(AuthenticationService));
+            _ = services.AddScoped(typeof(IProfileService), typeof(ProfileService));
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();
             _ = services.AddTransient<UserManager<User>, UserManager<User>>();
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();

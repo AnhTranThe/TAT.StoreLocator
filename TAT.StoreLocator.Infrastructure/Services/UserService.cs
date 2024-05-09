@@ -27,11 +27,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public UserService(UserManager<User> userManager,
         ILogger logger,
-         AppDbContext dbContext,
+        AppDbContext dbContext,
         IPhotoService photoService,
         IMapper mapper)
-
-
         {
             _userManager = userManager;
             _logger = logger;
@@ -40,9 +38,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _mapper = mapper;
 
         }
-
-
-
         public async Task<BaseResponse> Delete(string id)
         {
             BaseResponse response = new()
@@ -66,7 +61,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             response.Success = true;
             return response;
-
         }
 
         public async Task<BasePaginationResult<UserResponseModel>> GetListUserAsync(BasePaginationRequest request)
@@ -77,7 +71,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
 
             int totalRow = await query.CountAsync();
-
             List<UserResponseModel> data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(p => new UserResponseModel()
@@ -86,13 +79,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     UserName = p.UserName,
                     Email = p.Email,
                 }).ToListAsync();
-
-
             response.TotalCount = totalRow;
             response.PageIndex = request.PageIndex;
             response.PageSize = request.PageSize;
             response.Data = data;
-
             return response;
         }
 
@@ -172,9 +162,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         _ = await UpdateUserPhoto(uploadPhotoRequestModel);
 
                     }
-
-
-
 
                     // Update or create address
                     if (_dbContext != null && _dbContext.Addresses != null)

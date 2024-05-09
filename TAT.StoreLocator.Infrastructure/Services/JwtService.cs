@@ -42,6 +42,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             using RandomNumberGenerator rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
+
         }
 
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
@@ -64,3 +65,4 @@ namespace TAT.StoreLocator.Infrastructure.Services
         }
     }
 }
+
