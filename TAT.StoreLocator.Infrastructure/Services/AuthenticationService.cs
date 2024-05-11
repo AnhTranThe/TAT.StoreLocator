@@ -135,6 +135,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                     response.UserResponseModel = _mapper.Map<UserResponseModel>(user);
                     IList<string> roles = await _userManager.GetRolesAsync(user);
+                    response.UserResponseModel.Roles = roles;
                     Claim[] claims = new[]
            {
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),

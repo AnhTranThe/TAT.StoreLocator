@@ -42,10 +42,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             Claim[] claims = new[]
             {
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Name, userName),
-                new Claim(UserClaims.Id, userId),
-            };
+        new Claim(UserClaims.Email, email),
+        new Claim(UserClaims.UserName, userName),
+        new Claim(UserClaims.Id, userId),
+    };
 
             if (roles != null && roles.Any())
             {

@@ -6,6 +6,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     {
         string GenerateAccessToken(IEnumerable<Claim> claims);
         string GenerateRefreshToken(string email, string userName, ICollection<string>? roles, string v);
+
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
 
     }

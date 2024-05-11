@@ -81,12 +81,15 @@ namespace TAT.StoreLocator.API.Controllers
                 }
 
                 string accessToken = _jwtService.GenerateAccessToken(loginResponse.claims);
+
+                string[] roles = loginResponse.UserResponseModel.Roles.ToArray(); // Convert roles to an array of strings
+
                 string refreshToken = _jwtService.GenerateRefreshToken(
-    loginResponse.UserResponseModel.Email,
-    loginResponse.UserResponseModel.UserName,
-    loginResponse.UserResponseModel.Roles, // Assuming roles is a collection
-    loginResponse.UserResponseModel.Id.ToString()
-);
+                    loginResponse.UserResponseModel.Email,
+                    loginResponse.UserResponseModel.UserName,
+                    loginResponse.UserResponseModel.Roles, // Pass roles array
+                    loginResponse.UserResponseModel.Id.ToString()
+                );
 
                 UpdateJwtUserInfoRequestModel updateJwtUserInfoRequestModel = new()
                 {
