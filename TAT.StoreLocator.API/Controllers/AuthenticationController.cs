@@ -39,9 +39,6 @@ namespace TAT.StoreLocator.API.Controllers
 
 
         }
-
-
-
         [HttpPost, Route(nameof(Register))]
         [AllowAnonymous]
         public async Task<ActionResult> Register([FromBody] RegisterRequestModel model)
@@ -84,7 +81,13 @@ namespace TAT.StoreLocator.API.Controllers
                 }
 
                 string accessToken = _jwtService.GenerateAccessToken(loginResponse.claims);
-                string refreshToken = _jwtService.GenerateRefreshToken();
+                string refreshToken = _jwtService.GenerateRefreshToken(
+    loginResponse.UserResponseModel.Email,
+    loginResponse.UserResponseModel.UserName,
+    loginResponse.UserResponseModel.Roles, // Assuming roles is a collection
+    loginResponse.UserResponseModel.Id.ToString()
+);
+
                 UpdateJwtUserInfoRequestModel updateJwtUserInfoRequestModel = new()
                 {
                     UserId = loginResponse.UserResponseModel.Id,
