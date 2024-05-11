@@ -22,7 +22,7 @@ namespace TAT.StoreLocator.API.Controllers
             _userService = userService;
 
         }
-        [HttpGet("get-user-by-id/{userId}")]
+        [HttpGet("get/{userId}")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> GetUserById(string userId)
         {
@@ -46,7 +46,7 @@ namespace TAT.StoreLocator.API.Controllers
 
             }
         }
-        [HttpPut("update-user/{userId}")]
+        [HttpPut("update/user/{userId}")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> Update([FromBody] UpdateUserRequestModel request)
         {

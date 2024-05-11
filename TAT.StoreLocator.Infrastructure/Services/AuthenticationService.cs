@@ -183,6 +183,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 user.RefreshTokenExpiryTime = null;
                 IdentityResult result = await _userManager.UpdateAsync(user);
 
+
                 if (!result.Succeeded)
                 {
                     response.Message = "Can not update refresh token ${user.Email}";
