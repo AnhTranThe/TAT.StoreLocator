@@ -130,10 +130,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     {
                         // Invalid password
                         baseResponse.Message = "Invalid password";
+                        throw new Exception(message: "Invalid password");
                     }
 
                     response.UserResponseModel = _mapper.Map<UserResponseModel>(user);
                     IList<string> roles = await _userManager.GetRolesAsync(user);
+                    response.UserResponseModel.Roles = roles;
                     Claim[] claims = new[]
            {
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
@@ -203,7 +205,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
 
         }
-
 
 
     }

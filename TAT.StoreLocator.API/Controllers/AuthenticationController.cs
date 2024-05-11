@@ -8,6 +8,7 @@ using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Authentication;
 using TAT.StoreLocator.Core.Models.Request.User;
 using TAT.StoreLocator.Core.Models.Response.Authentication;
+using TAT.StoreLocator.Core.Models.Token.Request;
 using TAT.StoreLocator.Core.Utils;
 
 namespace TAT.StoreLocator.API.Controllers
@@ -39,9 +40,6 @@ namespace TAT.StoreLocator.API.Controllers
 
 
         }
-
-
-
         [HttpPost, Route(nameof(Register))]
         [AllowAnonymous]
         public async Task<ActionResult> Register([FromBody] RegisterRequestModel model)
@@ -84,7 +82,16 @@ namespace TAT.StoreLocator.API.Controllers
                 }
 
                 string accessToken = _jwtService.GenerateAccessToken(loginResponse.claims);
-                string refreshToken = _jwtService.GenerateRefreshToken();
+
+                string[] roles = loginResponse.UserResponseModel.Roles.ToArray(); // Convert roles to an array of strings
+
+                string refreshToken = _jwtService.GenerateRefreshToken(
+                    loginResponse.UserResponseModel.Email,
+                    loginResponse.UserResponseModel.UserName,
+                    loginResponse.UserResponseModel.Roles, // Pass roles array
+                    loginResponse.UserResponseModel.Id.ToString()
+                );
+
                 UpdateJwtUserInfoRequestModel updateJwtUserInfoRequestModel = new()
                 {
                     UserId = loginResponse.UserResponseModel.Id,
@@ -148,6 +155,21 @@ namespace TAT.StoreLocator.API.Controllers
             return NoContent();
         }
 
+        [HttpPost]
+        [Route("refresh-token")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequest tokenModel)
+        {
+            try
+            {
+                var newToken = await _jwtService.RefreshToken(tokenModel);
+                return Ok(newToken);
+            }
+            catch (Exception ex)
+            {
 
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
