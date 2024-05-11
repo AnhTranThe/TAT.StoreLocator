@@ -207,6 +207,5 @@ namespace TAT.StoreLocator.Infrastructure.Services
         }
 
 
-
     }
 }
