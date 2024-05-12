@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace TAT.StoreLocator.Core.Models.Response.Product
 {
-    internal class ListProductResponseModel
+    public class ListProductResponseModel
     {
+    
+
     }
 }

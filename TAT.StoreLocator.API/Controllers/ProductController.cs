@@ -43,5 +43,21 @@ namespace TAT.StoreLocator.API.Controllers
 
             }
         }
+        [HttpGet("GetListProducts")]
+        public async Task<IActionResult> GetListUser()
+        {
+            try
+            {
+                BasePaginationRequest request = new();
+                BasePaginationResult<ProductResponseModel> Products = await _productService.GetListProductAsync(request);
+                return Ok(Products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+
+            }
+        }
+
     }
 }
