@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TAT.StoreLocator.Core.Entities;
@@ -142,6 +143,52 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             );
                         _ = await context.SaveChangesAsync();
 
+                    }
+
+                    if (!context.Products.Any())
+                    {
+                        // Create product entities
+                        var products = new List<Product>
+                       {
+                           new Product
+                           {
+                               Name = "Product 1",
+                                  Description = "Description for Product 1",
+                                },
+                           new Product
+                           {
+                               Name = "Product 2",
+                               Description = "Description for Product 2",                                     
+                           }                                   
+                         };
+
+                        await context.Products.AddRangeAsync(products);
+                        await context.SaveChangesAsync();
+                    }
+
+
+                    if(!context.Galleries.Any())
+                    {
+                        var gallery = new List<Gallery>
+                        {
+                         new Gallery
+                        {
+                            FileName = "test",
+                            Url = "test",
+                            PublicId = "test",
+                        },
+                            new Gallery
+                        {
+                            FileName = "test2",
+                            Url = "test2",
+                            PublicId = "test2",
+                        }
+
+
+                    };
+                      
+                        await context.Galleries.AddRangeAsync(gallery);
+                        await context.SaveChangesAsync();
                     }
 
 
