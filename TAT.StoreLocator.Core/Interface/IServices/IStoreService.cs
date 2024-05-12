@@ -1,13 +1,16 @@
-﻿namespace TAT.StoreLocator.Core.Interface.IServices
+﻿using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Models.Request.Store;
+using TAT.StoreLocator.Core.Models.Response.Store;
+
+namespace TAT.StoreLocator.Core.Interface.IServices
 {
     public interface IStoreService
     {
-        //Task<CreateCategoryResponseModel> Create(CreateCategoryRequestModel request);
-        //Task<UpdateCategoryResponseModel> Update(UpdateCategoryRequestModel request);
-        //Task<int> Delete(string StoreId);
-        //Task<CategoryViewModel> GetStoreById(int providerId);
-        //Task<List<CategoryViewModel>> GetAll();
-        //Task<List<CategoryViewModel>> Search(string search);
+        //Create
+        Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request);
+
+        //GetAllStore
+        Task<BaseResponseResult<List<StoreResponseModel>>> GetAllStoreAsync();
 
     }
 }
