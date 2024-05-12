@@ -111,6 +111,7 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();
             _ = services.AddTransient<UserManager<User>, UserManager<User>>();
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
+            _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
 
             #endregion
 

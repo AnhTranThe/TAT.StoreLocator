@@ -4,6 +4,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Models.Request.Address;
 using TAT.StoreLocator.Core.Models.Request.User;
 using TAT.StoreLocator.Core.Models.Response.Authentication;
+using TAT.StoreLocator.Core.Models.Response.Store;
 using TAT.StoreLocator.Core.Models.Response.User;
 
 namespace TAT.StoreLocator.Infrastructure.Mapper
@@ -73,7 +74,16 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                   .ForMember(dest => dest.longitude, opt => opt.MapFrom(src => src.longitude))
 
                      .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward));
-
+            // Store 
+            CreateMap<Store, StoreResponseModel>()
+                .ForMember(dest => dest.RoadName, opt => opt.MapFrom(src => src.Address.RoadName))
+                .ForMember(dest => dest.Province, opt => opt.MapFrom(src => src.Address.Province))
+                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.Address.District))
+                .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Address.Ward))
+                .ForMember(dest => dest.PostalCode, opt => opt.MapFrom(src => src.Address.PostalCode))
+                .ForMember(dest => dest.latitude, opt => opt.MapFrom(src => src.Address.latitude))
+                .ForMember(dest => dest.longtitude, opt => opt.MapFrom(src => src.Address.longitude))
+                .ForMember(dest => dest.mapGalleryStores, opt => opt.MapFrom(src => src.MapGalleryStores));
             #endregion
 
         }
