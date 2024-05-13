@@ -8,10 +8,10 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     public interface IJwtService
     {
         string GenerateAccessToken(IEnumerable<Claim> claims);
-        string GenerateRefreshToken(string email, string userName, ICollection<string>? roles, string v);
-        Task<BaseResponseResult<NewToken>> RefreshToken(RefreshTokenRequest tokenModel);
+        string GenerateRefreshToken(string email, string userName, ICollection<string>? roles, string userId);
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
-
+        BaseResponseResult<NewToken> RefreshToken(RefreshTokenRequest tokenModel);
+        bool ValidationJwtToken(string jwt);
 
     }
 }

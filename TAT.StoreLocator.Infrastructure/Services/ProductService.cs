@@ -26,7 +26,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             if (string.IsNullOrEmpty(productId))
             {
                 throw new ArgumentNullException(nameof(productId));
-            }            
+            }
             Product? product = await _dbContext.Products
                  .Include(p => p.Category)
                  .Include(p => p.MapGalleryProducts)

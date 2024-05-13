@@ -6,7 +6,6 @@ using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Authentication;
-using TAT.StoreLocator.Core.Models.Request.User;
 using TAT.StoreLocator.Core.Models.Response.Authentication;
 using TAT.StoreLocator.Core.Models.Token.Request;
 using TAT.StoreLocator.Core.Utils;
@@ -23,7 +22,6 @@ namespace TAT.StoreLocator.API.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
-
 
         public AuthenticationController(
             Core.Interface.IServices.IAuthenticationService authenticationService,
@@ -83,23 +81,14 @@ namespace TAT.StoreLocator.API.Controllers
 
                 string accessToken = _jwtService.GenerateAccessToken(loginResponse.claims);
 
-                string[] roles = loginResponse.UserResponseModel.Roles.ToArray(); // Convert roles to an array of strings
-
                 string refreshToken = _jwtService.GenerateRefreshToken(
                     loginResponse.UserResponseModel.Email,
                     loginResponse.UserResponseModel.UserName,
                     loginResponse.UserResponseModel.Roles, // Pass roles array
                     loginResponse.UserResponseModel.Id.ToString()
                 );
-
-                UpdateJwtUserInfoRequestModel updateJwtUserInfoRequestModel = new()
-                {
-                    UserId = loginResponse.UserResponseModel.Id,
-                    RefreshToken = refreshToken,
-                };
-                BaseResponse updateJwtResponse = await _userService.UpdateJwtUserInfo(updateJwtUserInfoRequestModel);
-                return !updateJwtResponse.Success
-                    ? BadRequest(updateJwtResponse.Message)
+                return !loginResponse.BaseResponse.Success
+                    ? BadRequest(loginResponse.BaseResponse.Message)
                     : Ok(new AuthenticationResponseModel
                     {
                         Token = accessToken,
@@ -133,36 +122,14 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-
-        //[HttpGet(nameof(RefreshToken))]
-        //[Authorize]
-
-        [HttpPost, Route(nameof(Revoke))]
-        [Authorize]
-        public async Task<ActionResult> Revoke()
-        {
-            string id = HttpContext.User.GetClaimUserId();
-            User user = await _userManager.Users
-                .SingleAsync(u => u.Id == id);
-
-            if (user == null)
-            {
-                return BadRequest("User not found");
-            }
-            user.RefreshToken = null;
-            user.RefreshTokenExpiryTime = null;
-            _ = await _userManager.UpdateAsync(user);
-            return NoContent();
-        }
-
         [HttpPost]
         [Route("refresh-token")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken(RefreshTokenRequest tokenModel)
+        public IActionResult RefreshToken(RefreshTokenRequest tokenModel)
         {
             try
             {
-                var newToken = await _jwtService.RefreshToken(tokenModel);
+                BaseResponseResult<Core.Models.Token.Response.NewToken> newToken = _jwtService.RefreshToken(tokenModel);
                 return Ok(newToken);
             }
             catch (Exception ex)

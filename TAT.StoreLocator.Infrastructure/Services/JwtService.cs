@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,7 +6,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using TAT.StoreLocator.Core.Common;
-using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Token.Request;
@@ -20,14 +18,14 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         private readonly JwtTokenSettings _jwtTokenSettings;
         protected IHttpContextAccessor _httpContextAccessor;
-        private readonly UserManager<User> _userManager;
+
         public JwtService(IOptions<JwtTokenSettings> jwtTokenSettings,
-            UserManager<User> userManager,
+
             IHttpContextAccessor httpContextAccessor)
 
         {
             _jwtTokenSettings = jwtTokenSettings.Value;
-            _userManager = userManager;
+
             _httpContextAccessor = httpContextAccessor;
         }
         public string GenerateAccessToken(IEnumerable<Claim> claims)
@@ -39,7 +37,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 issuer: _jwtTokenSettings.Issuer,
                 audience: _jwtTokenSettings.Issuer,
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddMinutes(_jwtTokenSettings.ExpireInMinutes),
                 signingCredentials: signinCredentials
             );
 
@@ -61,25 +59,23 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 claims = claims.Concat(roles.Select(role => new Claim(ClaimTypes.Role, role))).ToArray();
             }
 
-            var key = new byte[32]; // 256 bits
-            using (var rng = RandomNumberGenerator.Create())
+            byte[] key = new byte[32]; // 256 bits
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(key);
             }
-            var securityKey = new SymmetricSecurityKey(key); // Replace "your_secret_key" with your actual secret key
-            var creds = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            SymmetricSecurityKey securityKey = new(key); // Replace "your_secret_key" with your actual secret key
+            SigningCredentials creds = new(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
+            JwtSecurityToken token = new(
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(3), // Token expiration time, adjust as needed
+                expires: DateTime.UtcNow.AddMinutes(_jwtTokenSettings.ExpireInMinutes), // Token expiration time, adjust as needed
                 signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-
-        public async Task<BaseResponseResult<NewToken>> RefreshToken(RefreshTokenRequest tokenModel)
+        public BaseResponseResult<NewToken> RefreshToken(RefreshTokenRequest tokenModel)
         {
             BaseResponseResult<NewToken> result = new()
             {
@@ -96,33 +92,32 @@ namespace TAT.StoreLocator.Infrastructure.Services
             string? accessToken = tokenModel.AccessToken;
             string? refreshToken = tokenModel.RefreshToken;
 
-            var principal = GetPrincipalFromExpiredTokenv2(accessToken);
+            ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(accessToken ?? "");
             if (principal == null)
             {
                 result.Message = "Invalid access token or refresh token";
                 return result;
             }
-
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            string username = principal.Identity.Name;
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-
-            var user = await _userManager.FindByNameAsync(username);
-
-            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+            // Get the expiration claim from the token
+            Claim? expirationClaim = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp);
+            if (expirationClaim == null || !long.TryParse(expirationClaim.Value, out long expirationEpoch))
             {
-                result.Message = "Invalid access token or refresh token";
+                result.Message = "Expiration claim not found or invalid";
+                return result;
+            }
+            // Convert the expiration time from epoch time to DateTime
+            DateTime expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationEpoch).UtcDateTime;
+
+            // Compare the expiration time with the current time
+            if (expirationDateTime <= DateTime.UtcNow)
+            {
+                result.Message = "Access token has expired";
                 return result;
             }
 
-            var newAccessToken = GenerateAccessToken(principal.Claims.ToList());
-            // var newRefreshToken = GenerateRefreshToken();
-
-            //user.RefreshToken = newRefreshToken;
-            //await _userManager.UpdateAsync(user);
-
+            string newAccessToken = GenerateAccessToken(principal.Claims.ToList());
+            result.Success = true;
+            result.Message = "Refresh token successfully";
             result.Data = new NewToken()
             {
                 NewAccessToken = newAccessToken,
@@ -139,7 +134,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key)),
-                ValidateLifetime = true //here we are saying that we don't care about the token's expiration date
+                ValidateLifetime = false //here we are saying that we don't care about the token's expiration date
             };
 
 
@@ -150,25 +145,60 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 : principal;
         }
 
-        private ClaimsPrincipal? GetPrincipalFromExpiredTokenv2(string? token)
+
+        public bool ValidationJwtToken(string jwt)
         {
-            var tokenValidationParameters = new TokenValidationParameters
+            try
             {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtTokenSettings.Key)),
-                ValidateLifetime = false
-            };
+                JwtSecurityTokenHandler tokenHandler = new();
+                TokenValidationParameters validationParameters = new()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _jwtTokenSettings.Issuer,
+                    ValidAudience = _jwtTokenSettings.Issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtTokenSettings.Key)),
+                    ClockSkew = TimeSpan.Zero // Adjust as needed
+                };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-                throw new SecurityTokenException("Invalid token");
+                ClaimsPrincipal principal = tokenHandler.ValidateToken(jwt, validationParameters, out SecurityToken validatedToken);
 
-            return principal;
+                if (validatedToken.ValidTo < DateTime.UtcNow)
+                {
+                    // Token has expired
+                    return false;
+                }
 
+                return principal != null;
+            }
+            catch (Exception)
+            {
+                // Log or handle the exception if necessary
+                return false;
+            }
         }
+
+
+        //public ClaimsPrincipal? GetPrincipalFromExpiredTokenv2(string token)
+        //{
+        //    TokenValidationParameters tokenValidationParameters = new()
+        //    {
+        //        ValidateAudience = false,
+        //        ValidateIssuer = false,
+        //        ValidateIssuerSigningKey = true,
+        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtTokenSettings.Key)),
+        //        ValidateLifetime = false
+        //    };
+
+        //    JwtSecurityTokenHandler tokenHandler = new();
+        //    ClaimsPrincipal principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+        //    return securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)
+        //        ? throw new SecurityTokenException("Invalid token")
+        //        : principal;
+        //}
+
+
     }
 
 

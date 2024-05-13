@@ -108,7 +108,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
 
         }
-
         public async Task<LoginResponseModel> LoginUserAsync(LoginRequestModel model)
         {
             LoginResponseModel response = new();
@@ -181,17 +180,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 await _signInManager.SignOutAsync();
 
-                user.RefreshToken = null;
-                user.RefreshTokenExpiryTime = null;
-                IdentityResult result = await _userManager.UpdateAsync(user);
-
-
-                if (!result.Succeeded)
-                {
-                    response.Message = "Can not update refresh token ${user.Email}";
-                    return response;
-
-                }
 
                 response.Success = true;
 
