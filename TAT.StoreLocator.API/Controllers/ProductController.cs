@@ -1,7 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
+using TAT.StoreLocator.Core.Models.Request.Authentication;
+using TAT.StoreLocator.Core.Models.Request.Product;
+using TAT.StoreLocator.Core.Models.Response.Authentication;
 using TAT.StoreLocator.Core.Models.Response.Product;
+using TAT.StoreLocator.Core.Models.Response.User;
+using TAT.StoreLocator.Infrastructure.Services;
 
 namespace TAT.StoreLocator.API.Controllers
 {
@@ -57,6 +64,34 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, ex.Message);
 
             }
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> AddProduct([FromBody] ProductRequestModel request)
+        {
+
+            try
+            {
+    
+                if (string.IsNullOrWhiteSpace(request.Name))
+                {
+                    return BadRequest(" not found");
+                }
+
+
+                BaseResponse Response = await _productService.AddProduct(request);
+
+                return !Response.Success ? BadRequest(Response.Message) : Ok(Response);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, ex.Message);
+
+            }
+
+
         }
 
     }

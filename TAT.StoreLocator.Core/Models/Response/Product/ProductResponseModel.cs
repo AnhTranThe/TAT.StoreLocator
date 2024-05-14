@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TAT.StoreLocator.Core.Models.Response.Category;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
+using TAT.StoreLocator.Core.Models.Response.Store;
 
 namespace TAT.StoreLocator.Core.Models.Response.Product
 {
@@ -22,9 +23,11 @@ namespace TAT.StoreLocator.Core.Models.Response.Product
         public string? SKU { get; set; }
         public bool IsActive { get; set; } = true;
         public int ProductViewCount { get; set; }
+        public string? StoreId { get; set; }
 
         public string? CategoryId { set; get; }
         public CategoryResponseModel? Category { get; set; }
         public List<GalleryResponseModel>? galleryResponseModels { get; set; }
+        
     }
 }

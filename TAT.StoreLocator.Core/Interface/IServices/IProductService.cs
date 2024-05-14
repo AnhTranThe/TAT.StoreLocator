@@ -11,6 +11,6 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<BasePaginationResult<ProductResponseModel>> SearchProductAsync(SearchProductPagingRequestModel request);
         Task<BaseResponseResult<ProductResponseModel>> GetById(string Id);
         Task<BasePaginationResult<ProductResponseModel>> GetListProductAsync(BasePaginationRequest request);
-
-    }
+        Task<BaseResponse> AddProduct(ProductRequestModel request); 
+     }
 }

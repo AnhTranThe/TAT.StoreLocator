@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TAT.StoreLocator.Core.Models.Request.Product
 {
-    internal class UpdateProductRequestModel
+    public class UpdateProductRequestModel
     {
     }
 }
