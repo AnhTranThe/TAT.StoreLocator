@@ -42,22 +42,40 @@ namespace TAT.StoreLocator.API.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> Register([FromBody] RegisterRequestModel model)
         {
+
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+
             if (model.Email != null && await _userManager.Users.AnyAsync(u => u.NormalizedEmail == model.Email.ToUpper()))
             {
-                return BadRequest("Email is already registered.");
+                return BadRequest(new RegisterResponseModel
+                {
+                    BaseResponse = new BaseResponse
+                    {
+                        Success = false,
+                        Message = "Email is already registered."
+                    }
+                });
             }
 
             try
             {
                 RegisterResponseModel response = await _authenticationService.RegisterUserAsync(model);
-                return response.BaseResponse.Success ? Ok(response) : BadRequest(response.BaseResponse.Message);
+
+                return response.BaseResponse.Success ? Ok(response) : BadRequest(response);
 
             }
             catch (Exception ex)
             {
 
-                return BadRequest(ex.Message);
+                return BadRequest(new RegisterResponseModel
+                {
+                    BaseResponse = new BaseResponse
+                    {
+                        Success = false,
+                        Message = ex.Message
+                    }
+                });
             }
 
         }

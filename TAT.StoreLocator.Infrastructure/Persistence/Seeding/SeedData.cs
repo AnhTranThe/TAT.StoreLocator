@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TAT.StoreLocator.Core.Entities;
@@ -148,8 +147,8 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                     if (!context.Products.Any())
                     {
                         // Create product entities
-                        var products = new List<Product>
-                       {
+                        List<Product> products = new()
+                        {
                            new Product
                            {
                                Name = "Product 1",
@@ -158,18 +157,18 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                            new Product
                            {
                                Name = "Product 2",
-                               Description = "Description for Product 2",                                     
-                           }                                   
+                               Description = "Description for Product 2",
+                           }
                          };
 
                         await context.Products.AddRangeAsync(products);
-                        await context.SaveChangesAsync();
+                        _ = await context.SaveChangesAsync();
                     }
 
 
-                    if(!context.Galleries.Any())
+                    if (!context.Galleries.Any())
                     {
-                        var gallery = new List<Gallery>
+                        List<Gallery> gallery = new()
                         {
                          new Gallery
                         {
@@ -186,9 +185,9 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
 
 
                     };
-                      
+
                         await context.Galleries.AddRangeAsync(gallery);
-                        await context.SaveChangesAsync();
+                        _ = await context.SaveChangesAsync();
                     }
 
 
