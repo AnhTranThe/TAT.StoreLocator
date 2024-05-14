@@ -14,7 +14,7 @@ namespace TAT.StoreLocator.API.Controllers
             _profileService = profileService;
         }
 
-        [HttpGet("Profile")]
+        [HttpGet("gets")]
         //[Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> GetProfile()
         {
