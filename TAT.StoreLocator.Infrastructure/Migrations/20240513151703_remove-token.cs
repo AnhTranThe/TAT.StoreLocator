@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -9,24 +8,24 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "RefreshToken",
                 table: "Users");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "RefreshTokenExpiryTime",
                 table: "Users");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "RefreshToken",
                 table: "Users",
                 type: "text",
                 nullable: true);
 
-            migrationBuilder.AddColumn<DateTimeOffset>(
+            _ = migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "RefreshTokenExpiryTime",
                 table: "Users",
                 type: "timestamp with time zone",

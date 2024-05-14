@@ -78,8 +78,8 @@ namespace TAT.StoreLocator.API
             _ = app.UseCors("CorsPolicy");
             _ = app.UseHttpsRedirection();
             _ = app.UseAuthentication();
-            _ = app.UseAuthorization();
             _ = app.UseMiddleware<JwtMiddleWare>();
+            _ = app.UseAuthorization();
             _ = app.MapControllers();
             app.Run();
         }

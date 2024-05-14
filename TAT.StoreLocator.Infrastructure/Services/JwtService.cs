@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
@@ -143,40 +142,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)
                 ? throw new SecurityTokenException("Invalid token")
                 : principal;
-        }
-
-
-        public bool ValidationJwtToken(string jwt)
-        {
-            try
-            {
-                JwtSecurityTokenHandler tokenHandler = new();
-                TokenValidationParameters validationParameters = new()
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = _jwtTokenSettings.Issuer,
-                    ValidAudience = _jwtTokenSettings.Issuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtTokenSettings.Key)),
-                    ClockSkew = TimeSpan.Zero // Adjust as needed
-                };
-
-                ClaimsPrincipal principal = tokenHandler.ValidateToken(jwt, validationParameters, out SecurityToken validatedToken);
-
-                if (validatedToken.ValidTo < DateTime.UtcNow)
-                {
-                    // Token has expired
-                    return false;
-                }
-
-                return principal != null;
-            }
-            catch (Exception)
-            {
-                // Log or handle the exception if necessary
-                return false;
-            }
         }
 
 

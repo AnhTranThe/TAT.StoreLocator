@@ -11,7 +11,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         string GenerateRefreshToken(string email, string userName, ICollection<string>? roles, string userId);
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
         BaseResponseResult<NewToken> RefreshToken(RefreshTokenRequest tokenModel);
-        bool ValidationJwtToken(string jwt);
+
 
     }
 }
