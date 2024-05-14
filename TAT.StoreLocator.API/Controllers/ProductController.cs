@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
-using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Response.Product;
-using TAT.StoreLocator.Core.Models.Response.User;
-using TAT.StoreLocator.Infrastructure.Services;
 
 namespace TAT.StoreLocator.API.Controllers
 {
@@ -24,8 +19,8 @@ namespace TAT.StoreLocator.API.Controllers
 
 
 
-        [HttpGet("get/productId")]
-      
+        [HttpGet("get/{productId}")]
+
         public async Task<IActionResult> GetProductById([FromQuery] string productId)
         {
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Options;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
@@ -23,19 +24,19 @@ namespace TAT.StoreLocator.Infrastructure.Services
         private readonly AppDbContext _dbContext;
         private readonly IPhotoService _photoService;
         private readonly IMapper _mapper;
-
-
         public UserService(UserManager<User> userManager,
         ILogger logger,
         AppDbContext dbContext,
         IPhotoService photoService,
-        IMapper mapper)
+        IMapper mapper,
+        IOptions<JwtTokenSettings> jwtTokenSettings)
         {
             _userManager = userManager;
             _logger = logger;
             _dbContext = dbContext;
             _photoService = photoService;
             _mapper = mapper;
+
 
         }
         public async Task<BaseResponse> Delete(string id)
@@ -152,7 +153,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     User mapperUser = _mapper.Map(request, user);
                     _ = _dbContext.Users.Update(mapperUser);
 
-                    if (request.NewFile != null && request.NewFile.Length > 0 && _dbContext != null && _dbContext.Galleries != null)
+                    if (request.NewFile != null && request.NewFile.Length > 0 && _dbContext.Galleries != null)
                     {
                         UploadPhotoRequestModel uploadPhotoRequestModel = new()
                         {
@@ -413,42 +414,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponse> UpdateJwtUserInfo(UpdateJwtUserInfoRequestModel request)
-        {
 
-            BaseResponse response = new()
-            {
-                Success = false
-            };
-
-            User user = await _userManager.FindByIdAsync(request.UserId);
-            if (user == null)
-            {
-                response.Message = GlobalConstants.MessageUserNotFound;
-                return response;
-            }
-
-            if (string.IsNullOrEmpty(request.RefreshToken))
-            {
-                response.Message = "Token not found";
-                return response;
-            }
-
-            user.RefreshToken = request.RefreshToken;
-            user.RefreshTokenExpiryTime = DateTimeOffset.UtcNow.AddDays(1);
-            IdentityResult result = await _userManager.UpdateAsync(user);
-
-            if (!result.Succeeded)
-            {
-                response.Message = "Can not update refresh token ${user.Email}";
-                return response;
-
-            }
-
-            response.Success = true;
-            return response;
-
-        }
 
         public async Task<BaseResponse> ChangeStatusUser(ChangeStatusUserRequestModel request)
         {

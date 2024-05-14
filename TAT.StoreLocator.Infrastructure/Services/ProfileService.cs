@@ -35,10 +35,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
         }
-        protected Guid GetGuidUserIdLogin()
+        protected string GetGuidUserIdLogin()
         {
             var user = _httpContextAccessor.HttpContext?.User;
-            return Guid.Parse(user.FindFirstValue(ClaimTypes.Name));
+            string hello = user.FindFirstValue(UserClaims.Id);
+            return hello;
         }
 
         public async Task<BaseResponseResult<UserResponseModel>> GetByProfile()
@@ -47,7 +48,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Success = false
             };
-            Guid loginId = GetGuidUserIdLogin();
+            var loginId = GetGuidUserIdLogin();
             try
             {
                 User user = await _userManager.FindByIdAsync(loginId.ToString());
