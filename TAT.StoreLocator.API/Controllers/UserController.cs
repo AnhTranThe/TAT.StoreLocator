@@ -46,7 +46,7 @@ namespace TAT.StoreLocator.API.Controllers
 
             }
         }
-        [HttpPut("update/user/{userId}")]
+        [HttpPut("update/{userId}")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> Update([FromBody] UpdateUserRequestModel request)
         {
@@ -76,14 +76,14 @@ namespace TAT.StoreLocator.API.Controllers
             }
 
         }
-        [HttpPost("ResetPassword")]
+        [HttpPost("resetPassword")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequestModel request)
         {
             BaseResponse check = await _userService.ResetPasswordAsync(request);
             return Ok(check);
         }
-        [HttpPost("ChangePassword")]
+        [HttpPost("changePassword")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequestModel request)
         {

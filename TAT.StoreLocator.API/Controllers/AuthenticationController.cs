@@ -123,7 +123,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPost]
-        [Route("refresh-token")]
+        [Route("RefreshToken")]
         [AllowAnonymous]
         public IActionResult RefreshToken(RefreshTokenRequest tokenModel)
         {
