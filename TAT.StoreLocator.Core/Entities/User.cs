@@ -30,8 +30,6 @@ namespace TAT.StoreLocator.Core.Entities
         public DateTimeOffset UpdateAt { get; set; }
         public string? CreateBy { get; set; }
         public string? UpdateBy { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTimeOffset? RefreshTokenExpiryTime { get; set; }
         // relationship 
         public Address? Address { get; set; }
         public string? AddressId { get; set; }

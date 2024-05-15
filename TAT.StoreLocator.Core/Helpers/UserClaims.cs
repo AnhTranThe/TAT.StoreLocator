@@ -8,5 +8,7 @@
         public const string Avatar = "avatar";
         public const string UserName = "userName";
         public const string Code = "code";
+        public const string Email = "email";
+
     }
 }

@@ -1,6 +1,7 @@
 using log4net;
 using log4net.Config;
 using Microsoft.OpenApi.Models;
+using TAT.StoreLocator.API.MiddleWares;
 using TAT.StoreLocator.Core.DI;
 using TAT.StoreLocator.Infrastructure.DI;
 
@@ -77,6 +78,7 @@ namespace TAT.StoreLocator.API
             _ = app.UseCors("CorsPolicy");
             _ = app.UseHttpsRedirection();
             _ = app.UseAuthentication();
+            _ = app.UseMiddleware<JwtMiddleWare>();
             _ = app.UseAuthorization();
             _ = app.MapControllers();
             app.Run();

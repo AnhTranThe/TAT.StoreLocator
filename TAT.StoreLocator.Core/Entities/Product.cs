@@ -13,10 +13,10 @@ namespace TAT.StoreLocator.Core.Entities
         public string? Slug { get; set; }
 
         public decimal Price { get; set; } = 0;
-        public decimal Discount { get; set; } // in percent
+        public decimal Discount { get; set; } = 0; // in percent
         public string? MetaTitle { get; set; }
         public string? MetaDescription { get; set; }
-        public int Quantity { get; set; }
+        public int Quantity { get; set; } = 0;
         public double Rating { get; set; } = 0;
         public string? SKU { get; set; }
         public bool IsActive { get; set; } = true;

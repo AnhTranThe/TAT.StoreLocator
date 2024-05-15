@@ -108,7 +108,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
 
         }
-
         public async Task<LoginResponseModel> LoginUserAsync(LoginRequestModel model)
         {
             LoginResponseModel response = new();
@@ -130,10 +129,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     {
                         // Invalid password
                         baseResponse.Message = "Invalid password";
+                        throw new Exception(message: "Invalid password");
                     }
 
                     response.UserResponseModel = _mapper.Map<UserResponseModel>(user);
                     IList<string> roles = await _userManager.GetRolesAsync(user);
+                    response.UserResponseModel.Roles = roles;
                     Claim[] claims = new[]
            {
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
@@ -179,17 +180,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 await _signInManager.SignOutAsync();
 
-                user.RefreshToken = null;
-                user.RefreshTokenExpiryTime = null;
-                IdentityResult result = await _userManager.UpdateAsync(user);
-
-
-                if (!result.Succeeded)
-                {
-                    response.Message = "Can not update refresh token ${user.Email}";
-                    return response;
-
-                }
 
                 response.Success = true;
 
@@ -203,7 +193,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
 
         }
-
 
 
     }

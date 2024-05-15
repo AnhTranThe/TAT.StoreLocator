@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.Text;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
@@ -87,14 +89,29 @@ namespace TAT.StoreLocator.Infrastructure.DI
                 cfg.SaveToken = true;
                 cfg.TokenValidationParameters = new TokenValidationParameters
                 {
-
                     ValidIssuer = config["JwtTokenSettings:Issuer"],
                     ValidAudience = config["JwtTokenSettings:Issuer"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtTokenSettings:Key"])),
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateLifetime = false,
-                    ValidateIssuerSigningKey = true
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                };
+
+                cfg.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                        {
+                            context.Response.StatusCode = 400; // Return bad request
+                            context.Response.ContentType = "application/json";
+                            var message = new { error = "Token expired" };
+                            return context.Response.WriteAsync(JsonConvert.SerializeObject(message));
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
             _ = services.AddAuthorization();
@@ -111,7 +128,12 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();
             _ = services.AddTransient<UserManager<User>, UserManager<User>>();
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
+//<<<<<<< HEAD
             _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
+//=======
+            //huy_dev
+            _ = services.AddScoped(typeof(IProductService), typeof(ProductService));
+//>>>>>>> develop
 
             #endregion
 

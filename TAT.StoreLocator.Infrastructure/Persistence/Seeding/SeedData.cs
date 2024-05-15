@@ -144,6 +144,52 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
 
                     }
 
+                    if (!context.Products.Any())
+                    {
+                        // Create product entities
+                        List<Product> products = new()
+                        {
+                           new Product
+                           {
+                               Name = "Product 1",
+                                  Description = "Description for Product 1",
+                                },
+                           new Product
+                           {
+                               Name = "Product 2",
+                               Description = "Description for Product 2",
+                           }
+                         };
+
+                        await context.Products.AddRangeAsync(products);
+                        _ = await context.SaveChangesAsync();
+                    }
+
+
+                    if (!context.Galleries.Any())
+                    {
+                        List<Gallery> gallery = new()
+                        {
+                         new Gallery
+                        {
+                            FileName = "test",
+                            Url = "test",
+                            PublicId = "test",
+                        },
+                            new Gallery
+                        {
+                            FileName = "test2",
+                            Url = "test2",
+                            PublicId = "test2",
+                        }
+
+
+                    };
+
+                        await context.Galleries.AddRangeAsync(gallery);
+                        _ = await context.SaveChangesAsync();
+                    }
+
 
                 }
 

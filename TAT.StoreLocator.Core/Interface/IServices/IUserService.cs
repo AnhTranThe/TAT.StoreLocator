@@ -18,13 +18,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<BaseResponse> Delete(string id);
         Task<BaseResponse> ChangePasswordAsync(ChangePasswordRequestModel request);
         Task<BaseResponse> ResetPasswordAsync(ResetPasswordRequestModel request);
-        Task<BaseResponse> UpdateJwtUserInfo(UpdateJwtUserInfoRequestModel request);
         Task<BaseResponse> ChangeStatusUser(ChangeStatusUserRequestModel request);
-
-
-
-
-
 
 
     }
