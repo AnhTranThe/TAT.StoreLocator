@@ -128,13 +128,11 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();
             _ = services.AddTransient<UserManager<User>, UserManager<User>>();
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
-//<<<<<<< HEAD
-            _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
-//=======
             //huy_dev
             _ = services.AddScoped(typeof(IProductService), typeof(ProductService));
-//>>>>>>> develop
 
+            //PhucThinh-dev
+            _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
             #endregion
 
             #region Mapper
