@@ -51,10 +51,6 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District));
 
 
-
-
-
-
             _ = CreateMap<UpdateUserRequestModel, Address>()
                   .ForMember(dest => dest.RoadName, opt => opt.MapFrom(src => src.RoadName))
                   .ForMember(dest => dest.Province, opt => opt.MapFrom(src => src.Province))
@@ -74,18 +70,18 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                   .ForMember(dest => dest.longitude, opt => opt.MapFrom(src => src.longitude))
 
                      .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward));
-            // Store 
-            CreateMap<Store, StoreResponseModel>()
-                .ForMember(dest => dest.RoadName, opt => opt.MapFrom(src => src.Address.RoadName))
-                .ForMember(dest => dest.Province, opt => opt.MapFrom(src => src.Address.Province))
-                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.Address.District))
-                .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Address.Ward))
-                .ForMember(dest => dest.PostalCode, opt => opt.MapFrom(src => src.Address.PostalCode))
-                .ForMember(dest => dest.latitude, opt => opt.MapFrom(src => src.Address.latitude))
-                .ForMember(dest => dest.longtitude, opt => opt.MapFrom(src => src.Address.longitude))
-                .ForMember(dest => dest.mapGalleryStores, opt => opt.MapFrom(src => src.MapGalleryStores));
-            #endregion
+           
 
+            CreateMap<Store, StoreResponseModel>()
+            .ForMember(dest => dest.MapGalleryStores, opt => opt.Ignore()); // We handle this manually
+            CreateMap<MapGalleryStore, MapGalleryStoreResponse>()
+                .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery.FileName))
+                .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Gallery.Url))
+                .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery.IsThumbnail));
         }
+        #endregion
+
     }
-}
+    }
+
+

@@ -92,5 +92,51 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("getDetail/{storeId}")]
+        public async Task<IActionResult> GetDetailStore(string storeId)
+        {
+            try
+            {
+                var request = new GetDetailStoreRequestModel { Id = storeId };
+                var response = await _storeService.GetDetailStoreAsync(storeId);
+                if (response.Success)
+                {
+                    return Ok(response.Data);
+                }
+                else
+                {
+                    return NotFound(response.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        //[HttpGet("getDetail/{storeId}")]
+        //public async Task<IActionResult> GetDetailStore(string storeId)
+        //{
+        //    try
+        //    {
+        //        //var request = new GetDetailStoreRequestModel { Id = storeId };
+        //        var response = await _storeService.GetDetailStoreAsync(storeId); // test
+        //        if (response.Success)
+        //        {
+        //            return Ok(response.Data);
+        //        }
+        //        return NotFound(response.Message);
+        //        //        //else
+        //        //        //{
+        //        //        //    return NotFound(response.Message);
+        //        //        //}
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
     }
 }

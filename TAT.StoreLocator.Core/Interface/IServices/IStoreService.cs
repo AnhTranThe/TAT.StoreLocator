@@ -12,5 +12,10 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         //GetAllStore
         Task<BaseResponseResult<List<StoreResponseModel>>> GetAllStoreAsync();
 
+        ////GetDetailStore
+        //Task<BaseResponseResult<GetDetailStoreResponseModel>> GetDetailStoreAsync(GetDetailStoreRequestModel request);
+
+
+        Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId);
     }
 }

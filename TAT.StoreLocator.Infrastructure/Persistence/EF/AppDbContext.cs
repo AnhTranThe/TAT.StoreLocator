@@ -72,7 +72,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
         public DbSet<MapStoreWishlist> mapStoreWishlists { get; set; }
 
         public DbSet<MapGalleryProduct> mapGalleryProducts { get; set; }
-        public DbSet<MapGalleryStore> mapGalleryStores { get; set; }
+        public DbSet<MapGalleryStore> MapGalleryStores { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Store> Stores { get; set; }

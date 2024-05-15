@@ -98,45 +98,56 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
+        public async Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId)
+        {
+            var response = new BaseResponseResult<StoreResponseModel>();
+            try
+            {
+                var store = await _appDbContext.Stores
+                    .Include(s => s.Address)
+                    .Include(s => s.MapGalleryStores)
+                        .ThenInclude(mgs => mgs.Gallery)  // Ensure Galleries are loaded
+                    .FirstOrDefaultAsync(s => s.Id == storeId);
 
+                if (store != null)
+                {
+                    var storeResponseModel = _mapper.Map<StoreResponseModel>(store);
+                    // Map galleries
+                    storeResponseModel.MapGalleryStores = store.MapGalleryStores
+                        .Select(mgs => new MapGalleryStoreResponse
+                        {
+                            GalleryId = mgs.GalleryId,
+                            FileName = mgs.Gallery?.FileName,
+                            Url = mgs.Gallery?.Url,
+                            IsThumbnail = mgs.Gallery?.IsThumbnail ?? false
+                        })
+                        .ToList();
 
-        //public async Task<GetDetailStoreRequestModel> GetDetailStoreAsync(string storeId)
-        //          public async Task<BaseResponseResult<GetDetailStoreResponseModel>> GetDetailStoreAsync(GetDetailStoreRequestModel request)
-        //    {
-        //        var response = new BaseResponseResult<GetDetailStoreResponseModel>();
-
-        //        try
-        //        {
-        //            var store = await _appDbContext.Stores.FirstOrDefaultAsync(s => s.Id == request.Id);
-        //            if (store != null)
-        //            {
-        //                // Mapping từ Entity sang ResponseModel
-        //                var storeResponse = _mapper.Map<StoreResponseModel>(store);
-        //                var detailResponse = new GetDetailStoreResponseModel
-        //                {
-        //                    BaseResponse = new BaseResponse { Success = true, Message = "Store  found" },
-        //                    StoreResponseModel = storeResponse
-        //                };
-        //                response.Success = true;
-        //                response.Data = detailResponse;
-        //            }
-        //            else
-        //            {
-        //                response.Success = false;
-        //                response.Message = "Store not found";
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            response.Success = false;
-        //            response.Message = ex.Message;
-        //        }
-
-        //        return response;
-        //    }
+                    response.Success = true;
+                    response.Data = storeResponseModel;
+                }
+                else
+                {
+                    response.Success = false;
+                    response.Message = "Store not found";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+            return response;
+        }
     }
-
 }
+
+
+
+
+
+
+
 
 
 
