@@ -27,8 +27,7 @@ namespace TAT.StoreLocator.API.Controllers
 
 
         [HttpGet("get/{productId}")]
-
-        public async Task<IActionResult> GetProductById([FromQuery] string productId)
+        public async Task<IActionResult> GetProductById(string productId)
         {
 
 
@@ -67,7 +66,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("addProduct")]
         public async Task<ActionResult> AddProduct([FromBody] ProductRequestModel request)
         {
 
