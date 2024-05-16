@@ -26,54 +26,57 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
             _ = builder.ApplyConfiguration(new AppUserLoginConfiguration());
             _ = builder.ApplyConfiguration(new AppUserRoleConfiguration());
             _ = builder.ApplyConfiguration(new AppUserTokenConfiguration());
-            ///////////////////////////////
             _ = builder.ApplyConfiguration(new AddressConfiguration());
             _ = builder.ApplyConfiguration(new CategoryConfiguration());
             _ = builder.ApplyConfiguration(new GalleryConfiguration());
-            _ = builder.ApplyConfiguration(new LocationConfiguration());
-            _ = builder.ApplyConfiguration(new MapProductGalleryConfiguration());
+
             _ = builder.ApplyConfiguration(new MapProductWishlistConfiguration());
             _ = builder.ApplyConfiguration(new MapStoreWishlistConfiguration());
+            _ = builder.ApplyConfiguration(new MapGalleryStoreConfiguration());
+            _ = builder.ApplyConfiguration(new MapGalleryProductConfiguration());
             _ = builder.ApplyConfiguration(new ProductConfiguration());
             _ = builder.ApplyConfiguration(new ReviewConfiguration());
-            _ = builder.ApplyConfiguration(new ScheduleConfiguration());
+
             _ = builder.ApplyConfiguration(new StoreConfiguration());
             _ = builder.ApplyConfiguration(new WishlistConfiguration());
         }
-        public virtual Task<int> SaveChangesAsync(string username = "")
+
+
+        public virtual async Task<int> SaveChangesAsync(string userId = "")
         {
             foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<BaseEntity> entry in ChangeTracker.Entries<BaseEntity>())
             {
 
                 if (entry.State == EntityState.Modified)
                 {
-                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
-                    entry.Entity.CreatedBy = username;
+                    entry.Entity.UpdatedAt = DateTime.Now;
+                    entry.Entity.UpdatedBy = userId;
                 }
 
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
-                    entry.Entity.CreatedBy = username;
+                    entry.Entity.CreatedAt = DateTime.Now;
+                    entry.Entity.CreatedBy = userId;
                 }
             }
-            return base.SaveChangesAsync();
+
+
+            return await base.SaveChangesAsync();
+
         }
+        public DbSet<Address> Addresses { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Gallery> Galleries { get; set; }
 
+        public DbSet<MapProductWishlist> MapProductWishlists { get; set; }
+        public DbSet<MapStoreWishlist> mapStoreWishlists { get; set; }
 
-        public DbSet<Address>? Addresses { get; set; }
-        public DbSet<Category>? Categories { get; set; }
-        public DbSet<Gallery>? Galleries { get; set; }
-        public DbSet<Location>? Locations { get; set; }
-        public DbSet<MapProductGallery>? MapProductGalleries { get; set; }
-        public DbSet<MapProductWishlist>? MapProductWishlists { get; set; }
-        public DbSet<MapStoreWishlist>? mapStoreWishlists { get; set; }
-        public DbSet<Product>? Products { get; set; }
-        public DbSet<Review>? Reviews { get; set; }
-        public DbSet<Schedule>? Schedules { get; set; }
-        public DbSet<Store>? Stores { get; set; }
-        public DbSet<Wishlist>? Wishlists { get; set; }
-
+        public DbSet<MapGalleryProduct> mapGalleryProducts { get; set; }
+        public DbSet<MapGalleryStore> MapGalleryStores { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Store> Stores { get; set; }
+        public DbSet<Wishlist> Wishlists { get; set; }
 
     }
 

@@ -14,15 +14,11 @@ namespace TAT.StoreLocator.Core.Entities
         // relationship
         [Required]
         public string? ParentCategoryId { get; set; }
-        public Category ParentCategory { get; set; } = new Category();
-        [Required]
+        public Category? ParentCategory { get; set; }
+        public Gallery? Gallery { get; set; }
         public string? GalleryId { get; set; }
-        public Gallery Gallery { get; set; } = new Gallery();
-
         public virtual ICollection<Category>? ChildrenCategories { get; set; }
-
         public virtual ICollection<Product>? Products { get; set; }
-
 
 
     }

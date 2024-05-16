@@ -9,7 +9,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
         public void Configure(EntityTypeBuilder<User> builder)
         {
             _ = builder.ToTable("Users");
-            _ = builder.HasOne(x => x.Address).WithOne(x => x.User).HasForeignKey<User>(x => x.AddressId);
+
 
 
         }

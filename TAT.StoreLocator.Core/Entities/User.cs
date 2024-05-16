@@ -26,19 +26,14 @@ namespace TAT.StoreLocator.Core.Entities
         public EGenderType Gender { get; set; } = EGenderType.NotInformation;
         public DateTimeOffset Dob { get; set; }
         public bool IsActive { get; set; } = true;
-        public DateTimeOffset LastLogin { get; set; }
         public DateTimeOffset CreateAt { get; set; }
         public DateTimeOffset UpdateAt { get; set; }
         public string? CreateBy { get; set; }
         public string? UpdateBy { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTimeOffset TokenCreated { get; set; }
-        public DateTimeOffset TokenExpires { get; set; }
-        // relationship
-
-        [Required]
-        public string? AddressId { get; set; }
+        // relationship 
         public Address? Address { get; set; }
+        public string? AddressId { get; set; }
+        public Gallery? Gallery { get; set; }
         public virtual ICollection<Wishlist>? Wishlists { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }
 

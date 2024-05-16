@@ -5,6 +5,8 @@ namespace TAT.StoreLocator.Core.Models.Request.User
 {
     public class ChangePasswordRequestModel : BaseRequest
     {
+        [Required]
+        public string? UserId { get; set; }
 
         [Required]
         public string? OldPassword { get; set; }

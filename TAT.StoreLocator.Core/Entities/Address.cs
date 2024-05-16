@@ -11,10 +11,10 @@ namespace TAT.StoreLocator.Core.Entities
         public string? District { get; set; }
         public string? Ward { get; set; }
         public string? PostalCode { get; set; }
+        public decimal latitude { get; set; }
+        public decimal longitude { get; set; }
         public User? User { get; set; }
         public Store? Store { get; set; }
-        public Location? Location { get; set; }
-
 
 
     }
