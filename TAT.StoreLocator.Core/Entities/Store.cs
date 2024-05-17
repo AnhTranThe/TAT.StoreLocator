@@ -9,6 +9,7 @@ namespace TAT.StoreLocator.Core.Entities
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
+        public bool IsDeleted { get; set; } 
         public Address? Address { get; set; }
         public string? AddressId { get; set; }
         //public virtual ICollection<Gallery>? Galleries { get; set; }  => bỏ, nhớ commit quăng lên github
