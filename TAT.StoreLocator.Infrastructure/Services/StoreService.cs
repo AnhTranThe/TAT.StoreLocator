@@ -7,13 +7,12 @@
 //using TAT.StoreLocator.Infrastructure.Persistence.EF;
 //using TAT.StoreLocator.Core.Models.Response.Store;
 //using TAT.StoreLocator.Core.Interface.IServices;
-using System;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
+using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Store;
 using TAT.StoreLocator.Core.Models.Response.Store;
@@ -72,14 +71,47 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             try
             {
-                var store = await _appDbContext.Stores
-                    .Where(s => !s.IsDeleted)
-                    .ToListAsync();
-                if (store != null)
+                var query = (from store in _appDbContext.Stores
+                             join mapGalleryStore in _appDbContext.MapGalleryStores
+                                 on store.Id equals mapGalleryStore.StoreId
+                             join gallery in _appDbContext.Galleries
+                                 on mapGalleryStore.GalleryId equals gallery.Id
+                             select new StoreResponseModel
+                             {
+                                 Id = store.Id,
+                                 Name = store.Name,
+                                 Email = store.Email,
+                                 PhoneNumber = store.PhoneNumber,
+                                 Address = store.Address == null ? null : new AddressResponseModel
+                                 {
+                                     RoadName = store.Address.RoadName,
+                                     Province = store.Address.Province,
+                                     District = store.Address.District,
+                                     Ward = store.Address.Ward,
+                                     PostalCode = store.Address.PostalCode,
+                                     Latitude = store.Address.latitude,
+                                     Longitude = store.Address.longitude
+                                 },
+                                 CreatedAt = store.CreatedAt,
+                                 CreatedBy = store.CreatedBy,
+                                 UpdatedAt = store.UpdatedAt,
+                                 UpdatedBy = store.UpdatedBy,
+                                 MapGalleryStores = _appDbContext.MapGalleryStores
+                                     .Where(mgs => mgs.StoreId == store.Id)
+                                     .Select(mgs => new MapGalleryStoreResponse
+                                     {
+                                         GalleryId = mgs.GalleryId,
+                                         FileName = gallery.FileName,
+                                         Url = gallery.Url,
+                                         IsThumbnail = gallery.IsThumbnail
+                                     }).ToList()
+                             }).ToList();
+                if (!query.IsNullOrEmpty())
                 {
-                    var storeResponseModel = _mapper.Map<List<StoreResponseModel>>(store);
+                    response.Code = GlobalConstants.SUCCESSFULL;
+                    response.Message = HttpStatusCode.OK.ToString();
+                    response.Data = query;
                     response.Success = true;
-                    response.Data = storeResponseModel;
                 }
                 else
                 {
