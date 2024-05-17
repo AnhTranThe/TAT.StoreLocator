@@ -66,18 +66,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
         }
 
-        //private string GenerateNewStoreId()
-        //{
-        //    return Guid.NewGuid().ToString();
-        //}
-
         public async Task<BaseResponseResult<List<StoreResponseModel>>> GetAllStoreAsync()
         {
             var response = new BaseResponseResult<List<StoreResponseModel>>();
 
             try
             {
-                var store = await _appDbContext.Stores.ToListAsync();
+                var store = await _appDbContext.Stores
+                    .Where(s => !s.IsDeleted)
+                    .ToListAsync();
                 if (store != null)
                 {
                     var storeResponseModel = _mapper.Map<List<StoreResponseModel>>(store);
@@ -136,6 +133,73 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 response.Success = false;
                 response.Message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<BaseResponseResult<StoreResponseModel>>UpdateStoreAsync ( string storeId,UpdateStoreRequestModel request)
+        {
+            var response = new BaseResponseResult<StoreResponseModel>();
+            try
+            {
+                var store = await _appDbContext.Stores.FindAsync(storeId);
+                if (store == null) 
+                {
+                    response.Success = false;
+                    response.Message = "Store not found";
+                    return response;
+                }
+
+                store.Name = request.Name;
+                store.Email = request.Email;
+                store.PhoneNumber = request.PhoneNumber;
+
+                await _appDbContext.SaveChangesAsync();
+
+                var updateStoreResponse = new StoreResponseModel
+                {
+                    Id = store.Id,
+                    Name = store.Name,
+                    Email = store.Email,
+                    PhoneNumber = store.PhoneNumber,
+                };
+                response.Success = true;
+                response.Data = updateStoreResponse;
+            }
+            catch(Exception ex) 
+            { 
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<BaseResponse> DeleteStoreAsync(string storeId)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                var store = await _appDbContext.Stores.FindAsync(storeId);
+                if (store == null)
+                {
+                    response.Success = false;
+                    response.Message = "Store not found";
+                    return response;
+                }
+
+
+                store.IsDeleted = true;
+                _appDbContext.Stores.Update(store);
+
+                await _appDbContext.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = "Store deleted successfully";
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error deleting store: {ex.Message}";
             }
             return response;
         }
