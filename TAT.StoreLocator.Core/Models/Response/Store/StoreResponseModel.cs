@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static TAT.StoreLocator.Core.Helpers.Enums;
 
 namespace TAT.StoreLocator.Core.Models.Response.Store
 {
@@ -29,4 +30,8 @@ namespace TAT.StoreLocator.Core.Models.Response.Store
         public string? Url { get; set; }
         public bool IsThumbnail { get; set; }
     }
+
+
+
+
 }

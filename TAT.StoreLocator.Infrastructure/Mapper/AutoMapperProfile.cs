@@ -70,7 +70,7 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                   .ForMember(dest => dest.longitude, opt => opt.MapFrom(src => src.longitude))
 
                      .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward));
-           
+
 
             CreateMap<Store, StoreResponseModel>()
             .ForMember(dest => dest.MapGalleryStores, opt => opt.Ignore()); // We handle this manually
@@ -78,10 +78,13 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                 .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery.FileName))
                 .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Gallery.Url))
                 .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery.IsThumbnail));
-        }
-        #endregion
 
+
+
+            #endregion
+
+        }
     }
-    }
+}
 
 
