@@ -115,28 +115,46 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
+        [HttpPut("update/{storeId}")]
+        public async Task<IActionResult>UpdateStore ( string storeId,[FromBody]UpdateStoreRequestModel request)
+        {
+            try
+            {
+                var response = await _storeService.UpdateStoreAsync(storeId, request);
+                if(response.Success)
+                {
+                    return Ok(response.Data);
+                }
+                else
+                {
+                    return StatusCode(500,response.Message);
+                }
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
-        //[HttpGet("getDetail/{storeId}")]
-        //public async Task<IActionResult> GetDetailStore(string storeId)
-        //{
-        //    try
-        //    {
-        //        //var request = new GetDetailStoreRequestModel { Id = storeId };
-        //        var response = await _storeService.GetDetailStoreAsync(storeId); // test
-        //        if (response.Success)
-        //        {
-        //            return Ok(response.Data);
-        //        }
-        //        return NotFound(response.Message);
-        //        //        //else
-        //        //        //{
-        //        //        //    return NotFound(response.Message);
-        //        //        //}
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-        //}
+        [HttpDelete("delete/{storeId}")]
+        public async Task<IActionResult> DeleteStore(string storeId)
+        {
+            try
+            {
+                var response = await _storeService.DeleteStoreAsync(storeId);
+                if (response.Success)
+                {
+                    return Ok("Store deleted successfully");
+                }
+                else
+                {
+                    return StatusCode(500, response.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
