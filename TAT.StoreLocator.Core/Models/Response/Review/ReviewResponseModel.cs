@@ -30,4 +30,5 @@ namespace TAT.StoreLocator.Core.Models.Response.Review
         public string? PhoneNumber { get; set; }
     }
 
+
 }
