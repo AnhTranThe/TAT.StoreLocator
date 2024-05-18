@@ -4,8 +4,13 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Models.Request.Address;
 using TAT.StoreLocator.Core.Models.Request.User;
 using TAT.StoreLocator.Core.Models.Response.Authentication;
+using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;
 using TAT.StoreLocator.Core.Models.Response.User;
+using TAT.StoreLocator.Core.Models.Request.Review;
+using static TAT.StoreLocator.Core.Helpers.Enums;
+using TAT.StoreLocator.Core.Models.Response.Address; // test
+using TAT.StoreLocator.Core.Helpers;
 
 namespace TAT.StoreLocator.Infrastructure.Mapper
 {
@@ -80,8 +85,26 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                 .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery.IsThumbnail));
 
 
+  
+            CreateMap<Review, ReviewResponseModel>()
+            .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Product.Store));
+            CreateMap<Store, StoreResponse>();
+
+
+            CreateMap<CreateReviewRequestModel, Review>()
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enums.EReviewStatus.Pending)) // Assuming default status is Pending
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
 
             #endregion
+
+
 
         }
     }
