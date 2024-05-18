@@ -133,6 +133,7 @@ namespace TAT.StoreLocator.Infrastructure.DI
 
             //PhucThinh-dev
             _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
+            _ = services.AddScoped(typeof(IReviewService), typeof(ReviewService));
             #endregion
 
             #region Mapper
