@@ -77,21 +77,21 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPut("update/{storeId}")]
-        public async Task<IActionResult>UpdateStore ( string storeId,[FromBody]UpdateStoreRequestModel request)
+        public async Task<IActionResult> UpdateStore(string storeId, [FromBody] UpdateStoreRequestModel request)
         {
             try
             {
                 var response = await _storeService.UpdateStoreAsync(storeId, request);
-                if(response.Success)
+                if (response.Success)
                 {
                     return Ok(response.Data);
                 }
                 else
                 {
-                    return StatusCode(500,response.Message);
+                    return StatusCode(500, response.Message);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -110,6 +110,27 @@ namespace TAT.StoreLocator.API.Controllers
                 else
                 {
                     return StatusCode(500, response.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("get/nearStore")]
+        public async Task<IActionResult> GetNearStore(string district)
+        {
+            try
+            {
+                var response = await _storeService.GetTheNearestStore(district);
+                if (response.Success)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return Ok(response);
                 }
             }
             catch (Exception ex)
