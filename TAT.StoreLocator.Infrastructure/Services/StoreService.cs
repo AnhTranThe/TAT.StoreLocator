@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TAT.StoreLocator.Core.Common;
@@ -98,6 +96,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                          Url = gallery.Url,
                                          IsThumbnail = gallery.IsThumbnail
                                      }).ToList()
+
+
                              }).ToList();
                 if (!query.IsNullOrEmpty())
                 {
@@ -162,13 +162,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<StoreResponseModel>>UpdateStoreAsync ( string storeId,UpdateStoreRequestModel request)
+        public async Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request)
         {
             var response = new BaseResponseResult<StoreResponseModel>();
             try
             {
                 var store = await _appDbContext.Stores.FindAsync(storeId);
-                if (store == null) 
+                if (store == null)
                 {
                     response.Success = false;
                     response.Message = "Store not found";
@@ -191,8 +191,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.Success = true;
                 response.Data = updateStoreResponse;
             }
-            catch(Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 response.Success = false;
                 response.Message = ex.Message;
             }
@@ -228,8 +228,263 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
             return response;
         }
+        public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(string district)
+        {
+            var response = new BaseResponseResult<List<SimpleStoreResponse>>();
+            // Chuyển đổi chuỗi "Quận" thành "Q." để so sánh dễ dàng hơn
+            if (district.StartsWith("Quận"))
+            {
+                district = district.Replace("Quận", "Q.");
+            }
+            if (district.StartsWith("Huyện"))
+            {
+                district = district.Replace("Huyện", "H.");
+            }
+            List<string> list = await GetNearDistrict(district);
+
+            // Ensure that there is at least one nearby district
+            if (list == null || !list.Any())
+            {
+                response.Success = false;
+                response.Message = GlobalConstants.DISTRICT_NOT_FOUND;
+                response.Data = null;
+                return response; // Return an empty response if no nearby districts are found
+            }
+
+            // Query the stores whose addresses are in the nearby districts
+            var query = from store in _appDbContext.Stores
+                        join address in _appDbContext.Addresses
+                            on store.AddressId equals address.Id
+                        where address.District != null && list.Contains(address.District)
+                        select new SimpleStoreResponse
+                        {
+                            Id = store.Id.ToString(), // Assuming store.Id is a Guid or similar type
+                            Name = store.Name,
+                            Email = store.Email,
+                            PhoneNumber = store.PhoneNumber,
+                            Address = new AddressResponseModel
+                            {
+                                RoadName = address.RoadName,
+                                Ward = address.Ward,
+                                Province = address.Province,
+                                Latitude = address.latitude,
+                                Longitude = address.longitude,
+                                PostalCode = address.PostalCode,
+                                District = address.District
+                            }
+                        };
+
+            // Execute the query and get the list of stores
+            List<SimpleStoreResponse> nearestStores = await query.ToListAsync();
+
+            if (nearestStores != null && nearestStores.Any())
+            {
+                response.Code = HttpStatusCode.OK.ToString();
+                response.Message = GlobalConstants.SUCCESSFULL;
+                response.Data = nearestStores;
+                response.Success = true;
+            }
+            else
+            {
+                response.Success = false;
+                response.Message = GlobalConstants.NOT_STORE_NEAR;
+            }
+
+            return response;
+        }
+        private async Task<List<string>> GetNearDistrict(string district)
+        {
+            district = district.ToUpper(); // Chuyển đổi chuỗi đầu vào thành chữ hoa
+
+            return district switch
+            {
+                "Q.1" => await Task.FromResult(new List<string>
+            {
+                "Quận 3",
+                "Quận 4",
+                "Quận 5",
+                "Quận Bình Thạnh",
+                "Quận Phú Nhuận"
+            }),
+
+                "Q.2" => await Task.FromResult(new List<string>
+            {
+                "Quận Bình Thạnh",
+                "Quận 9",
+                "Quận Thủ Đức",
+                "Quận 4",
+                "Quận 7"
+            }),
+
+                "Q.3" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 10",
+                "Quận Phú Nhuận",
+                "Quận Tân Bình"
+            }),
+
+                "Q.4" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 7",
+                "Quận 8",
+                "Quận 2"
+            }),
+
+                "Q.5" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 6",
+                "Quận 10",
+                "Quận 11",
+                "Quận 8"
+            }),
+
+                "Q.6" => await Task.FromResult(new List<string>
+            {
+                "Quận 5",
+                "Quận 11",
+                "Quận Bình Tân",
+                "Quận 8"
+            }),
+
+                "Q.7" => await Task.FromResult(new List<string>
+            {
+                "Quận 2",
+                "Quận 4",
+                "Quận 8",
+                "Huyện Nhà Bè",
+                "Huyện Bình Chánh"
+            }),
+
+                "Q.8" => await Task.FromResult(new List<string>
+            {
+                "Quận 4",
+                "Quận 5",
+                "Quận 6",
+                "Quận 7",
+                "Quận Bình Tân",
+                "Huyện Bình Chánh"
+            }),
+
+                "Q.9" => await Task.FromResult(new List<string>
+            {
+                "Quận 2",
+                "Quận Thủ Đức"
+            }),
+
+                "Q.10" => await Task.FromResult(new List<string>
+            {
+                "Quận 3",
+                "Quận 5",
+                "Quận 11",
+                "Quận Tân Bình"
+            }),
+
+                "Q.11" => await Task.FromResult(new List<string>
+            {
+                "Quận 5",
+                "Quận 6",
+                "Quận 10",
+                "Quận Tân Bình",
+                "Quận Bình Tân"
+            }),
+
+                "Q.12" => await Task.FromResult(new List<string>
+            {
+                "Quận Gò Vấp",
+                "Quận Bình Thạnh",
+                "Quận Thủ Đức",
+                "Quận Tân Bình",
+                "Huyện Hóc Môn"
+            }),
+
+                "Q.BÌNH THẠNH" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 2",
+                "Quận Gò Vấp",
+                "Quận Phú Nhuận",
+                "Quận Thủ Đức"
+            }),
+
+                "Q.TÂN BÌNH" => await Task.FromResult(new List<string>
+            {
+                "Quận 3",
+                "Quận 10",
+                "Quận 11",
+                "Quận Phú Nhuận",
+                "Quận Tân Phú"
+            }),
+
+                "Q.TÂN PHÚ" => await Task.FromResult(new List<string>
+            {
+                "Quận Tân Bình",
+                "Quận Bình Tân",
+                "Quận 11"
+            }),
+
+                "Q.PHÚ NHUẬN" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 3",
+                "Quận Bình Thạnh",
+                "Quận Tân Bình"
+            }),
+
+                "Q.THỦ ĐỨC" => await Task.FromResult(new List<string>
+            {
+                "Quận 2",
+                "Quận 9",
+                "Quận Bình Thạnh",
+                "Quận 12"
+            }),
+
+                "Q.BÌNH TÂN" => await Task.FromResult(new List<string>
+            {
+                "Quận 6",
+                "Quận 8",
+                "Quận Tân Phú",
+                "Quận Bình Chánh"
+            }),
+
+                "H.HÓC MÔN" => await Task.FromResult(new List<string>
+            {
+                "Quận 12",
+                "Huyện Củ Chi",
+                "Quận Bình Tân"
+            }),
+
+                "H.CỦ CHI" => await Task.FromResult(new List<string>
+            {
+                "Huyện Hóc Môn",
+                "Huyện Bình Chánh"
+            }),
+
+                "H.BÌNH CHÁNH" => await Task.FromResult(new List<string>
+            {
+                "Quận 7",
+                "Quận 8",
+                "Quận Bình Tân",
+                "Huyện Nhà Bè",
+                "Huyện Củ Chi"
+            }),
+
+                "H.NHÀ BÈ" => await Task.FromResult(new List<string>
+            {
+                "Quận 7",
+                "Huyện Bình Chánh"
+            }),
+
+                _ => await Task.FromResult(new List<string>())
+            };
+        }
     }
+
+
 }
+
 
 
 

@@ -172,5 +172,8 @@
         public const string DATE_OUT_RANGE = "DATE_OUT_RANGE";
         public const string MONTH_NOT_SAME = "MONTH_NOT_SAME";
 
+        public const string NOT_STORE_NEAR = "NOT_STORE_NEAR";
+
+
     }
 }
