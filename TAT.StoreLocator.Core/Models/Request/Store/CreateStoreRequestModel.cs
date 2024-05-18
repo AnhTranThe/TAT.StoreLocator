@@ -2,7 +2,7 @@
 
 namespace TAT.StoreLocator.Core.Models.Request.Store
 {
-    public class CreateStoreRequestModel
+    public class CreateStoreRequestModel 
     {
         [Required]
         public string? Name { get; set; }
