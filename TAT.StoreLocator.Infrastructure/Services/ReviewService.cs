@@ -60,7 +60,59 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 Success = true,
                 Data = responseModel
             };
-         
+        }
+
+        public async Task<BaseResponseResult<ReviewResponseModel>>UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request)
+        {
+            var response = new BaseResponseResult<ReviewResponseModel>();
+            try
+            {
+                var review = await _appDbContext.Reviews
+                    .Include(r => r.Product)
+                        .ThenInclude(p => p.Store)
+                      .FirstOrDefaultAsync(r => r.Id == reviewId);
+
+                if (review == null)
+                {
+                    response.Success = false;
+                    response.Message = "Can not found review";
+                    return response;
+                }
+                
+                // Sử dụng AutoMapper để map các thuộc tính từ request đến thực thể review
+                _mapper.Map(request, review);
+                //review.UpdatedBy = request.UpdatedBy;
+
+               await _appDbContext.SaveChangesAsync();
+                var updateReviewResponse = new ReviewResponseModel
+                {
+                    Id = reviewId,
+                    Content = review.Content,
+                    RatingValue = review.RatingValue,
+                    Status = review.Status,
+                    UserId = request.UserId,
+                    ProductId = review.ProductId,
+                    Store = new StoreResponse
+                    {
+                        Id = review.Product?.Store?.Id,
+                        Name = review.Product?.Store?.Name,
+                        Email = review.Product?.Store?.Email,
+                        PhoneNumber = review.Product?.Store?.PhoneNumber
+                    },
+                    CreatedAt = review.CreatedAt.ToString(),
+                    CreatedBy = review.CreatedBy,
+                    UpdatedAt = review.UpdatedAt.ToString(),
+                    //UpdatedBy = review.UpdatedBy
+                };
+                response.Success = true;
+                response.Data = updateReviewResponse;
+            }
+            catch(Exception ex)
+            {
+                response.Success = false;
+                response.Message += ex.Message; 
+            }
+            return response;
         }
     }
 }

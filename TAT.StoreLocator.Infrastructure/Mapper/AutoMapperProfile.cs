@@ -102,6 +102,15 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
 
+
+            CreateMap<UpdateReviewRequestModel, Review>()
+                  .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+            .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? Enums.EReviewStatus.Pending)) // Assuming default status is Pending
+            .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+            //.ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy));
             #endregion
 
 
