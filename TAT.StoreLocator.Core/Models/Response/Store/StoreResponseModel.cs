@@ -12,6 +12,8 @@
         public DateTimeOffset? UpdatedAt { get; set; }
         public string? UpdatedBy { get; set; }
 
+        public RatingStore RatingStore { get; set; } = new RatingStore();
+
         public List<MapGalleryStoreResponse> MapGalleryStores { get; set; } = new List<MapGalleryStoreResponse>();
     }
 
