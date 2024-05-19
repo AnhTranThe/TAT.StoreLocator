@@ -67,7 +67,7 @@ namespace TAT.StoreLocator.API
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                SeedData.InitializeAsync(app);
+                _ = SeedData.InitializeAsync(app);
                 _ = app.UseSwagger();
                 _ = app.UseSwaggerUI();
             }
@@ -78,9 +78,9 @@ namespace TAT.StoreLocator.API
             _ = app.UseStaticFiles();
             _ = app.UseCors("CorsPolicy");
             _ = app.UseHttpsRedirection();
-            //_ = app.UseAuthentication();
-            //_ = app.UseMiddleware<JwtMiddleWare>();
-            //_ = app.UseAuthorization();
+            _ = app.UseAuthentication();
+            _ = app.UseMiddleware<JwtMiddleWare>();
+            _ = app.UseAuthorization();
             _ = app.MapControllers();
             app.Run();
         }
