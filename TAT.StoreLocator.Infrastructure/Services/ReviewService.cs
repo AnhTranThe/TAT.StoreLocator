@@ -111,5 +111,21 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
             return response;
         }
+
+        public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync(string userId)
+        {
+            var response = await _appDbContext.Reviews
+                .Include ( r => r.Product )
+                .ThenInclude (p => p.Store)
+                .Where (r => r.UserId == userId)    
+                .ToListAsync ();    
+
+            var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>( response );
+            return new BaseResponseResult<List<ReviewResponseModel>>
+            {
+                Success = true,
+                Data = reviewResponseModel
+            };
+        }      
     }
 }

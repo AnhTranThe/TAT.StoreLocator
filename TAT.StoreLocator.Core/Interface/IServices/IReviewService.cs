@@ -16,5 +16,8 @@ namespace TAT.StoreLocator.Core.Interface.IServices
 
         //Update
         Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request);
+
+        // GetReviewByUserId
+        Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync (string userId);
     }
 }

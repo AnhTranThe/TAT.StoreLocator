@@ -48,5 +48,15 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
+        [HttpGet("getReviewByUserId/{userId}")]
+        public async Task<IActionResult> GetReviewByUserId ( string userId )
+        {
+            var response = await _reviewService.GetReviewByUserIdAsync(userId);
+            if(response.Success)    
+            {
+                return Ok(response);
+            }
+            return StatusCode(500,response.Message);    
+        }
     }
 }
