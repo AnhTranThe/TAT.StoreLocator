@@ -1,5 +1,4 @@
-﻿using TAT.StoreLocator.Core.Models.Response.Store;
-using static TAT.StoreLocator.Core.Helpers.Enums;
+﻿using static TAT.StoreLocator.Core.Helpers.Enums;
 
 namespace TAT.StoreLocator.Core.Models.Response.Review
 {
@@ -13,7 +12,7 @@ namespace TAT.StoreLocator.Core.Models.Response.Review
 
         public string? UserId { get; set; }
 
-        public string? ProductId { get; set; }
+        // public string? ProductId { get; set; }
 
         public StoreResponse? Store { get; set; }
 

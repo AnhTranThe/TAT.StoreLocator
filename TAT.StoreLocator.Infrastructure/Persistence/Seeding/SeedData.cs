@@ -68,6 +68,8 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
 
                     }
 
+
+
                     if (!context.Users.Any())
                     {
 
@@ -87,6 +89,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             SecurityStamp = Guid.NewGuid().ToString(),
                             LockoutEnabled = false,
                             AddressId = GlobalConstants.AddressAdminId,
+
 
                         },
 
@@ -164,6 +167,31 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                         await context.Products.AddRangeAsync(products);
                         _ = await context.SaveChangesAsync();
                     }
+
+
+                    //if (context.Wishlist != null && !context.Wishlist.Any())
+
+                    //{
+                    //    // Create address entities
+                    //    List<Wishlist> wishlists = new()
+                    //    {
+                    //        new Wishlist
+                    //        {
+
+                    //            UserId = GlobalConstants.UserId
+
+                    //        },
+                    //        new Wishlist
+                    //        {
+
+                    //            UserId = GlobalConstants.AdminId
+                    //        }
+                    //    };
+                    //    await context.Wishlist.AddRangeAsync(wishlists);
+
+                    //    _ = await context.SaveChangesAsync();
+
+                    //}
 
 
                     if (!context.Galleries.Any())

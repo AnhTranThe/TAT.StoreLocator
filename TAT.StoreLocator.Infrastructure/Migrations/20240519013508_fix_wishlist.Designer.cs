@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -11,9 +12,10 @@ using TAT.StoreLocator.Infrastructure.Persistence.EF;
 namespace TAT.StoreLocator.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240519013508_fix_wishlist")]
+    partial class fix_wishlist
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -423,9 +425,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<string>("StoreId")
-                        .HasColumnType("text");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -438,8 +437,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("StoreId");
 
                     b.HasIndex("UserId");
 
@@ -827,19 +824,12 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Store", "Store")
-                        .WithMany("Reviews")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("TAT.StoreLocator.Core.Entities.User", "User")
                         .WithMany("Reviews")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Product");
-
-                    b.Navigation("Store");
 
                     b.Navigation("User");
                 });
@@ -916,8 +906,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Navigation("MapStoreWishlists");
 
                     b.Navigation("Products");
-
-                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.User", b =>
