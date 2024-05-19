@@ -1,13 +1,4 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using AutoMapper;
-//using TAT.StoreLocator.Infrastructure.Persistence.EF;
-//using TAT.StoreLocator.Core.Models.Response.Store;
-//using TAT.StoreLocator.Core.Interface.IServices;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TAT.StoreLocator.Core.Common;
@@ -35,18 +26,18 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             try
             {
-                var newStoreId = Guid.NewGuid().ToString();
-                var newStoreEntity = new Store
+                string newStoreId = Guid.NewGuid().ToString();
+                Store newStoreEntity = new()
                 {
                     Id = newStoreId,
                     Name = request.Name,
                     PhoneNumber = request.PhoneNumber,
                 };
-                _appDbContext.Stores.Add(newStoreEntity);
+                _ = _appDbContext.Stores.Add(newStoreEntity);
 
-                await _appDbContext.SaveChangesAsync();
+                _ = await _appDbContext.SaveChangesAsync();
 
-                var newStoreResponse = new CreateStoreResponseModel
+                CreateStoreResponseModel newStoreResponse = new()
                 {
                     Id = newStoreId,
                     BaseResponse = new BaseResponse { Success = true, Message = "Store created successfully." },
@@ -67,45 +58,47 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponseResult<List<StoreResponseModel>>> GetAllStoreAsync()
         {
-            var response = new BaseResponseResult<List<StoreResponseModel>>();
+            BaseResponseResult<List<StoreResponseModel>> response = new();
 
             try
             {
-                var query = (from store in _appDbContext.Stores
-                             join mapGalleryStore in _appDbContext.MapGalleryStores
-                                 on store.Id equals mapGalleryStore.StoreId
-                             join gallery in _appDbContext.Galleries
-                                 on mapGalleryStore.GalleryId equals gallery.Id
-                             select new StoreResponseModel
-                             {
-                                 Id = store.Id,
-                                 Name = store.Name,
-                                 Email = store.Email,
-                                 PhoneNumber = store.PhoneNumber,
-                                 Address = store.Address == null ? null : new AddressResponseModel
-                                 {
-                                     RoadName = store.Address.RoadName,
-                                     Province = store.Address.Province,
-                                     District = store.Address.District,
-                                     Ward = store.Address.Ward,
-                                     PostalCode = store.Address.PostalCode,
-                                     Latitude = store.Address.latitude,
-                                     Longitude = store.Address.longitude
-                                 },
-                                 CreatedAt = store.CreatedAt,
-                                 CreatedBy = store.CreatedBy,
-                                 UpdatedAt = store.UpdatedAt,
-                                 UpdatedBy = store.UpdatedBy,
-                                 MapGalleryStores = _appDbContext.MapGalleryStores
-                                     .Where(mgs => mgs.StoreId == store.Id)
-                                     .Select(mgs => new MapGalleryStoreResponse
-                                     {
-                                         GalleryId = mgs.GalleryId,
-                                         FileName = gallery.FileName,
-                                         Url = gallery.Url,
-                                         IsThumbnail = gallery.IsThumbnail
-                                     }).ToList()
-                             }).ToList();
+                List<StoreResponseModel> query = (from store in _appDbContext.Stores
+                                                  join mapGalleryStore in _appDbContext.MapGalleryStores
+                                                      on store.Id equals mapGalleryStore.StoreId
+                                                  join gallery in _appDbContext.Galleries
+                                                      on mapGalleryStore.GalleryId equals gallery.Id
+                                                  select new StoreResponseModel
+                                                  {
+                                                      Id = store.Id,
+                                                      Name = store.Name,
+                                                      Email = store.Email,
+                                                      PhoneNumber = store.PhoneNumber,
+                                                      Address = store.Address == null ? null : new AddressResponseModel
+                                                      {
+                                                          RoadName = store.Address.RoadName,
+                                                          Province = store.Address.Province,
+                                                          District = store.Address.District,
+                                                          Ward = store.Address.Ward,
+                                                          PostalCode = store.Address.PostalCode,
+                                                          Latitude = store.Address.latitude,
+                                                          Longitude = store.Address.longitude
+                                                      },
+                                                      CreatedAt = store.CreatedAt,
+                                                      CreatedBy = store.CreatedBy,
+                                                      UpdatedAt = store.UpdatedAt,
+                                                      UpdatedBy = store.UpdatedBy,
+                                                      MapGalleryStores = _appDbContext.MapGalleryStores
+                                                          .Where(mgs => mgs.StoreId == store.Id)
+                                                          .Select(mgs => new MapGalleryStoreResponse
+                                                          {
+                                                              GalleryId = mgs.GalleryId,
+                                                              FileName = gallery.FileName,
+                                                              Url = gallery.Url,
+                                                              IsThumbnail = gallery.IsThumbnail
+                                                          }).ToList()
+
+
+                                                  }).ToList();
                 if (!query.IsNullOrEmpty())
                 {
                     response.Code = GlobalConstants.SUCCESSFULL;
@@ -129,10 +122,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId)
         {
-            var response = new BaseResponseResult<StoreResponseModel>();
+            BaseResponseResult<StoreResponseModel> response = new();
             try
             {
-                var store = await _appDbContext.Stores
+                Store? store = await _appDbContext.Stores
                     .Include(s => s.Address)
                     .Include(s => s.MapGalleryStores)
                         .ThenInclude(mgs => mgs.Gallery)  // Ensure Galleries are loaded
@@ -140,7 +133,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 if (store != null)
                 {
-                    var storeResponseModel = _mapper.Map<StoreResponseModel>(store);
+                    StoreResponseModel storeResponseModel = _mapper.Map<StoreResponseModel>(store);
                     // Map galleries
                     storeResponseModel.MapGalleryStores = store.MapGalleryStores
                         .Select(mgs => new MapGalleryStoreResponse
@@ -169,13 +162,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<StoreResponseModel>>UpdateStoreAsync ( string storeId,UpdateStoreRequestModel request)
+        public async Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request)
         {
-            var response = new BaseResponseResult<StoreResponseModel>();
+            BaseResponseResult<StoreResponseModel> response = new();
             try
             {
-                var store = await _appDbContext.Stores.FindAsync(storeId);
-                if (store == null) 
+                Store? store = await _appDbContext.Stores.FindAsync(storeId);
+                if (store == null)
                 {
                     response.Success = false;
                     response.Message = "Store not found";
@@ -186,9 +179,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 store.Email = request.Email;
                 store.PhoneNumber = request.PhoneNumber;
 
-                await _appDbContext.SaveChangesAsync();
+                _ = await _appDbContext.SaveChangesAsync();
 
-                var updateStoreResponse = new StoreResponseModel
+                StoreResponseModel updateStoreResponse = new()
                 {
                     Id = store.Id,
                     Name = store.Name,
@@ -198,8 +191,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.Success = true;
                 response.Data = updateStoreResponse;
             }
-            catch(Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 response.Success = false;
                 response.Message = ex.Message;
             }
@@ -208,10 +201,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponse> DeleteStoreAsync(string storeId)
         {
-            var response = new BaseResponse();
+            BaseResponse response = new();
             try
             {
-                var store = await _appDbContext.Stores.FindAsync(storeId);
+                Store? store = await _appDbContext.Stores.FindAsync(storeId);
                 if (store == null)
                 {
                     response.Success = false;
@@ -221,9 +214,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
 
                 store.IsDeleted = true;
-                _appDbContext.Stores.Update(store);
+                _ = _appDbContext.Stores.Update(store);
 
-                await _appDbContext.SaveChangesAsync();
+                _ = await _appDbContext.SaveChangesAsync();
 
                 response.Success = true;
                 response.Message = "Store deleted successfully";
@@ -235,8 +228,264 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
             return response;
         }
+
+        public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(string district)
+        {
+            BaseResponseResult<List<SimpleStoreResponse>> response = new();
+            // Chuyển đổi chuỗi "Quận" thành "Q." để so sánh dễ dàng hơn
+            if (district.StartsWith("Quận"))
+            {
+                district = district.Replace("Quận", "Q.");
+            }
+            if (district.StartsWith("Huyện"))
+            {
+                district = district.Replace("Huyện", "H.");
+            }
+            List<string> list = await GetNearDistrict(district);
+
+            // Ensure that there is at least one nearby district
+            if (list == null || !list.Any())
+            {
+                response.Success = false;
+                response.Message = GlobalConstants.DISTRICT_NOT_FOUND;
+                response.Data = null;
+                return response; // Return an empty response if no nearby districts are found
+            }
+
+            // Query the stores whose addresses are in the nearby districts
+            IQueryable<SimpleStoreResponse> query = from store in _appDbContext.Stores
+                                                    join address in _appDbContext.Addresses
+                                                        on store.AddressId equals address.Id
+                                                    where address.District != null && list.Contains(address.District)
+                                                    select new SimpleStoreResponse
+                                                    {
+                                                        Id = store.Id.ToString(), // Assuming store.Id is a Guid or similar type
+                                                        Name = store.Name,
+                                                        Email = store.Email,
+                                                        PhoneNumber = store.PhoneNumber,
+                                                        Address = new AddressResponseModel
+                                                        {
+                                                            RoadName = address.RoadName,
+                                                            Ward = address.Ward,
+                                                            Province = address.Province,
+                                                            Latitude = address.latitude,
+                                                            Longitude = address.longitude,
+                                                            PostalCode = address.PostalCode,
+                                                            District = address.District
+                                                        }
+                                                    };
+
+            // Execute the query and get the list of stores
+            List<SimpleStoreResponse> nearestStores = await query.ToListAsync();
+
+            if (nearestStores != null && nearestStores.Any())
+            {
+                response.Code = HttpStatusCode.OK.ToString();
+                response.Message = GlobalConstants.SUCCESSFULL;
+                response.Data = nearestStores;
+                response.Success = true;
+            }
+            else
+            {
+                response.Success = false;
+                response.Message = GlobalConstants.NOT_STORE_NEAR;
+            }
+
+            return response;
+        }
+        private async Task<List<string>> GetNearDistrict(string district)
+        {
+            district = district.ToUpper(); // Chuyển đổi chuỗi đầu vào thành chữ hoa
+
+            return district switch
+            {
+                "Q.1" => await Task.FromResult(new List<string>
+            {
+                "Quận 3",
+                "Quận 4",
+                "Quận 5",
+                "Quận Bình Thạnh",
+                "Quận Phú Nhuận"
+            }),
+
+                "Q.2" => await Task.FromResult(new List<string>
+            {
+                "Quận Bình Thạnh",
+                "Quận 9",
+                "Quận Thủ Đức",
+                "Quận 4",
+                "Quận 7"
+            }),
+
+                "Q.3" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 10",
+                "Quận Phú Nhuận",
+                "Quận Tân Bình"
+            }),
+
+                "Q.4" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 7",
+                "Quận 8",
+                "Quận 2"
+            }),
+
+                "Q.5" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 6",
+                "Quận 10",
+                "Quận 11",
+                "Quận 8"
+            }),
+
+                "Q.6" => await Task.FromResult(new List<string>
+            {
+                "Quận 5",
+                "Quận 11",
+                "Quận Bình Tân",
+                "Quận 8"
+            }),
+
+                "Q.7" => await Task.FromResult(new List<string>
+            {
+                "Quận 2",
+                "Quận 4",
+                "Quận 8",
+                "Huyện Nhà Bè",
+                "Huyện Bình Chánh"
+            }),
+
+                "Q.8" => await Task.FromResult(new List<string>
+            {
+                "Quận 4",
+                "Quận 5",
+                "Quận 6",
+                "Quận 7",
+                "Quận Bình Tân",
+                "Huyện Bình Chánh"
+            }),
+
+                "Q.9" => await Task.FromResult(new List<string>
+            {
+                "Quận 2",
+                "Quận Thủ Đức"
+            }),
+
+                "Q.10" => await Task.FromResult(new List<string>
+            {
+                "Quận 3",
+                "Quận 5",
+                "Quận 11",
+                "Quận Tân Bình"
+            }),
+
+                "Q.11" => await Task.FromResult(new List<string>
+            {
+                "Quận 5",
+                "Quận 6",
+                "Quận 10",
+                "Quận Tân Bình",
+                "Quận Bình Tân"
+            }),
+
+                "Q.12" => await Task.FromResult(new List<string>
+            {
+                "Quận Gò Vấp",
+                "Quận Bình Thạnh",
+                "Quận Thủ Đức",
+                "Quận Tân Bình",
+                "Huyện Hóc Môn"
+            }),
+
+                "Q.BÌNH THẠNH" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 2",
+                "Quận Gò Vấp",
+                "Quận Phú Nhuận",
+                "Quận Thủ Đức"
+            }),
+
+                "Q.TÂN BÌNH" => await Task.FromResult(new List<string>
+            {
+                "Quận 3",
+                "Quận 10",
+                "Quận 11",
+                "Quận Phú Nhuận",
+                "Quận Tân Phú"
+            }),
+
+                "Q.TÂN PHÚ" => await Task.FromResult(new List<string>
+            {
+                "Quận Tân Bình",
+                "Quận Bình Tân",
+                "Quận 11"
+            }),
+
+                "Q.PHÚ NHUẬN" => await Task.FromResult(new List<string>
+            {
+                "Quận 1",
+                "Quận 3",
+                "Quận Bình Thạnh",
+                "Quận Tân Bình"
+            }),
+
+                "Q.THỦ ĐỨC" => await Task.FromResult(new List<string>
+            {
+                "Quận 2",
+                "Quận 9",
+                "Quận Bình Thạnh",
+                "Quận 12"
+            }),
+
+                "Q.BÌNH TÂN" => await Task.FromResult(new List<string>
+            {
+                "Quận 6",
+                "Quận 8",
+                "Quận Tân Phú",
+                "Quận Bình Chánh"
+            }),
+
+                "H.HÓC MÔN" => await Task.FromResult(new List<string>
+            {
+                "Quận 12",
+                "Huyện Củ Chi",
+                "Quận Bình Tân"
+            }),
+
+                "H.CỦ CHI" => await Task.FromResult(new List<string>
+            {
+                "Huyện Hóc Môn",
+                "Huyện Bình Chánh"
+            }),
+
+                "H.BÌNH CHÁNH" => await Task.FromResult(new List<string>
+            {
+                "Quận 7",
+                "Quận 8",
+                "Quận Bình Tân",
+                "Huyện Nhà Bè",
+                "Huyện Củ Chi"
+            }),
+
+                "H.NHÀ BÈ" => await Task.FromResult(new List<string>
+            {
+                "Quận 7",
+                "Huyện Bình Chánh"
+            }),
+
+                _ => await Task.FromResult(new List<string>())
+            };
+        }
     }
+
+
 }
+
 
 
 

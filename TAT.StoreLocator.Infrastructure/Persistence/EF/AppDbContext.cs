@@ -29,7 +29,6 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
             _ = builder.ApplyConfiguration(new AddressConfiguration());
             _ = builder.ApplyConfiguration(new CategoryConfiguration());
             _ = builder.ApplyConfiguration(new GalleryConfiguration());
-
             _ = builder.ApplyConfiguration(new MapProductWishlistConfiguration());
             _ = builder.ApplyConfiguration(new MapStoreWishlistConfiguration());
             _ = builder.ApplyConfiguration(new MapGalleryStoreConfiguration());
@@ -67,16 +66,14 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Gallery> Galleries { get; set; }
-
         public DbSet<MapProductWishlist> MapProductWishlists { get; set; }
         public DbSet<MapStoreWishlist> mapStoreWishlists { get; set; }
-
         public DbSet<MapGalleryProduct> mapGalleryProducts { get; set; }
         public DbSet<MapGalleryStore> MapGalleryStores { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Store> Stores { get; set; }
-        public DbSet<Wishlist> Wishlists { get; set; }
+        public DbSet<Wishlist> Wishlist { get; set; }
 
     }
 

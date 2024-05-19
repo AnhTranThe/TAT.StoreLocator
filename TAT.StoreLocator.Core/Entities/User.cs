@@ -34,10 +34,8 @@ namespace TAT.StoreLocator.Core.Entities
         public Address? Address { get; set; }
         public string? AddressId { get; set; }
         public Gallery? Gallery { get; set; }
-        public virtual ICollection<Wishlist>? Wishlists { get; set; }
+        public Wishlist? Wishlist { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }
-
-
 
 
     }

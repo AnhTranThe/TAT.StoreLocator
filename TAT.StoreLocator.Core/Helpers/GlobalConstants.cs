@@ -9,6 +9,8 @@
         public const string AdminId = "4D921CC6-5349-46FB-B62C-EBF293B217A5";
         public const string AddressUserId = "0C2CCCBB-7326-45FE-B800-F348CF4C37CF";
         public const string AddressAdminId = "C0FE97C7-918F-4E48-97A6-2B081D56372C";
+        public const string WishlistUserId = "62AC35DB-100C-46A9-9413-A79107439A76";
+        public const string WishlistAdminId = "BD4D2BE5-FEE8-4213-9648-76FF9BDBC835";
         public const string EmailAdmin = "admin@gmail.com";
         public const string RoleAdminName = "Admin";
         public const string RoleUserName = "User";
@@ -171,6 +173,9 @@
         //22/4
         public const string DATE_OUT_RANGE = "DATE_OUT_RANGE";
         public const string MONTH_NOT_SAME = "MONTH_NOT_SAME";
+
+        public const string NOT_STORE_NEAR = "NOT_STORE_NEAR";
+
 
     }
 }

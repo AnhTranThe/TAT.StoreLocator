@@ -1,4 +1,5 @@
 ﻿using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Models.Response.Store;
 
 namespace TAT.StoreLocator.Core.Models.Response.Review
 {
