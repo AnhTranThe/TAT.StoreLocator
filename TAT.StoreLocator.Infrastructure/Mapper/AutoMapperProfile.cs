@@ -85,10 +85,8 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                 .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery.IsThumbnail));
 
 
-  
-            CreateMap<Review, ReviewResponseModel>()
-            .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Product.Store));
-            CreateMap<Store, StoreResponse>();
+
+
 
 
             CreateMap<CreateReviewRequestModel, Review>()
@@ -103,14 +101,55 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
 
 
+            CreateMap<Review, ReviewResponseModel>()
+                .ForMember(dest => dest.StoreId, opt => opt.MapFrom(src => src.StoreId))
+                .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.ToString("yyyy-MM-ddTHH:mm:sszzz")))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.ToString("yyyy-MM-ddTHH:mm:sszzz")))
+                .ForMember(dest => dest.Product, opt => opt.MapFrom(src => new ProductResponse
+                {
+                    Id = src.ProductId,
+                    Name = src.Product.Name,
+                    Description = src.Product.Description,
+                    Content = src.Product.Content,
+                    Price = src.Product.Price,
+                    Discount = src.Product.Discount,
+                    Quantity = src.Product.Quantity,
+                }));
+         
+            
             CreateMap<UpdateReviewRequestModel, Review>()
-                  .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
-            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
-            .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
-            .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? Enums.EReviewStatus.Pending)) // Assuming default status is Pending
-            .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
-            //.ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy));
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? Enums.EReviewStatus.Pending))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+            CreateMap<Review , ReviewResponseModel>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.StoreId, opt => opt.MapFrom(src => src.StoreId))
+                .ForMember(dest => dest.Product, opt => opt.MapFrom(src => new ProductResponse
+                {
+                    Id = src.ProductId,
+                    Name = src.Product.Name,
+                    Description = src.Product.Description,
+                    Content = src.Product.Content,
+                    Price = src.Product.Price,
+                    Discount = src.Product.Discount,
+                    Quantity = src.Product.Quantity,
+                }))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.ToString("yyyy-MM-ddTHH:mm:sszzz")))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.ToString("yyyy-MM-ddTHH:mm:sszzz")))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy));
             #endregion
 
 

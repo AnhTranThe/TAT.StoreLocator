@@ -28,7 +28,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateReview(string reviewId, [FromBody]UpdateReviewRequestModel request)
+        public async Task<IActionResult> UpdateReview(string reviewId, [FromBody] UpdateReviewRequestModel request)
         {
             try
             {
@@ -39,14 +39,14 @@ namespace TAT.StoreLocator.API.Controllers
                 }
                 else
                 {
-                    return StatusCode (500,response.Message);   
+                    return StatusCode(500, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);  
+                return StatusCode(500, ex.Message);
             }
         }
-        
+
     }
 }
