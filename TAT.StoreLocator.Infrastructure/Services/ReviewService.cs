@@ -85,13 +85,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     RatingValue = review.RatingValue,
                     Status = review.Status,
                     UserId = request.UserId,
-                    //     ProductId = review.ProductId,
-                    Store = new StoreResponse
+                    StoreId = review.StoreId,
+                    Product = new ProductResponse
                     {
-                        Id = review.Product?.Store?.Id,
-                        Name = review.Product?.Store?.Name,
-                        Email = review.Product?.Store?.Email,
-                        PhoneNumber = review.Product?.Store?.PhoneNumber
+                        Id = review.Product.Id,
+                        Name = review.Product.Name,
+                        Description = review.Product.Description,
+                        Content = review.Product.Content,
+                        Price = review.Product.Price,
+                        Discount = review.Product.Discount,
+                        Quantity = review.Product.Quantity,
                     },
                     CreatedAt = review.CreatedAt.ToString(),
                     CreatedBy = review.CreatedBy,
@@ -108,5 +111,21 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
             return response;
         }
+
+        public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync(string userId)
+        {
+            var response = await _appDbContext.Reviews
+                .Include ( r => r.Product )
+                .ThenInclude (p => p.Store)
+                .Where (r => r.UserId == userId)    
+                .ToListAsync ();    
+
+            var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>( response );
+            return new BaseResponseResult<List<ReviewResponseModel>>
+            {
+                Success = true,
+                Data = reviewResponseModel
+            };
+        }      
     }
 }
