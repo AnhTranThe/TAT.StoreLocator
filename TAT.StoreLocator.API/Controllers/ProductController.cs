@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
+using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Product;
 
 namespace TAT.StoreLocator.API.Controllers
@@ -21,7 +22,7 @@ namespace TAT.StoreLocator.API.Controllers
 
         [HttpGet("get/{productId}")]
 
-        public async Task<IActionResult> GetProductById([FromQuery] string productId)
+        public async Task<IActionResult> GetProductById(string productId)
         {
 
 
@@ -42,6 +43,70 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, ex.Message);
 
             }
+        }
+
+        [HttpGet("GetListProducts")]
+        public async Task<IActionResult> GetListProduct()
+        {
+            try
+            {
+                BasePaginationRequest request = new();
+                BasePaginationResult<ProductResponseModel> Products = await _productService.GetListProductAsync(request);
+                return Ok(Products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+
+            }
+        }
+
+
+        [HttpPost("addProduct")]
+        public async Task<ActionResult> AddProduct([FromBody] ProductRequestModel request)
+        {
+
+            try
+            {
+
+                if (string.IsNullOrWhiteSpace(request.StoreId))
+                {
+                    return BadRequest("StoreId is not null");
+                }
+
+
+                BaseResponse Response = await _productService.AddProduct(request);
+
+                return !Response.Success ? BadRequest(Response.Message) : Ok(Response);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, ex.Message);
+
+            }
+
+        }
+
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateProduct([FromBody] ProductRequestModel request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.ProductId))
+            {
+                return BadRequest(new BaseResponse
+                {
+                    Success = false,
+                    Message = "Invalid request data."
+                });
+            }
+
+            var response = await _productService.UpdateProduct(request);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
     }
 }

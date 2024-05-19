@@ -1,13 +1,7 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Review;
 using TAT.StoreLocator.Core.Models.Response.Review;
@@ -27,9 +21,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<BaseResponseResult<ReviewResponseModel>>CreateReviewAsync(CreateReviewRequestModel request)
+        public async Task<BaseResponseResult<ReviewResponseModel>> CreateReviewAsync(CreateReviewRequestModel request)
         {
-            var existingReview = await _appDbContext.Reviews
+            Review? existingReview = await _appDbContext.Reviews
                   .Include(r => r.Product)
                       .ThenInclude(p => p.Store)
                .FirstOrDefaultAsync(r => r.UserId == request.UserId && r.Product.StoreId == request.StoreId);
@@ -44,17 +38,17 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     Errors = new List<string> { "User has already reviewed this store" }
                 };
             }
-            var review = _mapper.Map<Review>(request);
-            _appDbContext.Reviews.Add(review);
-            await _appDbContext.SaveChangesAsync();
-          
+            Review? review = _mapper.Map<Review>(request);
+            _ = _appDbContext.Reviews.Add(review);
+            _ = await _appDbContext.SaveChangesAsync();
+
             review = await _appDbContext.Reviews
                .Include(r => r.Product)
                .ThenInclude(p => p.Store)
                .FirstOrDefaultAsync(r => r.Id == review.Id);
 
 
-            var responseModel = _mapper.Map<ReviewResponseModel>(review);
+            ReviewResponseModel responseModel = _mapper.Map<ReviewResponseModel>(review);
             return new BaseResponseResult<ReviewResponseModel>
             {
                 Success = true,
@@ -62,12 +56,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
             };
         }
 
-        public async Task<BaseResponseResult<ReviewResponseModel>>UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request)
+        public async Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request)
         {
-            var response = new BaseResponseResult<ReviewResponseModel>();
+            BaseResponseResult<ReviewResponseModel> response = new();
             try
             {
-                var review = await _appDbContext.Reviews
+                Review? review = await _appDbContext.Reviews
                     .Include(r => r.Product)
                         .ThenInclude(p => p.Store)
                       .FirstOrDefaultAsync(r => r.Id == reviewId);
@@ -78,26 +72,29 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     response.Message = "Can not found review";
                     return response;
                 }
-                
+
                 // Sử dụng AutoMapper để map các thuộc tính từ request đến thực thể review
-                _mapper.Map(request, review);
+                _ = _mapper.Map(request, review);
                 //review.UpdatedBy = request.UpdatedBy;
 
-               await _appDbContext.SaveChangesAsync();
-                var updateReviewResponse = new ReviewResponseModel
+                _ = await _appDbContext.SaveChangesAsync();
+                ReviewResponseModel updateReviewResponse = new()
                 {
                     Id = reviewId,
                     Content = review.Content,
                     RatingValue = review.RatingValue,
                     Status = review.Status,
                     UserId = request.UserId,
-                    ProductId = review.ProductId,
-                    Store = new StoreResponse
+                    StoreId = review.StoreId,
+                    Product = new ProductResponse
                     {
-                        Id = review.Product?.Store?.Id,
-                        Name = review.Product?.Store?.Name,
-                        Email = review.Product?.Store?.Email,
-                        PhoneNumber = review.Product?.Store?.PhoneNumber
+                        Id = review.Product.Id,
+                        Name = review.Product.Name,
+                        Description = review.Product.Description,
+                        Content = review.Product.Content,
+                        Price = review.Product.Price,
+                        Discount = review.Product.Discount,
+                        Quantity = review.Product.Quantity,
                     },
                     CreatedAt = review.CreatedAt.ToString(),
                     CreatedBy = review.CreatedBy,
@@ -107,10 +104,56 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.Success = true;
                 response.Data = updateReviewResponse;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response.Success = false;
-                response.Message += ex.Message; 
+                response.Message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync(string userId)
+        {
+            var review = await _appDbContext.Reviews
+                .Include(r => r.Product)
+                .ThenInclude(p => p.Store)
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
+
+            var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
+            var response =  new BaseResponseResult<List<ReviewResponseModel>>
+            {
+                Success = true,
+                Data = reviewResponseModel
+            };
+
+            if(!reviewResponseModel.Any())
+            {
+                response.Success = false;
+                response.Message = "Can not found review by userId";
+            }
+            return response;
+        }
+
+        public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByStoreIdAsync(string storeId)
+        {
+                var review = await _appDbContext.Reviews
+                .Include(r => r.Product)
+                .Where(r => r.StoreId == storeId)
+                .ToListAsync();
+
+                var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
+                
+                var response = new BaseResponseResult<List<ReviewResponseModel>>
+                {
+                    Success = true,
+                    Data = reviewResponseModel
+                };
+
+            if(!reviewResponseModel.Any())
+            {
+                response.Success = false;
+                response.Message = "Can not found review by storeId";
             }
             return response;
         }
