@@ -107,25 +107,55 @@ namespace TAT.StoreLocator.Infrastructure.Services
             catch (Exception ex)
             {
                 response.Success = false;
-                response.Message += ex.Message;
+                response.Message = ex.Message;
             }
             return response;
         }
 
         public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync(string userId)
         {
-            var response = await _appDbContext.Reviews
-                .Include ( r => r.Product )
-                .ThenInclude (p => p.Store)
-                .Where (r => r.UserId == userId)    
-                .ToListAsync ();    
+            var review = await _appDbContext.Reviews
+                .Include(r => r.Product)
+                .ThenInclude(p => p.Store)
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
 
-            var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>( response );
-            return new BaseResponseResult<List<ReviewResponseModel>>
+            var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
+            var response =  new BaseResponseResult<List<ReviewResponseModel>>
             {
                 Success = true,
                 Data = reviewResponseModel
             };
-        }      
+
+            if(!reviewResponseModel.Any())
+            {
+                response.Success = false;
+                response.Message = "Can not found review by userId";
+            }
+            return response;
+        }
+
+        public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByStoreIdAsync(string storeId)
+        {
+                var review = await _appDbContext.Reviews
+                .Include(r => r.Product)
+                .Where(r => r.StoreId == storeId)
+                .ToListAsync();
+
+                var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
+                
+                var response = new BaseResponseResult<List<ReviewResponseModel>>
+                {
+                    Success = true,
+                    Data = reviewResponseModel
+                };
+
+            if(!reviewResponseModel.Any())
+            {
+                response.Success = false;
+                response.Message = "Can not found review by storeId";
+            }
+            return response;
+        }
     }
 }
