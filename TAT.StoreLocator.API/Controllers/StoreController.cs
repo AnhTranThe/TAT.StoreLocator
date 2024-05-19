@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Store;
 
@@ -119,11 +120,12 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpGet("get/nearStore")]
-        public async Task<IActionResult> GetNearStore(string district)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetNearStore(string district, string ward, string province, string keyWord)
         {
             try
             {
-                var response = await _storeService.GetTheNearestStore(district);
+                var response = await _storeService.GetTheNearestStore(district, ward, province, keyWord);
                 if (response.Success)
                 {
                     return Ok(response);
