@@ -95,12 +95,19 @@ namespace TAT.StoreLocator.API.Controllers
 
         [HttpGet("get/nearStore")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetNearStore(string district, string ward, string province, string keyWord, string category)
+        public async Task<IActionResult> GetNearStore(string district, string ward, string province, string keyWord)
         {
             try
             {
-                Core.Common.BaseResponseResult<List<Core.Models.Response.Store.SimpleStoreResponse>> response = await _storeService.GetTheNearestStore(district);
-                return response.Success ? Ok(response) : (IActionResult)Ok(response);
+                var response = await _storeService.GetTheNearestStore(district, ward, province, keyWord);
+                if (response.Success)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return Ok(response);
+                }
             }
             catch (Exception ex)
             {
