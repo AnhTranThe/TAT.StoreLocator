@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
-using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Category;
+using System;
+using System.Threading.Tasks;
+using TAT.StoreLocator.Core.Helpers;
 
 namespace TAT.StoreLocator.API.Controllers
 {
@@ -20,72 +22,81 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPost("addCategory")]
-        [AllowAnonymous]
         public async Task<IActionResult> Add([FromBody] CategoryRequestModel request)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var response = await _categoryService.Add(request);
+
+                if (response.Success)
+                    return Ok(response);
+
+                return BadRequest(response);
             }
-
-            BaseResponse response = await _categoryService.Add(request);
-
-            if (response.Success)
+            catch (Exception ex)
             {
-                return Ok(response);
+                // Log exception
+                return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
             }
-
-            return BadRequest(response);
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetById(string id)
         {
-            var response = await _categoryService.GetById(id);
-
-            if (response.Success)
+            try
             {
-                return Ok(response);
-            }
+                var response = await _categoryService.GetById(id);
 
-            return NotFound(response);
+                if (response.Success)
+                    return Ok(response);
+
+                return NotFound(response);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
+            }
         }
 
         [HttpGet("getListCategory")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetList([FromQuery] BasePaginationRequest request)
         {
-            var response = await _categoryService.GetListAsync(request);
-
-            return Ok(response);
+            try
+            {
+                var response = await _categoryService.GetListAsync(request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
+            }
         }
 
         [HttpPut("update/{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> Update(string id, [FromBody] CategoryRequestModel request)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
-            var response = await _categoryService.Update(id, request);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            if (response.Success)
+                var response = await _categoryService.Update(id, request);
+
+                if (response.Success)
+                    return Ok(response);
+
+                return BadRequest(response);
+            }
+            catch (Exception ex)
             {
-                return Ok(response);
+                // Log exception
+                return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
             }
-
-            return BadRequest(response);
         }
-
-
-
     }
-
 }
-
-
-
-    
-
