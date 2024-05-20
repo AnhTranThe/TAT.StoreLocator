@@ -130,6 +130,7 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
             //huy_dev
             _ = services.AddScoped(typeof(IProductService), typeof(ProductService));
+            _ = services.AddScoped(typeof(ICategoryService), typeof(CategoryService));
 
             //PhucThinh-dev
             _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));

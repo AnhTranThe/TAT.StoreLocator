@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.ILogger;
@@ -24,67 +25,81 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _dbContext = dbContext;
             _photoService = photoService;
         }
-        public async Task<BaseResponseResult<ProductResponseModel>> GetById(string productId)
-        {
-            if (string.IsNullOrEmpty(productId))
-            {
-                throw new ArgumentNullException(nameof(productId));
-            }
-            BaseResponseResult<ProductResponseModel> reponse = new();
 
-            Product? product = await _dbContext.Products
-                  .Include(p => p.Category)
-                  .Include(p => p.MapGalleryProducts)
-                  .ThenInclude(m => m.Gallery) // Nạp thông tin các hình ảnh của sản phẩm
-                  .FirstOrDefaultAsync(p => p.Id == productId);
+
+        public async Task<BaseResponseResult<ProductResponseModel>> GetById(string Id)
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                throw new ArgumentNullException(nameof(Id));
+            }
+
+            BaseResponseResult<ProductResponseModel> response = new();
+
+            // Fetch the product without including related entities
+            Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == Id);
             if (product == null)
             {
                 return new BaseResponseResult<ProductResponseModel>
                 {
                     Success = false,
-                    Message = $"Product with ID {productId} not found."
+                    Message = $"Product with ID {Id} not found."
                 };
             }
-            // Check null
-            CategoryProductResponseModel? categoryResponse = product.Category != null ? new CategoryProductResponseModel
-            {
-                Id = product.Category.Id,
-                Name = product.Category.Name,
-                Description = product.Category.Description,
-            } : null;
-            StoreOfProductResponseModel? storeResponse = new();
 
-            Store? store = await _dbContext.Stores.FindAsync(product.StoreId);
-            if (store is null)
+            CategoryProductResponseModel? categoryResponse = null;
+            if (!string.IsNullOrEmpty(product.CategoryId))
             {
-                reponse.Message = $"Store is not found";
-                store = null;
-            }
-            else
-            {
-                storeResponse = new StoreOfProductResponseModel
+                var category = await _dbContext.Categories.FindAsync(product.CategoryId);
+                if (category != null)
                 {
-                    Id = store.Id,
-                    Name = store.Name,
-                    Email = store.Email,
-                    PhoneNumber = store.PhoneNumber,
-                };
-
+                    categoryResponse = new CategoryProductResponseModel
+                    {
+                        Id = category.Id,
+                        Name = category.Name,
+                        Description = category.Description,
+                    };
+                }
             }
 
-            List<GalleryResponseModel> galleryResponseModels = product.MapGalleryProducts != null ? product.MapGalleryProducts.Select(g => new GalleryResponseModel
+            StoreOfProductResponseModel? storeResponse = null;
+            if (!string.IsNullOrEmpty(product.StoreId))
             {
-                Id = g.GalleryId,
-                FileName = g.Gallery.FileName,
-                Url = g.Gallery.Url,
-                FileBelongsTo = g.Gallery.FileBelongsTo,
-                IsThumbnail = g.Gallery.IsThumbnail
-                // Các thuộc tính khác của hình ảnh
-            }).ToList() : new List<GalleryResponseModel>();
+                var store = await _dbContext.Stores.FindAsync(product.StoreId);
+                if (store != null)
+                {
+                    storeResponse = new StoreOfProductResponseModel
+                    {
+                        Id = store.Id,
+                        Name = store.Name,
+                        Email = store.Email,
+                        PhoneNumber = store.PhoneNumber,
+                    };
+                }
+                else
+                {
+                    response.Message = $"Store not found.";
+                }
+            }
+            List<GalleryResponseModel> galleryResponseModels = new();
+
+            if (product.MapGalleryProducts != null && product.MapGalleryProducts.Any())
+            {
+                galleryResponseModels = await _dbContext.mapGalleryProducts
+                    .Where(mgp => mgp.ProductId == Id)
+                    .Select(mgp => new GalleryResponseModel
+                    {
+                        FileName = mgp.Gallery!.FileName,
+                        Url = mgp.Gallery.Url,
+                        IsThumbnail = mgp.Gallery.IsThumbnail
+                    })
+                    .ToListAsync();
+            }
+
 
             ProductResponseModel productResponse = new()
             {
-                Id = product.Id,
+                Id = product!.Id,
                 Name = product.Name,
                 Description = product.Description,
                 Content = product.Content,
@@ -106,11 +121,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 GalleryResponseModels = galleryResponseModels
             };
 
-            reponse.Data = productResponse;
-            reponse.Success = true;
+            response.Data = productResponse;
+            response.Success = true;
 
-            return reponse;
+            return response;
         }
+
 
         public Task<BasePaginationResult<ProductResponseModel>> SearchProductAsync(SearchProductPagingRequestModel request)
         {
@@ -122,7 +138,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             IQueryable<Product> productQuery = _dbContext.Products
                  .Include(p => p.Category)
                  .Include(p => p.MapGalleryProducts)
-                     .ThenInclude(m => m.Gallery)
                  .Include(p => p.Store);
             int totalRow = await productQuery.CountAsync();
             List<ProductResponseModel> data = await productQuery.Skip((request.PageIndex - 1) * request.PageSize)
@@ -154,22 +169,21 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         Description = product.Category.Description,
                         // Other properties
                     } : null,
-                    Store = new StoreOfProductResponseModel
+                    Store = product.Store != null ? new StoreOfProductResponseModel
                     {
                         Id = product.Store.Id,
                         Name = product.Store.Name,
                         Email = product.Store.Email
-                        // Other properties
-                    },
-                    GalleryResponseModels = product.MapGalleryProducts
+                    } : null,
+                    GalleryResponseModels = product.MapGalleryProducts != null ? product.MapGalleryProducts
                         .Select(m => new GalleryResponseModel
                         {
-                            Id = m.Gallery.Id,
+                            Id = m.Gallery!.Id,
                             FileName = m.Gallery.FileName,
                             Url = m.Gallery.Url,
                             FileBelongsTo = m.Gallery.FileBelongsTo,
                             IsThumbnail = m.Gallery.IsThumbnail
-                        }).ToList()
+                        }).ToList() : null,
                 }).ToListAsync();
 
             BasePaginationResult<ProductResponseModel> response = new()
@@ -183,11 +197,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponse> UpdateProduct(ProductRequestModel request)
+        public async Task<BaseResponse> UpdateProduct(string Id, ProductRequestModel request)
         {
             BaseResponse response = new() { Success = false };
 
-            if (request == null || string.IsNullOrEmpty(request.ProductId))
+            if (request == null || string.IsNullOrEmpty(Id))
             {
                 response.Message = "Invalid request data.";
                 return response;
@@ -197,7 +211,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 try
                 {
-                    Product? product = await _dbContext.Products.FindAsync(request.ProductId);
+                    Product? product = await _dbContext.Products.FindAsync(Id);
                     if (product == null)
                     {
                         response.Message = "Product not found.";
@@ -318,7 +332,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 Category? existingCategory = await _dbContext.Categories.FindAsync(request.CategoryId);
                 if (existingCategory == null)
                 {
-                    throw new Exception("Invalid CategoryId.");
+                    _logger.LogError(new Exception());
                 }
                 product.CategoryId = request.CategoryId;
             }
@@ -439,10 +453,50 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
+        public async Task<BasePaginationResult<ProductResponseModel>> GetByIdStore(string StoreId, BasePaginationRequest request)
+        {
+            var query = _dbContext.Products
+                .Include(p => p.Category)
+                .Include(p => p.MapGalleryProducts)
+                .Where(p => p.StoreId == StoreId && p.IsActive)
+                .Select(product => new ProductResponseModel
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description,
+                    Content = product.Content,
+                    Note = product.Note,
+                    Slug = product.Slug,
+                    Price = product.Price,
+                    Discount = product.Discount,
+                    MetaTitle = product.MetaTitle,
+                    MetaDescription = product.MetaDescription,
+                    Quantity = product.Quantity,
+                    Rating = product.Rating,
+                    SKU = product.SKU,
+                    IsActive = product.IsActive,
+                    ProductViewCount = product.ProductViewCount,
+                    CategoryId = product.CategoryId,
+
+                });
+
+            var totalCount = await query.CountAsync();
+
+            var paginatedProducts = await query
+                .OrderBy(p => p.Name)
+                .Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            var paginationResult = new BasePaginationResult<ProductResponseModel>
+            {
+                Data = paginatedProducts,
+                TotalCount = totalCount
+            };
+
+            return paginationResult;
 
 
-
-
-
+        }
     }
 }
