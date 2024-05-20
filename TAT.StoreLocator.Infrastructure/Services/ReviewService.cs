@@ -4,6 +4,7 @@ using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Review;
+using TAT.StoreLocator.Core.Models.Response.Product;
 using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
@@ -86,7 +87,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     Status = review.Status,
                     UserId = request.UserId,
                     StoreId = review.StoreId,
-                    Product = new ProductResponse
+                    Product = review.Product == null ? null : new BaseProductResponseModel
                     {
                         Id = review.Product.Id,
                         Name = review.Product.Name,
@@ -114,20 +115,20 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync(string userId)
         {
-            var review = await _appDbContext.Reviews
+            List<Review> review = await _appDbContext.Reviews
                 .Include(r => r.Product)
                 .ThenInclude(p => p.Store)
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
 
-            var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
-            var response =  new BaseResponseResult<List<ReviewResponseModel>>
+            List<ReviewResponseModel> reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
+            BaseResponseResult<List<ReviewResponseModel>> response = new()
             {
                 Success = true,
                 Data = reviewResponseModel
             };
 
-            if(!reviewResponseModel.Any())
+            if (!reviewResponseModel.Any())
             {
                 response.Success = false;
                 response.Message = "Can not found review by userId";
@@ -137,20 +138,20 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByStoreIdAsync(string storeId)
         {
-                var review = await _appDbContext.Reviews
+            List<Review> review = await _appDbContext.Reviews
                 .Include(r => r.Product)
                 .Where(r => r.StoreId == storeId)
                 .ToListAsync();
 
-                var reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
-                
-                var response = new BaseResponseResult<List<ReviewResponseModel>>
-                {
-                    Success = true,
-                    Data = reviewResponseModel
-                };
+            List<ReviewResponseModel> reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
 
-            if(!reviewResponseModel.Any())
+            BaseResponseResult<List<ReviewResponseModel>> response = new()
+            {
+                Success = true,
+                Data = reviewResponseModel
+            };
+
+            if (!reviewResponseModel.Any())
             {
                 response.Success = false;
                 response.Message = "Can not found review by storeId";
