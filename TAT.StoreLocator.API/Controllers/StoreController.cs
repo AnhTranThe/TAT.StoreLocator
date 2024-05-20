@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Store;
 
@@ -36,11 +37,12 @@ namespace TAT.StoreLocator.API.Controllers
 
         [HttpGet("getAll")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllStore()
+        public async Task<IActionResult> GetAllStore([FromQuery] BasePaginationRequest paginationRequest)
         {
             try
             {
-                Core.Common.BaseResponseResult<List<Core.Models.Response.Store.StoreResponseModel>> response = await _storeService.GetAllStoreAsync();
+
+                var response = await _storeService.GetAllStoreAsync(paginationRequest);
                 return response != null && response.Success ? Ok(response.Data) : (IActionResult)StatusCode(500, "Failed to get stores");
             }
             catch (Exception ex)
@@ -95,11 +97,11 @@ namespace TAT.StoreLocator.API.Controllers
 
         [HttpGet("get/nearStore")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetNearStore(string district, string ward, string province, string keyWord)
+        public async Task<IActionResult> GetNearStore([FromQuery] GetNearStore getNearStore)
         {
             try
             {
-                var response = await _storeService.GetTheNearestStore(district, ward, province, keyWord);
+                var response = await _storeService.GetTheNearestStore(getNearStore.District, getNearStore.Ward, getNearStore.Province, getNearStore.keyWord);
                 if (response.Success)
                 {
                     return Ok(response);
