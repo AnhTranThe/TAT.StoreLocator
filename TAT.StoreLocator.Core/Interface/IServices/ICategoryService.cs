@@ -1,8 +1,6 @@
 ﻿using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Models.Request.Category;
-using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Category;
-using TAT.StoreLocator.Core.Models.Response.Product;
 
 namespace TAT.StoreLocator.Core.Interface.IServices
 {
@@ -16,6 +14,8 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         //Task<List<CategoryViewModel>> Search(string search);
         Task<BaseResponseResult<CategoryResponseModel>> GetById(string Id);
         Task<BasePaginationResult<CategoryResponseModel>> GetListAsync(BasePaginationRequest request);
+        Task<BasePaginationResult<CategoryResponseModel>> GetListParentCategoryAsync(BasePaginationRequest request);
+        Task<BasePaginationResult<CategoryResponseModel>> GetListSubCategoryAsync(BasePaginationRequest request);
         Task<BaseResponse> Add(CategoryRequestModel request);
         Task<BaseResponse> Update(string id, CategoryRequestModel request);
     }

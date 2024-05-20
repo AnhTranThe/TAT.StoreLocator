@@ -7,7 +7,7 @@ using TAT.StoreLocator.Core.Models.Request.Category;
 
 namespace TAT.StoreLocator.API.Controllers
 {
-    [Route("api/admin/[controller]")]
+    [Route("api/admin/category")]
     [ApiController]
     [Authorize(Roles = GlobalConstants.RoleAdminName)]
     public class AdminCategoryController : ControllerBase
@@ -20,7 +20,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPost("addCategory")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> Add([FromBody] CategoryRequestModel request)
         {
             if (!ModelState.IsValid)
@@ -30,53 +30,57 @@ namespace TAT.StoreLocator.API.Controllers
 
             BaseResponse response = await _categoryService.Add(request);
 
-            if (response.Success)
-            {
-                return Ok(response);
-            }
-
-            return BadRequest(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(string id)
         {
-            var response = await _categoryService.GetById(id);
+            BaseResponseResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetById(id);
 
-            if (response.Success)
-            {
-                return Ok(response);
-            }
-
-            return NotFound(response);
+            return response.Success ? Ok(response) : NotFound(response);
         }
 
         [HttpGet("getListCategory")]
         [AllowAnonymous]
         public async Task<IActionResult> GetList([FromQuery] BasePaginationRequest request)
         {
-            var response = await _categoryService.GetListAsync(request);
+            BasePaginationResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetListAsync(request);
 
             return Ok(response);
         }
 
-        [HttpPut("update/{id}")]
+        [HttpGet("getListParentCategory")]
         [AllowAnonymous]
+        public async Task<IActionResult> GetListParentCategory([FromQuery] BasePaginationRequest request)
+        {
+            BasePaginationResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetListParentCategoryAsync(request);
+
+            return Ok(response);
+        }
+
+        [HttpGet("getListSubCategory")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetListSubCategory([FromQuery] BasePaginationRequest request)
+        {
+            BasePaginationResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetListSubCategoryAsync(request);
+
+            return Ok(response);
+        }
+
+
+        [HttpPut("update/{id}")]
+
         public async Task<IActionResult> Update(string id, [FromBody] CategoryRequestModel request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var response = await _categoryService.Update(id, request);
+            BaseResponse response = await _categoryService.Update(id, request);
 
-            if (response.Success)
-            {
-                return Ok(response);
-            }
-
-            return BadRequest(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
 
@@ -87,5 +91,5 @@ namespace TAT.StoreLocator.API.Controllers
 
 
 
-    
+
 
