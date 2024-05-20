@@ -207,13 +207,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             };
         }
 
-        private async Task<Category> FindCategoryByIdAsync(string id)
-        {
-            return await _dbContext.Categories
-                .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(c => c.Id == id);
-        }
-
         public async Task<BasePaginationResult<CategoryResponseModel>> GetListParentCategoryAsync(BasePaginationRequest request)
         {
             BasePaginationResult<CategoryResponseModel> response = new();
