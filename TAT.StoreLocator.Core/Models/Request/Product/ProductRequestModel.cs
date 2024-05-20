@@ -12,7 +12,6 @@ namespace TAT.StoreLocator.Core.Models.Request.Product
 {
     public class ProductRequestModel
     {
-            public string? ProductId { get; set; }
             public string? Name { get; set; }
             public string? Description { get; set; }
             public string? Content { get; set; }

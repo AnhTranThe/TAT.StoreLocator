@@ -8,15 +8,30 @@ namespace TAT.StoreLocator.Core.Interface.IServices
 {
     public interface ICategoryService
     {
-        //Task<int> Create(CategoryCreateRequest request);
-        //Task<int> Update(CategoryUpdateRequest request);
-        //Task<int> Delete(int providerId);
-        //Task<CategoryViewModel> GetStoreById(int providerId);
-        //Task<List<CategoryViewModel>> GetAll();
-        //Task<List<CategoryViewModel>> Search(string search);
+        /// <summary>
+        /// getById Category
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns> Category</returns>
         Task<BaseResponseResult<CategoryResponseModel>> GetById(string Id);
+        /// <summary>
+        /// GetListCategory
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns> List category with pagination </returns>
         Task<BasePaginationResult<CategoryResponseModel>> GetListAsync(BasePaginationRequest request);
+        /// <summary>
+        /// add new Category
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns> true or false </returns>
         Task<BaseResponse> Add(CategoryRequestModel request);
-        Task<BaseResponse> Update(string id, CategoryRequestModel request);
+        /// <summary>
+        /// Update Category
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns> true or false  </returns>
+        Task<BaseResponse> Update(string Id, CategoryRequestModel request);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TAT.StoreLocator.Core.Models.Response.Category;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
+using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;
 
 namespace TAT.StoreLocator.Core.Models.Response.Product
@@ -29,5 +30,6 @@ namespace TAT.StoreLocator.Core.Models.Response.Product
         public string? CategoryId { set; get; }
         public CategoryProductResponseModel? Category { get; set; }
         public List<GalleryResponseModel>? GalleryResponseModels { get; set; }
+        public List<ReviewResponseModel>? Reviews { get; set; }
     }
 }
