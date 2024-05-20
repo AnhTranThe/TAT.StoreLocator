@@ -46,11 +46,7 @@ namespace TAT.StoreLocator.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetListProduct([FromQuery]BasePaginationRequest request)
         {   
-            if(request == null)
-            {
-                request = new BasePaginationRequest();
-
-            }
+            request ??= new BasePaginationRequest();
             
             try
             {
@@ -91,7 +87,7 @@ namespace TAT.StoreLocator.API.Controllers
 
         }
 
-        [HttpPut("update/{id}")]
+        [HttpPut("update/{Id}")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateProduct(string Id ,[FromBody] ProductRequestModel request)
         {
@@ -122,11 +118,7 @@ namespace TAT.StoreLocator.API.Controllers
             {
                 return BadRequest("StoreId cannot be null or empty.");
             }
-            if (request == null)
-            {
-                request = new BasePaginationRequest();
-
-            }
+            request ??= new BasePaginationRequest();
 
             try
             {

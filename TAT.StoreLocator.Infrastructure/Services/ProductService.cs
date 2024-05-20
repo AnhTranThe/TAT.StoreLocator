@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.ILogger;
@@ -9,6 +8,7 @@ using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Category;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 using TAT.StoreLocator.Core.Models.Response.Product;
+using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
@@ -25,105 +25,79 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _dbContext = dbContext;
             _photoService = photoService;
         }
-
-
+        /// <summary>
+        /// getproductbyid Last
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<BaseResponseResult<ProductResponseModel>> GetById(string Id)
         {
-            if (string.IsNullOrEmpty(Id))
-            {
-                throw new ArgumentNullException(nameof(Id));
-            }
-
             BaseResponseResult<ProductResponseModel> response = new();
 
-            // Fetch the product without including related entities
-            Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == Id);
+            ProductResponseModel? product = await (from p in _dbContext.Products
+                                                   where p.Id == Id
+                                                   select new ProductResponseModel
+                                                   {
+                                                       Id = p.Id,
+                                                       Name = p.Name,
+                                                       Description = p.Description,
+                                                       Content = p.Content,
+                                                       Note = p.Note,
+                                                       Slug = p.Slug,
+                                                       Price = p.Price,
+                                                       Discount = p.Discount,
+                                                       MetaTitle = p.MetaTitle,
+                                                       MetaDescription = p.MetaDescription,
+                                                       Quantity = p.Quantity,
+                                                       Rating = p.Rating,
+                                                       SKU = p.SKU,
+                                                       IsActive = p.IsActive,
+                                                       ProductViewCount = p.ProductViewCount,
+                                                       CategoryId = p.CategoryId,
+                                                       Category = p.Category != null ? new CategoryProductResponseModel
+                                                       {
+                                                           Id = p.Category.Id,
+                                                           Name = p.Category.Name,
+                                                           Description = p.Category.Description
+                                                       } : null,
+                                                       StoreId = p.StoreId,
+                                                       Store = p.Store != null ? new StoreOfProductResponseModel
+                                                       {
+                                                           Id = p.Store.Id,
+                                                           Name = p.Store.Name,
+                                                           Email = p.Store.Email
+                                                       } : null,
+                                                       GalleryResponseModels = p.MapGalleryProducts != null ? p.MapGalleryProducts
+                                                           .Select(m => new GalleryResponseModel
+                                                           {
+                                                               Id = m.Gallery!.Id,
+                                                               FileName = m.Gallery.FileName,
+                                                               Url = m.Gallery.Url,
+                                                               FileBelongsTo = m.Gallery.FileBelongsTo,
+                                                               IsThumbnail = m.Gallery.IsThumbnail
+                                                           }).ToList() : null,
+                                                       Reviews = p.Reviews != null ? p.Reviews
+                                                           .Select(r => new ReviewResponseModel
+                                                           {
+                                                               Id = r.Id,
+                                                               Content = r.Content,
+                                                               RatingValue = r.RatingValue,
+                                                               Status = r.Status,
+                                                               UserId = r.UserId
+                                                           }).ToList() : null
+                                                   }).FirstOrDefaultAsync();
+
             if (product == null)
             {
-                return new BaseResponseResult<ProductResponseModel>
-                {
-                    Success = false,
-                    Message = $"Product with ID {Id} not found."
-                };
+                response.Success = false;
+                response.Message = "Product not found.";
             }
-
-            CategoryProductResponseModel? categoryResponse = null;
-            if (!string.IsNullOrEmpty(product.CategoryId))
+            else
             {
-                var category = await _dbContext.Categories.FindAsync(product.CategoryId);
-                if (category != null)
-                {
-                    categoryResponse = new CategoryProductResponseModel
-                    {
-                        Id = category.Id,
-                        Name = category.Name,
-                        Description = category.Description,
-                    };
-                }
+                response.Success = true;
+                response.Data = product;
             }
-
-            StoreOfProductResponseModel? storeResponse = null;
-            if (!string.IsNullOrEmpty(product.StoreId))
-            {
-                var store = await _dbContext.Stores.FindAsync(product.StoreId);
-                if (store != null)
-                {
-                    storeResponse = new StoreOfProductResponseModel
-                    {
-                        Id = store.Id,
-                        Name = store.Name,
-                        Email = store.Email,
-                        PhoneNumber = store.PhoneNumber,
-                    };
-                }
-                else
-                {
-                    response.Message = $"Store not found.";
-                }
-            }
-            List<GalleryResponseModel> galleryResponseModels = new();
-
-            if (product.MapGalleryProducts != null && product.MapGalleryProducts.Any())
-            {
-                galleryResponseModels = await _dbContext.mapGalleryProducts
-                    .Where(mgp => mgp.ProductId == Id)
-                    .Select(mgp => new GalleryResponseModel
-                    {
-                        FileName = mgp.Gallery!.FileName,
-                        Url = mgp.Gallery.Url,
-                        IsThumbnail = mgp.Gallery.IsThumbnail
-                    })
-                    .ToListAsync();
-            }
-
-
-            ProductResponseModel productResponse = new()
-            {
-                Id = product!.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Content = product.Content,
-                Note = product.Note,
-                Slug = product.Slug,
-                Price = product.Price,
-                Discount = product.Discount,
-                MetaTitle = product.MetaTitle,
-                MetaDescription = product.MetaDescription,
-                Quantity = product.Quantity,
-                Rating = product.Rating,
-                SKU = product.SKU,
-                IsActive = product.IsActive,
-                ProductViewCount = product.ProductViewCount,
-                StoreId = product.StoreId,
-                Store = storeResponse,
-                CategoryId = product.CategoryId,
-                Category = categoryResponse,
-                GalleryResponseModels = galleryResponseModels
-            };
-
-            response.Data = productResponse;
-            response.Success = true;
-
             return response;
         }
 
@@ -132,7 +106,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// getProductList
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns> List Product </returns>
         public async Task<BasePaginationResult<ProductResponseModel>> GetListProductAsync(BasePaginationRequest request)
         {
             IQueryable<Product> productQuery = _dbContext.Products
@@ -196,7 +174,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             return response;
         }
-
+        /// <summary>
+        /// Update product
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns> BaseResponse </returns>
         public async Task<BaseResponse> UpdateProduct(string Id, ProductRequestModel request)
         {
             BaseResponse response = new() { Success = false };
@@ -252,7 +235,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        private void UpdateProductProperties(Product product, ProductRequestModel request)
+        private static void UpdateProductProperties(Product product, ProductRequestModel request)
         {
             if (!string.IsNullOrEmpty(request.Name))
             {
@@ -343,7 +326,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     Name = request.Category.Name,
                     Description = request.Category.Description,
                     Slug = request.Category.Slug,
-                    IsActive = request.Category.IsActive
+                    IsActive = request.Category.IsActive,
+                    ParentCategoryId = request.Category.ParentCategoryId
                 };
                 _ = _dbContext.Categories.Add(newCategory);
                 _ = await _dbContext.SaveChangesAsync();
@@ -354,7 +338,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
         private async Task<BaseResponse> UpdateProductPhotoAsync(Product product, PhotoProductRequestModel uploadPhoto)
         {
             BaseResponse response = new() { Success = false };
-
+            if (uploadPhoto.FileUpload == null)
+            {
+                return response;
+            }
             CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await _photoService.UploadImage(uploadPhoto.FileUpload, true);
             if (uploadFileResult.Error != null)
             {
@@ -385,7 +372,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             response.Success = true;
             return response;
         }
-
+        /// <summary>
+        /// add new product
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>BaseResponse</returns>
         public async Task<BaseResponse> AddProduct(ProductRequestModel request)
         {
             BaseResponse response = new() { Success = false };
@@ -452,10 +443,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             return response;
         }
-
+        /// <summary>
+        /// get Product By StoreId
+        /// </summary>
+        /// <param name="StoreId"></param>
+        /// <param name="request"></param>
+        /// <returns>List Product of StoreId </returns>
         public async Task<BasePaginationResult<ProductResponseModel>> GetByIdStore(string StoreId, BasePaginationRequest request)
         {
-            var query = _dbContext.Products
+            IQueryable<ProductResponseModel> query = _dbContext.Products
                 .Include(p => p.Category)
                 .Include(p => p.MapGalleryProducts)
                 .Where(p => p.StoreId == StoreId && p.IsActive)
@@ -480,23 +476,21 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 });
 
-            var totalCount = await query.CountAsync();
+            int totalCount = await query.CountAsync();
 
-            var paginatedProducts = await query
+            List<ProductResponseModel> paginatedProducts = await query
                 .OrderBy(p => p.Name)
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToListAsync();
 
-            var paginationResult = new BasePaginationResult<ProductResponseModel>
+            BasePaginationResult<ProductResponseModel> paginationResult = new()
             {
                 Data = paginatedProducts,
                 TotalCount = totalCount
             };
 
             return paginationResult;
-
-
         }
     }
 }

@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
@@ -12,15 +15,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly IPhotoService _photoService;
         private readonly ILogger<CategoryService> _logger;
         private readonly AppDbContext _dbContext;
 
-        public CategoryService(ILogger<CategoryService> logger, AppDbContext dbContext, IPhotoService photoService)
+        public CategoryService(ILogger<CategoryService> logger, AppDbContext dbContext)
         {
             _logger = logger;
             _dbContext = dbContext;
-            _photoService = photoService;
         }
 
         public async Task<BaseResponse> Add(CategoryRequestModel request)
@@ -50,13 +51,20 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<CategoryResponseModel>> GetById(string id)
+        public async Task<BaseResponseResult<CategoryResponseModel>> GetById(string Id)
         {
             BaseResponseResult<CategoryResponseModel> response = new();
 
             try
             {
-                Category category = await FindCategoryByIdAsync(id);
+                if (string.IsNullOrEmpty(Id))
+                {
+                    response.Success = false;
+                    response.Message = "Category ID is null or empty.";
+                    return response;
+                }
+
+                var category = await FindCategoryByIdAsync(Id);
 
                 if (category == null)
                 {
@@ -73,7 +81,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 _logger.LogError(ex, "Error retrieving category by ID");
                 response.Success = false;
                 response.Message = $"An error occurred: {ex.Message}";
-                _ = _dbContext.Categories.AsQueryable();
             }
 
             return response;
@@ -85,7 +92,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             try
             {
-                IQueryable<Category> query = _dbContext.Categories.AsQueryable();
+                if (request == null)
+                    throw new ArgumentNullException(nameof(request), "Pagination request is null.");
+
+                var query = _dbContext.Categories.AsQueryable();
 
                 response.TotalCount = await query.CountAsync();
 
@@ -112,7 +122,17 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             try
             {
-                Category category = await FindCategoryByIdAsync(Id);
+                if (string.IsNullOrEmpty(Id))
+                {
+                    response.Success = false;
+                    response.Message = "Category ID is null or empty.";
+                    return response;
+                }
+
+                if (request == null)
+                    throw new ArgumentNullException(nameof(request), "Category request is null.");
+
+                var category = await FindCategoryByIdAsync(Id);
 
                 if (category == null)
                 {
@@ -138,7 +158,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        private Category MapToCategory(CategoryRequestModel request)
+        private static Category MapToCategory(CategoryRequestModel request)
         {
             if (!string.IsNullOrWhiteSpace(request.Name))
             {
@@ -154,13 +174,23 @@ namespace TAT.StoreLocator.Infrastructure.Services
             };
         }
 
-        private void UpdateCategory(Category category, CategoryRequestModel request)
+        private static void UpdateCategory(Category category, CategoryRequestModel request)
         {
             category.Name = request.Name;
             category.Description = request.Description;
             category.Slug = request.Slug;
             category.IsActive = request.IsActive;
             category.ParentCategoryId = request.ParentCategoryId;
+        }
+
+        private async Task<Category?> FindCategoryByIdAsync(string Id)
+        {
+            if (_dbContext == null)
+                throw new InvalidOperationException("Database context is null.");
+
+            return await _dbContext.Categories
+                .Include(c => c.ParentCategory)
+                .FirstOrDefaultAsync(c => c.Id == Id);
         }
 
         private CategoryResponseModel MapToCategoryResponse(Category category)
