@@ -10,7 +10,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request);
 
         //GetAllStore
-        Task<BaseResponseResult<List<StoreResponseModel>>> GetAllStoreAsync();
+        Task<BaseResponseResult<GetAllStoreResponseModel>> GetAllStoreAsync(BasePaginationRequest paginationRequest);
 
         ////GetDetailStore
         Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId);
