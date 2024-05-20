@@ -5,7 +5,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Review
     public class CreateReviewRequestModel
     {
         [Required]
-        public string StoreId { get; set; } 
+        public string? StoreId { get; set; } 
         [Required]
         public string? Content { get; set; }
         [Required]

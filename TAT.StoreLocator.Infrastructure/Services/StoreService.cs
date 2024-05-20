@@ -26,6 +26,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request)
         {
+            CreateStoreResponseModel response = new CreateStoreResponseModel();
             try
             {
                 string newStoreId = Guid.NewGuid().ToString();
@@ -39,23 +40,20 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 _ = await _appDbContext.SaveChangesAsync();
 
-                CreateStoreResponseModel newStoreResponse = new()
+                response.Id =newStoreId;
+                response.BaseResponse = new BaseResponse { Success = true, Message = "Store created successfully." };
+                response.StoreResponseModel = new StoreResponseModel
                 {
-                    Id = newStoreId,
-                    BaseResponse = new BaseResponse { Success = true, Message = "Store created successfully." },
-                    StoreResponseModel = new StoreResponseModel
-                    {
                         Id = newStoreId,
                         Name = request.Name,
                         PhoneNumber = request.PhoneNumber,
-                    }
                 };
-                return newStoreResponse;
             }
             catch (Exception ex)
             {
-                throw new Exception("Error creating store : " + ex.Message);
+                response.BaseResponse = new BaseResponse { Success = false, Message = "Error creating store: " + ex.Message };
             }
+            return response;
         }
 
         public async Task<BaseResponseResult<GetAllStoreResponseModel>> GetAllStoreAsync(BasePaginationRequest paginationRequest)
@@ -131,7 +129,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.Success = false;
                 response.Message = ex.Message;
             }
-            return response;
+            await Task.Yield(); /*Thêm một câu lệnh await Task.Yield() để đảm bảo phương thức trả về một Task*/
+            return response; 
         }
 
 
@@ -142,7 +141,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Store? store = await _appDbContext.Stores
                     .Include(s => s.Address)
-                    .Include(s => s.MapGalleryStores)
+                    .Include(s => s.MapGalleryStores!)
                         .ThenInclude(mgs => mgs.Gallery)  // Ensure Galleries are loaded
                     .FirstOrDefaultAsync(s => s.Id == storeId);
 
@@ -150,7 +149,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 {
                     StoreResponseModel storeResponseModel = _mapper.Map<StoreResponseModel>(store);
                     // Map galleries
-                    storeResponseModel.MapGalleryStores = store.MapGalleryStores
+                    storeResponseModel.MapGalleryStores = store.MapGalleryStores != null ? store.MapGalleryStores
                         .Select(mgs => new MapGalleryStoreResponse
                         {
                             GalleryId = mgs.GalleryId,
@@ -158,7 +157,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                             Url = mgs.Gallery?.Url,
                             IsThumbnail = mgs.Gallery?.IsThumbnail ?? false
                         })
-                        .ToList();
+                        .ToList() : new List<MapGalleryStoreResponse>();
 
                     response.Success = true;
                     response.Data = storeResponseModel;
