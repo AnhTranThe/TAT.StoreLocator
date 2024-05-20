@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -11,9 +12,10 @@ using TAT.StoreLocator.Infrastructure.Persistence.EF;
 namespace TAT.StoreLocator.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240520152635_fix_category_sub_parent")]
+    partial class fix_category_sub_parent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -703,7 +705,8 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.HasOne("TAT.StoreLocator.Core.Entities.Category", "ParentCategory")
                         .WithMany("ChildrenCategories")
-                        .HasForeignKey("ParentCategoryId");
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Gallery");
 

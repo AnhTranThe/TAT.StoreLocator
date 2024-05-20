@@ -8,6 +8,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Category;
 using TAT.StoreLocator.Core.Models.Response.Category;
+using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
 namespace TAT.StoreLocator.Infrastructure.Services
@@ -25,16 +26,17 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponse> Add(CategoryRequestModel request)
         {
-            var response = new BaseResponse();
+            BaseResponse response = new();
 
             try
             {
-                if (request == null)
-                    throw new ArgumentNullException(nameof(request), "Category request is null.");
-
-                var category = MapToCategory(request);
-                await _dbContext.Categories.AddAsync(category);
-                await _dbContext.SaveChangesAsync();
+                Category category = MapToCategory(request);
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                {
+                    category.Slug = CommonUtils.UrlFriendly(request.Name);
+                }
+                _ = await _dbContext.Categories.AddAsync(category);
+                _ = await _dbContext.SaveChangesAsync();
 
                 response.Success = true;
                 response.Message = "Category added successfully.";
@@ -51,7 +53,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponseResult<CategoryResponseModel>> GetById(string Id)
         {
-            var response = new BaseResponseResult<CategoryResponseModel>();
+            BaseResponseResult<CategoryResponseModel> response = new();
 
             try
             {
@@ -86,7 +88,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BasePaginationResult<CategoryResponseModel>> GetListAsync(BasePaginationRequest request)
         {
-            var response = new BasePaginationResult<CategoryResponseModel>();
+            BasePaginationResult<CategoryResponseModel> response = new();
 
             try
             {
@@ -97,7 +99,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 response.TotalCount = await query.CountAsync();
 
-                var categories = await query
+                List<Category> categories = await query
                     .Skip((request.PageIndex - 1) * request.PageSize)
                     .Take(request.PageSize)
                     .ToListAsync();
@@ -116,7 +118,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponse> Update(string Id, CategoryRequestModel request)
         {
-            var response = new BaseResponse();
+            BaseResponse response = new();
 
             try
             {
@@ -140,8 +142,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 }
 
                 UpdateCategory(category, request);
-                _dbContext.Categories.Update(category);
-                await _dbContext.SaveChangesAsync();
+                _ = _dbContext.Categories.Update(category);
+                _ = await _dbContext.SaveChangesAsync();
 
                 response.Success = true;
                 response.Message = "Category updated successfully.";
@@ -158,6 +160,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         private static Category MapToCategory(CategoryRequestModel request)
         {
+            if (!string.IsNullOrWhiteSpace(request.Name))
+            {
+                request.Slug = CommonUtils.UrlFriendly(request.Name);
+            }
             return new Category
             {
                 Name = request.Name,
@@ -199,6 +205,69 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 ParentCategoryId = category.ParentCategoryId,
                 GalleryId = category.GalleryId
             };
+        }
+
+        private async Task<Category> FindCategoryByIdAsync(string id)
+        {
+            return await _dbContext.Categories
+                .Include(c => c.ParentCategory)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<BasePaginationResult<CategoryResponseModel>> GetListParentCategoryAsync(BasePaginationRequest request)
+        {
+            BasePaginationResult<CategoryResponseModel> response = new();
+
+            try
+            {
+                IQueryable<Category> query = _dbContext.Categories.Where(c => c.ParentCategoryId == string.Empty); // Assuming ParentCategoryId is null for parent categories
+
+
+                response.TotalCount = await query.CountAsync();
+
+                List<Category> categories = await query
+                    .Skip((request.PageIndex - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                response.Data = categories.Select(MapToCategoryResponse).ToList();
+                response.PageIndex = request.PageIndex;
+                response.PageSize = request.PageSize;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving category list");
+            }
+
+            return response;
+        }
+
+        public async Task<BasePaginationResult<CategoryResponseModel>> GetListSubCategoryAsync(BasePaginationRequest request)
+        {
+            BasePaginationResult<CategoryResponseModel> response = new();
+
+            try
+            {
+                IQueryable<Category> query = _dbContext.Categories.Where(c => c.ParentCategoryId != string.Empty); // Assuming ParentCategoryId is null for parent categories
+
+
+                response.TotalCount = await query.CountAsync();
+
+                List<Category> categories = await query
+                    .Skip((request.PageIndex - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                response.Data = categories.Select(MapToCategoryResponse).ToList();
+                response.PageIndex = request.PageIndex;
+                response.PageSize = request.PageSize;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving category list");
+            }
+
+            return response;
         }
     }
 }

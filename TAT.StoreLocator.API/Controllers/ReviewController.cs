@@ -28,7 +28,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateReview(string reviewId, [FromBody]UpdateReviewRequestModel request)
+        public async Task<IActionResult> UpdateReview(string reviewId, [FromBody] UpdateReviewRequestModel request)
         {
             try
             {
@@ -39,14 +39,35 @@ namespace TAT.StoreLocator.API.Controllers
                 }
                 else
                 {
-                    return StatusCode (500,response.Message);   
+                    return StatusCode(500, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);  
+                return StatusCode(500, ex.Message);
             }
         }
-        
+
+        [HttpGet("getReviewByUserId/{userId}")]
+        public async Task<IActionResult> GetReviewByUserId ( string userId )
+        {
+            var response = await _reviewService.GetReviewByUserIdAsync(userId);
+            if(response.Success)    
+            {
+                return Ok(response);
+            }
+            return StatusCode(500,response.Message);    
+        }
+
+        [HttpGet("getReviewByStoreId/{storeId}")]
+        public async Task<IActionResult> GetReviewByStoreId(string storeId)
+        {
+            var response = await _reviewService.GetReviewByStoreIdAsync(storeId);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return StatusCode(500, response.Message);
+        }
     }
 }
