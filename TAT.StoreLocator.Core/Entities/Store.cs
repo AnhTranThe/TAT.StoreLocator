@@ -12,10 +12,9 @@ namespace TAT.StoreLocator.Core.Entities
         public bool IsDeleted { get; set; }
         public Address? Address { get; set; }
         public string? AddressId { get; set; }
-        //public virtual ICollection<Gallery>? Galleries { get; set; }  => bỏ, nhớ commit quăng lên github
         public virtual ICollection<Product>? Products { get; set; }
         public virtual ICollection<MapStoreWishlist>? MapStoreWishlists { get; set; }
-        public virtual ICollection<MapGalleryStore>? MapGalleryStores { get; set; }
+        public virtual ICollection<MapGalleryStore>? MapGalleryStores { get; set; } 
         public virtual ICollection<Review>? Reviews { get; set; }
 
     }

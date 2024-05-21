@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TAT.StoreLocator.Core.Common;
+﻿using TAT.StoreLocator.Core.Common;
 
 namespace TAT.StoreLocator.Core.Models.Response.Store
 {
     public class GetAllStoreResponseModel
     {
-        public BaseResponse BaseResponse { get; set; } = new BaseResponse();
-        public StoreResponseModel StoreResponseModel {get; set;} = new StoreResponseModel();
+        public BasePaginationRequest PaginationRequest { get; set; } = new BasePaginationRequest();
+        public List<StoreResponseModel> StoreResponseList { get; set; } = new List<StoreResponseModel>();
+        public int TotalCount { get; set; }
     }
 }
