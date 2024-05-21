@@ -97,14 +97,16 @@ namespace TAT.StoreLocator.API.Controllers
                     return BadRequest(loginResponse.BaseResponse.Message);
                 }
 
-                string accessToken = _jwtService.GenerateAccessToken(loginResponse.claims);
+                //string accessToken = _jwtService.GenerateAccessToken(loginResponse.claims);
 
-                string refreshToken = _jwtService.GenerateRefreshToken(
-                    loginResponse.UserResponseModel.Email,
-                    loginResponse.UserResponseModel.UserName,
-                    loginResponse.UserResponseModel.Roles, // Pass roles array
-                    loginResponse.UserResponseModel.Id.ToString()
-                );
+                //string refreshToken = _jwtService.GenerateRefreshToken(
+                //    loginResponse.UserResponseModel.Email,
+                //    loginResponse.UserResponseModel.UserName,
+                //    loginResponse.UserResponseModel.Roles, // Pass roles array
+                //    loginResponse.UserResponseModel.Id.ToString()
+                //);
+                string accessToken = await _jwtService.GenerateAccessTokenV2(loginResponse.UserResponseModel.UserName);
+                string refreshToken = await _jwtService.GenerateRefreshTokenV2(loginResponse.UserResponseModel.UserName);
                 return !loginResponse.BaseResponse.Success
                     ? BadRequest(loginResponse.BaseResponse.Message)
                     : Ok(new AuthenticationResponseModel
@@ -143,11 +145,11 @@ namespace TAT.StoreLocator.API.Controllers
         [HttpPost]
         [Route("RefreshToken")]
         [AllowAnonymous]
-        public IActionResult RefreshToken(RefreshTokenRequest tokenModel)
+        public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenRequest tokenModel)
         {
             try
             {
-                BaseResponseResult<Core.Models.Token.Response.NewToken> newToken = _jwtService.RefreshToken(tokenModel);
+                BaseResponseResult<Core.Models.Token.Response.NewToken> newToken = await _jwtService.RefreshToken(tokenModel);
                 return Ok(newToken);
             }
             catch (Exception ex)

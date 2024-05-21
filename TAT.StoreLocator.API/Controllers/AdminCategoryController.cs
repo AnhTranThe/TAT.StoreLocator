@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Category;
-using System;
-using System.Threading.Tasks;
-using TAT.StoreLocator.Core.Helpers;
 
 namespace TAT.StoreLocator.API.Controllers
 {
-    [Route("api/admin/[controller]")]
+    [Route("api/admin/category")]
     [ApiController]
     [Authorize(Roles = GlobalConstants.RoleAdminName)]
     public class AdminCategoryController : ControllerBase
@@ -27,14 +25,13 @@ namespace TAT.StoreLocator.API.Controllers
             try
             {
                 if (!ModelState.IsValid)
+                {
                     return BadRequest(ModelState);
+                }
 
-                var response = await _categoryService.Add(request);
+                BaseResponse response = await _categoryService.Add(request);
 
-                if (response.Success)
-                    return Ok(response);
-
-                return BadRequest(response);
+                return response.Success ? Ok(response) : BadRequest(response);
             }
             catch (Exception ex)
             {
@@ -44,16 +41,14 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(string id)
         {
             try
             {
-                var response = await _categoryService.GetById(id);
+                BaseResponseResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetById(id);
 
-                if (response.Success)
-                    return Ok(response);
-
-                return NotFound(response);
+                return response.Success ? Ok(response) : NotFound(response);
             }
             catch (Exception ex)
             {
@@ -63,11 +58,43 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpGet("getListCategory")]
+
         public async Task<IActionResult> GetList([FromQuery] BasePaginationRequest request)
         {
             try
             {
-                var response = await _categoryService.GetListAsync(request);
+                BasePaginationResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetListAsync(request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetListParentCategory")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetListParentCategory([FromQuery] BasePaginationRequest request)
+        {
+            try
+            {
+                BasePaginationResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetListParentCategoryAsync(request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
+            }
+        }
+        [HttpGet("getListSubCategory")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetListSubCategory([FromQuery] BasePaginationRequest request)
+        {
+            try
+            {
+                BasePaginationResult<Core.Models.Response.Category.CategoryResponseModel> response = await _categoryService.GetListSubCategoryAsync(request);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -83,14 +110,13 @@ namespace TAT.StoreLocator.API.Controllers
             try
             {
                 if (!ModelState.IsValid)
+                {
                     return BadRequest(ModelState);
+                }
 
-                var response = await _categoryService.Update(id, request);
+                BaseResponse response = await _categoryService.Update(id, request);
 
-                if (response.Success)
-                    return Ok(response);
-
-                return BadRequest(response);
+                return response.Success ? Ok(response) : BadRequest(response);
             }
             catch (Exception ex)
             {

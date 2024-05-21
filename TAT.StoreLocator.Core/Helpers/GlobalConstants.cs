@@ -82,7 +82,7 @@
         public const string MessageFailToResetPassword = "Fail to reset password";
 
 
-
+        public const string USERNAME_NOT_FOUND = "USERNAME_NOT_FOUND";
         public const string PIN_TIME_OUT = "PIN_TIME_OUT";
         public const string PIN_INVALID = "PIN_INVALID";
         public const string UNAUTHORIZED = "UNAUTHORIZED";

@@ -26,8 +26,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             Review? existingReview = await _appDbContext.Reviews
                   .Include(r => r.Product)
-                      .ThenInclude(p => p.Store)
-               .FirstOrDefaultAsync(r => r.UserId == request.UserId && r.Product.StoreId == request.StoreId);
+                      .ThenInclude(p => p!.Store) // Thêm dấu ! để chỉ định rằng nó k null 
+               .FirstOrDefaultAsync(r => r.UserId == request.UserId && r.Product != null && r.Product.StoreId == request.StoreId);
 
 
             if (existingReview != null)
@@ -45,7 +45,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             review = await _appDbContext.Reviews
                .Include(r => r.Product)
-               .ThenInclude(p => p.Store)
+               .ThenInclude(p => p!.Store)
                .FirstOrDefaultAsync(r => r.Id == review.Id);
 
 
@@ -64,7 +64,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Review? review = await _appDbContext.Reviews
                     .Include(r => r.Product)
-                        .ThenInclude(p => p.Store)
+                        .ThenInclude(p => p!.Store)
                       .FirstOrDefaultAsync(r => r.Id == reviewId);
 
                 if (review == null)
@@ -117,7 +117,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             List<Review> review = await _appDbContext.Reviews
                 .Include(r => r.Product)
-                .ThenInclude(p => p.Store)
+                .ThenInclude(p => p!.Store)
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
 

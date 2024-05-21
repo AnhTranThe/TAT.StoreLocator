@@ -76,16 +76,27 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                      .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward));
 
 
-            _ = CreateMap<Store, StoreResponseModel>()
-            .ForMember(dest => dest.MapGalleryStores, opt => opt.Ignore()); // We handle this manually
-            _ = CreateMap<MapGalleryStore, MapGalleryStoreResponse>()
-                .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery.FileName))
-                .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Gallery.Url))
-                .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery.IsThumbnail));
+                CreateMap<Store, StoreResponseModel>()
+                    .ForMember(dest => dest.MapGalleryStores, opt => opt.Ignore()) // We handle this manually
+                    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address != null ?
+                        new AddressResponseModel
+                        {
+                            RoadName = src.Address.RoadName,
+                            Province = src.Address.Province,
+                            District = src.Address.District,
+                            Ward = src.Address.Ward,
+                            PostalCode = src.Address.PostalCode,
+                            Latitude = src.Address.latitude,
+                            Longitude = src.Address.longitude
+                        } : null));
 
-
-
-
+                CreateMap<MapGalleryStore, MapGalleryStoreResponse>()
+                  .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery != null ?
+                      src.Gallery.FileName : string.Empty))
+                  .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Gallery != null ?
+                      src.Gallery.Url : string.Empty))
+                  .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery != null &&
+                      src.Gallery.IsThumbnail));
 
 
             _ = CreateMap<CreateReviewRequestModel, Review>()

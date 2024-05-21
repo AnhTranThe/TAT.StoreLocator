@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
@@ -64,7 +61,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     return response;
                 }
 
-                var category = await FindCategoryByIdAsync(Id);
+                Category? category = await FindCategoryByIdAsync(Id);
 
                 if (category == null)
                 {
@@ -93,9 +90,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             try
             {
                 if (request == null)
+                {
                     throw new ArgumentNullException(nameof(request), "Pagination request is null.");
+                }
 
-                var query = _dbContext.Categories.AsQueryable();
+                IQueryable<Category> query = _dbContext.Categories.AsQueryable();
 
                 response.TotalCount = await query.CountAsync();
 
@@ -130,9 +129,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 }
 
                 if (request == null)
+                {
                     throw new ArgumentNullException(nameof(request), "Category request is null.");
+                }
 
-                var category = await FindCategoryByIdAsync(Id);
+                Category? category = await FindCategoryByIdAsync(Id);
 
                 if (category == null)
                 {
@@ -185,10 +186,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         private async Task<Category?> FindCategoryByIdAsync(string Id)
         {
-            if (_dbContext == null)
-                throw new InvalidOperationException("Database context is null.");
-
-            return await _dbContext.Categories
+            return _dbContext == null
+                ? throw new InvalidOperationException("Database context is null.")
+                : await _dbContext.Categories
                 .Include(c => c.ParentCategory)
                 .FirstOrDefaultAsync(c => c.Id == Id);
         }
