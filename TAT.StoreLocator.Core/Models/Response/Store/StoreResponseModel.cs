@@ -27,6 +27,7 @@
 
     public class AddressResponseModel
     {
+        public string? Id { get; set; }
         public string? RoadName { get; set; }
         public string? Province { get; set; }
         public string? District { get; set; }

@@ -12,18 +12,22 @@ namespace TAT.StoreLocator.API.Controllers
     {
         //Depency Injection
         private readonly IStoreService _storeService;
-
+        private readonly IPhotoService _photoService;
         //Constructor
-        public StoreController(IStoreService storeService)
+        public StoreController(IStoreService storeService, IPhotoService photoService)
         {
             _storeService = storeService;
+            _photoService = photoService;
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateStore([FromBody] CreateStoreRequestModel request)
+        [Consumes("multipart/form-data")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CreateStore([FromForm] CreateStoreRequestModel request)
         {
             try
             {
+
                 Core.Models.Response.Store.CreateStoreResponseModel response = await _storeService.CreateStoreAsync(request);
                 return response == null
                     ? StatusCode(500, "Failed to create store")

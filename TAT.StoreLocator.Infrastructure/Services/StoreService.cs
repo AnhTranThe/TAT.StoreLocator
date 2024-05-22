@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TAT.StoreLocator.Core.Common;
@@ -17,28 +18,71 @@ namespace TAT.StoreLocator.Infrastructure.Services
     {
         private readonly AppDbContext _appDbContext;
         private readonly IMapper _mapper;
-        public StoreService(AppDbContext appDbContext, IMapper mapper)
+        private readonly IPhotoService _photoService;
+        public StoreService(AppDbContext appDbContext, IMapper mapper, IPhotoService photoService)
         {
             _appDbContext = appDbContext;
             _mapper = mapper;
+            _photoService = photoService;
         }
 
         public async Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request)
         {
-            CreateStoreResponseModel response = new();
+            var response = new CreateStoreResponseModel();
+
             try
             {
-                string newStoreId = Guid.NewGuid().ToString();
-                Store newStoreEntity = new()
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.PhoneNumber))
+                {
+                    response.BaseResponse = new BaseResponse { Success = false, Message = "Name and PhoneNumber are required." };
+                    return response;
+                }
+
+                // Create new address entity if address details are provided
+                Address? newAddressEntity = null;
+                if (request.Address != null)
+                {
+                    newAddressEntity = new Address
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        RoadName = request.Address.RoadName,
+                        Province = request.Address.Province,
+                        District = request.Address.District,
+                        Ward = request.Address.Ward,
+                        PostalCode = request.Address.PostalCode,
+                        latitude = request.Address.Latitude,
+                        longitude = request.Address.Longitude
+                    };
+                    _appDbContext.Addresses.Add(newAddressEntity);
+
+                }
+
+                // Create new store entity
+                var newStoreId = Guid.NewGuid().ToString();
+                var newStoreEntity = new Store
                 {
                     Id = newStoreId,
                     Name = request.Name,
                     PhoneNumber = request.PhoneNumber,
+                    Email = request.Email,
+                    AddressId = newAddressEntity?.Id,
+                    IsDeleted = false
                 };
-                _ = _appDbContext.Stores.Add(newStoreEntity);
+                if (request.files != null)
+                {
+                    foreach (var file in request.files)
+                    {
+                        await UpdateStorePhotoAsync(newStoreId, file);
+                    }
+                }
 
-                _ = await _appDbContext.SaveChangesAsync();
+                // Add new store entity to context
+                _appDbContext.Stores.Add(newStoreEntity);
+                // Save changes to the database
+                await _appDbContext.SaveChangesAsync();
 
+                // Populate response
                 response.Id = newStoreId;
                 response.BaseResponse = new BaseResponse { Success = true, Message = "Store created successfully." };
                 response.StoreResponseModel = new StoreResponseModel
@@ -46,15 +90,53 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     Id = newStoreId,
                     Name = request.Name,
                     PhoneNumber = request.PhoneNumber,
+                    Email = request.Email,
+                    Address = newAddressEntity == null ? null : new AddressResponseModel
+                    {
+                        Id = newAddressEntity.Id,
+                        RoadName = newAddressEntity.RoadName,
+                        Province = newAddressEntity.Province,
+                        District = newAddressEntity.District,
+                        Ward = newAddressEntity.Ward,
+                        PostalCode = newAddressEntity.PostalCode,
+                        Latitude = newAddressEntity.latitude,
+                        Longitude = newAddressEntity.longitude
+                    }
                 };
+
             }
             catch (Exception ex)
             {
-                response.BaseResponse = new BaseResponse { Success = false, Message = "Error creating store: " + ex.Message };
+                // Handle any exceptions that occur during the process
+                response.BaseResponse = new BaseResponse { Success = false, Message = $"Error creating store: {ex.Message}" };
             }
             return response;
         }
 
+        private async Task UpdateStorePhotoAsync(string storeId, IFormFile file)
+        {
+
+            CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await _photoService.UploadImage(file, true);
+            Gallery gallery = new()
+            {
+                PublicId = uploadFileResult.PublicId,
+                Url = uploadFileResult.Url.ToString(),
+                FileBelongsTo = "Store",
+                // IsThumbnail = uploadPhoto.IsThumbnail,
+            };
+
+            _ = _appDbContext.Galleries.Add(gallery);
+
+            MapGalleryStore mapGalleryStore = new()
+            {
+                StoreId = storeId.ToString(),
+                GalleryId = gallery.Id
+            };
+
+            _ = _appDbContext.MapGalleryStores.Add(mapGalleryStore);
+
+
+        }
         public async Task<BaseResponseResult<GetAllStoreResponseModel>> GetAllStoreAsync(BasePaginationRequest paginationRequest)
         {
             BaseResponseResult<GetAllStoreResponseModel> response = new();
@@ -66,7 +148,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                            on store.Id equals mapGalleryStore.StoreId
                                                        join gallery in _appDbContext.Galleries
                                                            on mapGalleryStore.GalleryId equals gallery.Id
-                                                       where paginationRequest.SearchString.Contains(store.Name == null ? string.Empty : store.Name)
                                                        select new StoreResponseModel
                                                        {
                                                            Id = store.Id,
@@ -99,9 +180,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                        };
 
 
+                if (!paginationRequest.SearchString.IsNullOrEmpty())
+                {
+                    query = query.Where(x => x.Name != null && x.Name.Contains(paginationRequest.SearchString));
+                }
                 int totalCount = await query.CountAsync();
-
-
                 IQueryable<StoreResponseModel> pagedQuery = query
                     .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
                     .Take(paginationRequest.PageSize);
