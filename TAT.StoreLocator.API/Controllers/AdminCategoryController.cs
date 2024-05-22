@@ -19,7 +19,7 @@ namespace TAT.StoreLocator.API.Controllers
             _categoryService = categoryService;
         }
 
-        [HttpPost("addCategory")]
+        [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] CategoryRequestModel request)
         {
             try
@@ -58,7 +58,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpGet("getListCategory")]
-
+        [AllowAnonymous]
         public async Task<IActionResult> GetList([FromQuery] BasePaginationRequest request)
         {
             try

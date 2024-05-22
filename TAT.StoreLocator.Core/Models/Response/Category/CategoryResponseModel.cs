@@ -13,7 +13,7 @@ namespace TAT.StoreLocator.Core.Models.Response.Category
         public string? Slug { get; set; }
         public bool IsActive { get; set; }
         public string? ParentCategoryId { get; set; }
-        public string? GalleryId { get; set; }
+        public string? ParentCategoryName { get; set; }
         public IList<ProductResponseModel> productResponseModels { get; set; } = new List<ProductResponseModel>();
 
 

@@ -1,6 +1,8 @@
-﻿namespace TAT.StoreLocator.Core.Common
+﻿using TAT.StoreLocator.Core.Interface.IPaging;
+
+namespace TAT.StoreLocator.Core.Common
 {
-    public class BasePaginationRequest
+    public class BasePaginationRequest : IPaginationRequest
     {
 
         private const int DefaultPageSize = 10;
@@ -19,6 +21,7 @@
             get => _pageIndex;
             set => _pageIndex = value > 0 ? value : DefaultPageIndex;
         }
+        public string SearchString { get; set; } = string.Empty;
 
 
 
