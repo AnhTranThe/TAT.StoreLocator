@@ -66,6 +66,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                            on store.Id equals mapGalleryStore.StoreId
                                                        join gallery in _appDbContext.Galleries
                                                            on mapGalleryStore.GalleryId equals gallery.Id
+                                                       where paginationRequest.SearchString.Contains(store.Name == null ? string.Empty : store.Name)
                                                        select new StoreResponseModel
                                                        {
                                                            Id = store.Id,
@@ -97,7 +98,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                                }).ToList()
                                                        };
 
+
                 int totalCount = await query.CountAsync();
+
 
                 IQueryable<StoreResponseModel> pagedQuery = query
                     .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
