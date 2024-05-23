@@ -202,8 +202,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.SearchString = paginationRequest.SearchString;
                 response.PageIndex = paginationRequest.PageIndex;
                 response.PageSize = paginationRequest.PageSize;
-                response.TotalCount = totalCount;
-                response.Data = storeList;
 
 
             }
