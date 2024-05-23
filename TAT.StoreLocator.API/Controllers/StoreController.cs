@@ -31,8 +31,7 @@ namespace TAT.StoreLocator.API.Controllers
                 BasePaginationResult<StoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
                 return Ok(response);
 
-                BasePaginationResult<StoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
-                return Ok(response);
+
             }
             catch (Exception ex)
             {
