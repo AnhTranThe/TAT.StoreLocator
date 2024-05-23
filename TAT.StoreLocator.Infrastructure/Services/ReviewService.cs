@@ -1,12 +1,17 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
+using TAT.StoreLocator.Core.Interface.IPaging;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Review;
 using TAT.StoreLocator.Core.Models.Response.Product;
 using TAT.StoreLocator.Core.Models.Response.Review;
+using TAT.StoreLocator.Core.Models.Response.Store;
+using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace TAT.StoreLocator.Infrastructure.Services
@@ -113,50 +118,72 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync(string userId)
+        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewByUserIdAsync(string userId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
         {
-            List<Review> review = await _appDbContext.Reviews
+            IQueryable<Review> query = _appDbContext.Reviews
                 .Include(r => r.Product)
                 .ThenInclude(p => p!.Store)
-                .Where(r => r.UserId == userId)
+                .Where(r => r.UserId == userId);
+
+            // Lọc theo rating nếu có giá trị được chỉ định
+            if (filterRequest.SearchRatingKey.HasValue)
+            {
+                query = query.Where(r => r.RatingValue == filterRequest.SearchRatingKey.Value);
+            }
+
+            int totalCount = await query.CountAsync();
+
+            // Thực hiện phân trang
+            List<Review> reviewList = await query
+                .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
+                .Take(paginationRequest.PageSize)
                 .ToListAsync();
 
-            List<ReviewResponseModel> reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
-            BaseResponseResult<List<ReviewResponseModel>> response = new()
-            {
-                Success = true,
-                Data = reviewResponseModel
-            };
+            // Map danh sách đánh giá sang danh sách đáp ứng
+            List<ReviewResponseModel> reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(reviewList);
 
-            if (!reviewResponseModel.Any())
+            // Tạo kết quả trả về
+            BasePaginationResult<ReviewResponseModel> paginationResult = new BasePaginationResult<ReviewResponseModel>
             {
-                response.Success = false;
-                response.Message = "Can not found review by userId";
-            }
-            return response;
+                Data = reviewResponseModel,
+                PageSize = paginationRequest.PageSize,
+                PageIndex = paginationRequest.PageIndex,
+                TotalCount = totalCount,
+                SearchString = paginationRequest.SearchString
+            };
+            return paginationResult;
         }
 
-        public async Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByStoreIdAsync(string storeId)
+        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewByStoreIdAsync(string storeId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
         {
-            List<Review> review = await _appDbContext.Reviews
+            IQueryable<Review> query = _appDbContext.Reviews
                 .Include(r => r.Product)
-                .Where(r => r.StoreId == storeId)
+                .Where(r => r.StoreId == storeId);
+
+            if (filterRequest.SearchRatingKey.HasValue)
+            {
+                query = query.Where(r => r.RatingValue == filterRequest.SearchRatingKey.Value);
+            }
+
+            int totalCount = await query.CountAsync();
+
+            List<Review> reviewList = await query
+                .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
+                .Take(paginationRequest.PageSize)
                 .ToListAsync();
 
-            List<ReviewResponseModel> reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(review);
-
-            BaseResponseResult<List<ReviewResponseModel>> response = new()
+            List<ReviewResponseModel> reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(reviewList);
+            BasePaginationResult<ReviewResponseModel> paginationResult = new()
             {
-                Success = true,
-                Data = reviewResponseModel
+                Data = reviewResponseModel,
+                PageSize = paginationRequest.PageSize,
+                PageIndex = paginationRequest.PageIndex,
+                TotalCount = totalCount,
+                SearchString = paginationRequest.SearchString
             };
-
-            if (!reviewResponseModel.Any())
-            {
-                response.Success = false;
-                response.Message = "Can not found review by storeId";
-            }
-            return response;
+            return paginationResult;
         }
     }
 }
+
+
