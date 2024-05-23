@@ -66,7 +66,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     PhoneNumber = request.PhoneNumber,
                     Email = request.Email,
                     AddressId = newAddressEntity?.Id,
-                    IsDeleted = false
+                    IsActive = true
                 };
                 if (request.files != null)
                 {
@@ -90,6 +90,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     Name = request.Name,
                     PhoneNumber = request.PhoneNumber,
                     Email = request.Email,
+                    IsActive = request.IsActive,
                     Address = newAddressEntity == null ? null : new AddressResponseModel
                     {
                         Id = newAddressEntity.Id,
@@ -160,6 +161,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                                Latitude = store.Address.latitude,
                                                                Longitude = store.Address.longitude
                                                            },
+                                                           IsActive = store.IsActive,
                                                            CreatedAt = store.CreatedAt,
                                                            CreatedBy = store.CreatedBy,
                                                            UpdatedAt = store.UpdatedAt,
@@ -274,6 +276,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 store.Name = request.Name;
                 store.Email = request.Email;
                 store.PhoneNumber = request.PhoneNumber;
+                store.IsActive = request.IsActive;
 
                 _ = await _appDbContext.SaveChangesAsync();
 
@@ -308,7 +311,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     return response;
                 }
 
-                store.IsDeleted = true;
+                store.IsActive = false;
                 _ = _appDbContext.Stores.Update(store);
 
                 _ = await _appDbContext.SaveChangesAsync();

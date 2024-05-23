@@ -9,6 +9,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Store
         public string? PhoneNumber { get; set; }
         public AddressStoreRequestModel? Address { get; set; }
         public ICollection<IFormFile>? files { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 
     public class AddressStoreRequestModel
