@@ -17,7 +17,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Store
         public string? District { get; set; }
         public string? Ward { get; set; }
         public string? PostalCode { get; set; }
-        public decimal? Latitude { get; set; }
-        public decimal? Longitude { get; set; }
+        public decimal Latitude { get; set; }
+        public decimal Longitude { get; set; }
     }
 }

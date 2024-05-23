@@ -54,8 +54,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         District = request.Address.District,
                         Ward = request.Address.Ward,
                         PostalCode = request.Address.PostalCode,
-                        latitude = request.Address?.Latitude ?? default(decimal), // Set default for decimal if null
-                        longitude = request.Address?.Longitude ?? default(decimal)
+                        latitude = request.Address.Latitude,
+                        longitude = request.Address.Longitude
                     };
                     _appDbContext.Addresses.Add(newAddressEntity);
 
@@ -70,7 +70,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     PhoneNumber = request.PhoneNumber,
                     Email = request.Email,
                     AddressId = newAddressEntity?.Id,
-                    IsActive = true
+                    IsDeleted = false
                 };
                 if (request.files != null)
                 {
@@ -263,14 +263,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<string>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request)
+        public async Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request)
         {
-            BaseResponseResult<string> response = new();
+            BaseResponseResult<StoreResponseModel> response = new();
             try
             {
-                Store? store = await _appDbContext.Stores
-                    .Include(s => s.Address)
-                    .FirstOrDefaultAsync(s => s.Id == storeId);
+                Store? store = await _appDbContext.Stores.FindAsync(storeId);
                 if (store == null)
                 {
                     response.Success = false;
@@ -279,27 +277,20 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 }
 
                 store.Name = request.Name;
-                store.PhoneNumber = request.Name;
                 store.Email = request.Email;
-                //store.IsDeleted = request.IsDelete;
-                if (request.Address != null && store.Address != null)
+                store.PhoneNumber = request.PhoneNumber;
+
+                _ = await _appDbContext.SaveChangesAsync();
+
+                StoreResponseModel updateStoreResponse = new()
                 {
-                    // Update existing address or create a new one
-
-                    store.Address.RoadName = request.Address.RoadName ?? store.Address.RoadName;  // Use null-conditional operator for potential null values
-                    store.Address.Province = request.Address.Province ?? store.Address.Province;
-                    store.Address.District = request.Address.District ?? store.Address.District;
-                    store.Address.Ward = request.Address.Ward ?? store.Address.Ward;
-                    store.Address.PostalCode = request.Address.PostalCode ?? store.Address.PostalCode;
-                    store.Address.latitude = request.Address.Latitude ?? store.Address.latitude;
-                    store.Address.longitude = request.Address.Longitude ?? store.Address.longitude;
-
-                }
-
-                _appDbContext.Stores.Update(store);
-                await _appDbContext.SaveChangesAsync();
+                    Id = store.Id,
+                    Name = store.Name,
+                    Email = store.Email,
+                    PhoneNumber = store.PhoneNumber,
+                };
                 response.Success = true;
-                response.Data = GlobalConstants.UPDATE_SUCCESSFULL;
+                response.Data = updateStoreResponse;
             }
             catch (Exception ex)
             {
@@ -323,7 +314,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 }
 
 
-                store.IsActive = false;
+                store.IsDeleted = true;
                 _ = _appDbContext.Stores.Update(store);
 
                 _ = await _appDbContext.SaveChangesAsync();
@@ -354,7 +345,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             var storeQuery = from store in _appDbContext.Stores
                              join address in _appDbContext.Addresses
                                  on store.AddressId equals address.Id
-                             where (!store.IsActive)
                              select new
                              {
                                  Store = store,
