@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
@@ -16,14 +17,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
     public class StoreService : IStoreService
     {
         private readonly AppDbContext _appDbContext;
+        private readonly ILogger<StoreService> _logger;
         private readonly IMapper _mapper;
         private readonly IPhotoService _photoService;
-
-        public StoreService(AppDbContext appDbContext, IMapper mapper, IPhotoService photoService)
+        public StoreService(AppDbContext appDbContext, IMapper mapper, IPhotoService photoService, ILogger<StoreService> logger)
         {
             _appDbContext = appDbContext;
             _mapper = mapper;
             _photoService = photoService;
+            _logger = logger;
         }
 
         public async Task<CreateStoreResponseModel> CreateStoreAsync(StoreRequestModel request)
@@ -140,6 +142,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             try
             {
+                response.SearchString = paginationRequest.SearchString;
+                response.PageIndex = paginationRequest.PageIndex;
+                response.PageSize = paginationRequest.PageSize;
                 IQueryable<StoreResponseModel> query = from store in _appDbContext.Stores
                                                        join mapGalleryStore in _appDbContext.MapGalleryStores
                                                            on store.Id equals mapGalleryStore.StoreId
@@ -174,7 +179,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                                    FileName = gallery.FileName,
                                                                    Url = gallery.Url,
                                                                    IsThumbnail = gallery.IsThumbnail
-                                                               }).ToList()
+                                                               }).ToList(),
+                                                           RatingStore = new RatingStore()
+                                                           {
+                                                               NumberRating = store.Reviews == null ? 0 : store.Reviews.Count(),
+                                                               PointOfRating = store.Reviews == null || !store.Reviews.Any()
+                                                                                               ? 0
+                                                                                                : store.Reviews.Average(r => r.RatingValue)
+                                                           }
+
                                                        };
 
                 //Thêm điều kiện tìm kiếm theo tên
@@ -184,35 +197,20 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     query = query.Where(store => store.Name != null && store.Name.ToUpper().Contains(normalizedSearchString));
                 }
 
-                int totalCount = await query.CountAsync();
+                response.TotalCount = await query.CountAsync();
                 IQueryable<StoreResponseModel> pagedQuery = query
                     .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
                     .Take(paginationRequest.PageSize);
 
-                List<StoreResponseModel> storeList = await pagedQuery.ToListAsync();
+                response.Data = await pagedQuery.ToListAsync();
                 response.SearchString = paginationRequest.SearchString;
                 response.PageIndex = paginationRequest.PageIndex;
                 response.PageSize = paginationRequest.PageSize;
-                response.TotalCount = totalCount;
-                response.Data = storeList;
 
-                if (storeList.Any())
-                {
-                    response.Code = GlobalConstants.SUCCESSFULL;
-                    response.Message = System.Net.HttpStatusCode.OK.ToString();
-                    response.Success = true;
-                }
-                else
-                {
-                    response.Code = GlobalConstants.FAIL;
-                    response.Success = false;
-                    response.Message = "Stores not found";
-                }
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
+                _logger.LogError(ex, "Error retrieving category list");
             }
             await Task.Yield(); /*Thêm một câu lệnh await Task.Yield() để đảm bảo phương thức trả về một Task*/
             return response;
