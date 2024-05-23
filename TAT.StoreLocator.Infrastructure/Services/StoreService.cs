@@ -97,6 +97,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                                }).ToList()
                                                        };
 
+                //Thêm điều kiện tìm kiếm theo tên
+                if (!string.IsNullOrWhiteSpace(paginationRequest.SearchString))
+                {
+                    string normalizedSearchString = CommonUtils.vietnameseReplace(paginationRequest.SearchString);
+                    query = query.Where(store => store.Name != null && store.Name.ToUpper().Contains(normalizedSearchString));
+                }
+
                 int totalCount = await query.CountAsync();
 
                 IQueryable<StoreResponseModel> pagedQuery = query

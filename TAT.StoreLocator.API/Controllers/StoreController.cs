@@ -56,7 +56,6 @@ namespace TAT.StoreLocator.API.Controllers
         {
             try
             {
-                GetDetailStoreRequestModel request = new() { Id = storeId };
                 Core.Common.BaseResponseResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.GetDetailStoreAsync(storeId);
                 return response.Success ? Ok(response.Data) : NotFound(response.Message);
             }
