@@ -19,6 +19,5 @@ namespace TAT.StoreLocator.Core.Entities
 
         public virtual ICollection<MapGalleryProduct>? MapGalleryProducts { get; set; }
         public virtual ICollection<MapGalleryStore>? MapGalleryStores { get; set; }
-
     }
 }

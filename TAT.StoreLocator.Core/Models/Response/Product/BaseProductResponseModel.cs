@@ -9,6 +9,5 @@
         public decimal Price { get; set; } = 0;
         public decimal Discount { get; set; } = 0;
         public int Quantity { get; set; } = 0;
-
     }
 }

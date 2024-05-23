@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using TAT.StoreLocator.Core.Models.Response.Category;
+﻿using TAT.StoreLocator.Core.Models.Response.Category;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;

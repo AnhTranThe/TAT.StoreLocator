@@ -18,7 +18,6 @@ namespace TAT.StoreLocator.API.Controllers
         public StoreController(IStoreService storeService)
         {
             _storeService = storeService;
-
         }
 
         [HttpGet("getAll")]
@@ -27,7 +26,6 @@ namespace TAT.StoreLocator.API.Controllers
         {
             try
             {
-
                 BasePaginationResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
                 return response != null && response.Success ? Ok(response) : (IActionResult)StatusCode(500, "Failed to get stores");
             }
@@ -43,7 +41,6 @@ namespace TAT.StoreLocator.API.Controllers
         {
             try
             {
-
                 Core.Common.BaseResponseResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.GetDetailStoreAsync(storeId);
                 return response.Success ? Ok(response.Data) : NotFound(response.Message);
             }

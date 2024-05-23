@@ -8,7 +8,6 @@
         public string? PhoneNumber { get; set; }
         public AddressResponseModel? Address { get; set; }
         public List<SimpleProductResponse> Products { get; set; } = new List<SimpleProductResponse>();
-
     }
 
     public class SimpleProductResponse
@@ -17,5 +16,4 @@
         public string? Name { get; set; }
         public string? Image { get; set; }
     }
-
 }

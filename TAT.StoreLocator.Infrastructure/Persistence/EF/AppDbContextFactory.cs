@@ -16,8 +16,6 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
             string connStr = configuration.GetConnectionString("DefaultConnection");
             _ = optionsBuilder.UseNpgsql(connStr);
             return new AppDbContext(optionsBuilder.Options);
-
         }
-
     }
 }

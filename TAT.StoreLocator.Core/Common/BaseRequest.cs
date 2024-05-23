@@ -6,6 +6,5 @@ namespace TAT.StoreLocator.Core.Common
     {
         [Required]
         public string? RequestId { get; set; }
-
     }
 }

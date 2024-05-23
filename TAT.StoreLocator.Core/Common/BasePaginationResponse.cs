@@ -11,7 +11,5 @@
         public int TotalPageCount { get; set; }
 
         public string SearchString { get; set; } = string.Empty;
-
     }
-
 }

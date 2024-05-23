@@ -14,13 +14,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class ProfileService : IProfileService
     {
-
         private readonly ILogger _logger;
         private readonly AppDbContext _dbContext;
 
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
         protected IHttpContextAccessor _httpContextAccessor;
+
         public ProfileService(UserManager<User> userManager,
          ILogger logger,
          AppDbContext dbContext,
@@ -35,9 +35,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
         }
+
         protected string GetGuidUserIdLogin()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
+            ClaimsPrincipal? user = _httpContextAccessor.HttpContext?.User;
             string hello = user.FindFirstValue(UserClaims.Id);
             return hello;
         }
@@ -48,7 +49,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Success = false
             };
-            var loginId = GetGuidUserIdLogin();
+            string loginId = GetGuidUserIdLogin();
             try
             {
                 User user = await _userManager.FindByIdAsync(loginId.ToString());
@@ -81,8 +82,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
 
             return response;
-
         }
-
     }
 }

@@ -6,13 +6,14 @@ namespace TAT.StoreLocator.Core.Entities
 {
     public class User : IdentityUser<string>
     {
-
         [Required]
         public string? FirstName { get; set; }
+
         [Required]
         public string? LastName { get; set; }
 
         private string _FullName = string.Empty;
+
         [Required]
         public string FullName
         {
@@ -23,6 +24,7 @@ namespace TAT.StoreLocator.Core.Entities
                 _FullName = LastName + " " + FirstName;
             }
         }
+
         public EGenderType Gender { get; set; } = EGenderType.NotInformation;
         public DateTimeOffset Dob { get; set; }
         public bool IsActive { get; set; } = true;
@@ -30,13 +32,13 @@ namespace TAT.StoreLocator.Core.Entities
         public DateTimeOffset UpdateAt { get; set; }
         public string? CreateBy { get; set; }
         public string? UpdateBy { get; set; }
-        // relationship 
+
+        // relationship
         public Address? Address { get; set; }
+
         public string? AddressId { get; set; }
         public Gallery? Gallery { get; set; }
         public Wishlist? Wishlist { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }
-
-
     }
 }

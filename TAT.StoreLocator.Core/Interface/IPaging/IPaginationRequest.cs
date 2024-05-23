@@ -16,6 +16,5 @@
         /// Search string
         /// </summary>
         public string SearchString { get; set; }
-
     }
 }

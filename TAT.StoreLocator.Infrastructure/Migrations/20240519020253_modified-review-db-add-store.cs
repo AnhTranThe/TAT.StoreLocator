@@ -8,18 +8,18 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "StoreId",
                 table: "Reviews",
                 type: "text",
                 nullable: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Reviews_StoreId",
                 table: "Reviews",
                 column: "StoreId");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Reviews_Stores_StoreId",
                 table: "Reviews",
                 column: "StoreId",
@@ -30,15 +30,15 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Reviews_Stores_StoreId",
                 table: "Reviews");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_Reviews_StoreId",
                 table: "Reviews");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "StoreId",
                 table: "Reviews");
         }

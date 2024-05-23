@@ -9,8 +9,5 @@
         public bool Success { get; set; }
         public string? Code { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
-
-
-
     }
 }

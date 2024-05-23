@@ -94,7 +94,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     throw new ArgumentNullException(nameof(request), "Pagination request is null.");
                 }
 
-
                 IQueryable<Category> query = _dbContext.Categories.AsQueryable();
                 if (!string.IsNullOrWhiteSpace(request.SearchString))
                 {
@@ -226,7 +225,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 IsActive = category.IsActive,
                 ParentCategoryId = category.ParentCategoryId,
                 ParentCategoryName = parentCategoryName
-
             };
         }
 
@@ -279,7 +277,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     .Skip((request.PageIndex - 1) * request.PageSize)
                     .Take(request.PageSize)
                     .ToListAsync();
-
 
                 response.Data = categories.Select(MapToCategoryResponse).ToList();
                 response.PageIndex = request.PageIndex;

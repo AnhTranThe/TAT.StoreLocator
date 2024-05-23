@@ -5,7 +5,6 @@ namespace TAT.StoreLocator.Core.Entities
     [Table("MapGalleryProducts")]
     public class MapGalleryProduct
     {
-
         public string? GalleryId { get; set; }
 
         public Gallery? Gallery { get; set; }

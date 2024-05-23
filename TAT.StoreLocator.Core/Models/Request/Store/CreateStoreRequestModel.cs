@@ -10,6 +10,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Store
         public AddressStoreRequestModel? Address { get; set; }
         public ICollection<IFormFile>? files { get; set; }
     }
+
     public class AddressStoreRequestModel
     {
         public string? RoadName { get; set; }

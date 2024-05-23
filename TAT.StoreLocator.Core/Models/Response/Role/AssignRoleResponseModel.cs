@@ -7,6 +7,5 @@ namespace TAT.StoreLocator.Core.Models.Response.Role
     {
         public BaseResponse BaseResponse { get; set; } = new BaseResponse();
         public UserRoleResponseModel UserRoleResponse { get; set; } = new UserRoleResponseModel();
-
     }
 }
