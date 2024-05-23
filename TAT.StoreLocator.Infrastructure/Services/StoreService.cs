@@ -182,7 +182,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                                }).ToList(),
                                                            RatingStore = new RatingStore()
                                                            {
-                                                               NumberRating = store.Reviews == null ? 0 : store.Reviews.Count(),
+                                                               NumberRating = store.Reviews == null ? 0 : store.Reviews.Count,
                                                                PointOfRating = store.Reviews == null || !store.Reviews.Any()
                                                                                                ? 0
                                                                                                 : store.Reviews.Average(r => r.RatingValue)

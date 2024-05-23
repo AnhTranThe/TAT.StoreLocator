@@ -8,5 +8,6 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<ImageUploadResult> UploadImage(IFormFile formFile, bool profile);
 
         Task<DeletionResult?> DeleteImage(string publicId);
+        Task DeleteDbAndCloudAsync(Guid galleryId, string fileBelongTo, string url);
     }
 }
