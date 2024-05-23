@@ -2,7 +2,6 @@
 {
     public static class GlobalConstants
     {
-
         public const string RoleAdminId = "4D921CC6-5349-46FB-B62C-EBF293B217A5";
         public const string RoleUserId = "D0C7A5D9-9F7B-4B7B-9C6F-8D6F6F6F6F6F";
         public const string UserId = "F0C7A5D9-9F7B-4B7B-9C6F-8D6F6F6F6F6F";
@@ -14,6 +13,7 @@
         public const string EmailAdmin = "admin@gmail.com";
         public const string RoleAdminName = "Admin";
         public const string RoleUserName = "User";
+
         public static string RemapInternationalCharToAscii(char c)
         {
             string s = c.ToString().ToLowerInvariant();
@@ -73,6 +73,7 @@
                 return result;
             }
         }
+
         public static readonly string[] VietNamChar = new string[] { "aAeEoOuUiIdDyY", "áàạảãâấầậẩẫăắằặẳẵ", "ÁÀẠẢÃÂẤẦẬẨẪĂẮẰẶẲẴ", "éèẹẻẽêếềệểễ", "ÉÈẸẺẼÊẾỀỆỂỄ", "óòọỏõôốồộổỗơớờợởỡ", "ÓÒỌỎÕÔỐỒỘỔỖƠỚỜỢỞỠ", "úùụủũưứừựửữ", "ÚÙỤỦŨƯỨỪỰỬỮ", "íìịỉĩ", "ÍÌỊỈĨ", "đ", "Đ", "ýỳỵỷỹ", "ÝỲỴỶỸ" };
 
         public const string RefreshTokenCookieName = "refreshToken";
@@ -80,7 +81,6 @@
         public const string MessagePasswordAndConfirmPasswordNotMatch = "Password and confirm new password do not match.";
         public const string MessageTokenNotFound = "Token not found";
         public const string MessageFailToResetPassword = "Fail to reset password";
-
 
         public const string USERNAME_NOT_FOUND = "USERNAME_NOT_FOUND";
         public const string PIN_TIME_OUT = "PIN_TIME_OUT";
@@ -133,15 +133,16 @@
         public const string VALUE_YOU_FIND_NOT_EXITS = "VALUE_YOU_FIND_NOT_EXITS";
         public const string CREATE_TABLE_JOBTITLE_FAIL = "CREATE_TABLE_JOBTITLE_FAIL";
 
-        //addmore 
+        //addmore
         public const string DATE_TIME_INPUT_ERROR = "DATE_TIME_INPUT_ERROR";
+
         public const string USER_NOT_ALLOWED = "USER_NOT_ALLOWED";
         public const string CAN_NOT_RATING = "CAN_NOT_RATING";
         public const string MESSAGE_FOR_CREATE_CONSULTING = "IF YOU ISN'T CONSULTANT PLEASE INPUT CONSUTANT_ID AND BRAND_ID";
 
-
         //NEW 10/4
         public const string CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND";
+
         public const string WARD_NOT_FOUND = "WARD_NOT_FOUND";
         public const string DISTRICT_NOT_FOUND = "DISTRICT_NOT_FOUND";
         public const string UPLOAD_FAIL = "UPLOAD_FAIL";
@@ -152,15 +153,16 @@
         public const string SUPERVISOR_NOT_FOUND = "CONSULTING_NOT_FOUND";
         public const string SUPERVISOR_NOT_SAME_BRANCH = "SUPERVISOR_NOT_SAME_BRAND";
 
-
-        //new 12/4 
+        //new 12/4
         public const string CREATE_HISTORY_FAIL = "CREATE_HISTORY_FAIL";
+
         public const string RATING_SUCCESSFUL = "RATING_SUCCESSFUL";
         public const string CANCEL_SUCCESSFUL = "CANCEL_SUCCESSFUL";
         public const string CANCEL_FAIL = "CANCEL_FAIL";
 
         //new 15/4
         public const string OTP_OUT_TIME = "OTP_OUT_TIME";
+
         public const string OTP_SEND_SUCCESSFUL = "OTP_SEND_SUCCESSFUL";
         public const string OTP_SEND_FAIL = "OTP_SEND_FAIL";
         public const string OTP_WRONG = "OTP_WRONG";
@@ -172,10 +174,9 @@
 
         //22/4
         public const string DATE_OUT_RANGE = "DATE_OUT_RANGE";
+
         public const string MONTH_NOT_SAME = "MONTH_NOT_SAME";
 
         public const string NOT_STORE_NEAR = "NOT_STORE_NEAR";
-
-
     }
 }

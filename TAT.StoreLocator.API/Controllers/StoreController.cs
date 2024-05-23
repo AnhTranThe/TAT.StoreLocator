@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
@@ -19,7 +19,6 @@ namespace TAT.StoreLocator.API.Controllers
         public StoreController(IStoreService storeService)
         {
             _storeService = storeService;
-
         }
 
         [HttpGet("getAll")]
@@ -45,7 +44,6 @@ namespace TAT.StoreLocator.API.Controllers
         {
             try
             {
-
                 Core.Common.BaseResponseResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.GetDetailStoreAsync(storeId);
                 return response.Success ? Ok(response.Data) : NotFound(response.Message);
             }

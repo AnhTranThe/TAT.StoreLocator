@@ -10,9 +10,6 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
         {
             _ = builder.ToTable("Roles");
             _ = builder.HasKey(x => x.Id);
-
-
-
         }
     }
 }

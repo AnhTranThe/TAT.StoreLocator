@@ -5,7 +5,6 @@ namespace TAT.StoreLocator.Core.Entities
     [Table("MapProductWishlists")]
     public class MapProductWishlist
     {
-
         public string? WishlistId { get; set; }
 
         public Wishlist? Wishlist { get; set; }

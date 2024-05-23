@@ -8,19 +8,19 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Galleries_Stores_StoreId",
                 table: "Galleries");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_Galleries_StoreId",
                 table: "Galleries");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "StoreId",
                 table: "Galleries");
 
-            migrationBuilder.AddColumn<bool>(
+            _ = migrationBuilder.AddColumn<bool>(
                 name: "IsDeleted",
                 table: "Stores",
                 type: "boolean",
@@ -30,22 +30,22 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "IsDeleted",
                 table: "Stores");
 
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "StoreId",
                 table: "Galleries",
                 type: "text",
                 nullable: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Galleries_StoreId",
                 table: "Galleries",
                 column: "StoreId");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Galleries_Stores_StoreId",
                 table: "Galleries",
                 column: "StoreId",

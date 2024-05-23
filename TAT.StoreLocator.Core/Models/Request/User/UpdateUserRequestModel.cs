@@ -7,16 +7,17 @@ namespace TAT.StoreLocator.Core.Models.Request.User
 {
     public class UpdateUserRequestModel : BaseRequest
     {
-
         [Required]
         [MinLength(2)]
         public string? Username { get; set; }
+
         [Required]
         [EmailAddress]
         public string? Email { get; set; }
 
         [Required]
         public string? FirstName { get; set; }
+
         [Required]
         public string? LastName { get; set; }
 
@@ -34,6 +35,5 @@ namespace TAT.StoreLocator.Core.Models.Request.User
         public string? PostalCode { get; set; } = string.Empty;
         public decimal latitude { get; set; } = 0;
         public decimal longitude { get; set; } = 0;
-
     }
 }

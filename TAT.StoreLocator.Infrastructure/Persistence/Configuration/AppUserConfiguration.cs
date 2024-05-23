@@ -9,9 +9,6 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
         public void Configure(EntityTypeBuilder<User> builder)
         {
             _ = builder.ToTable("Users");
-
-
-
         }
     }
 }

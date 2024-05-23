@@ -6,6 +6,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
     public class LoggerService : ILogger
     {
         private readonly ILog _logger;
+
         /// <summary>
         /// LoggingService
         /// </summary>
@@ -13,6 +14,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             _logger = LogManager.GetLogger(typeof(LoggerService));
         }
+
         /// <summary>
         /// LogError
         /// </summary>
@@ -21,6 +23,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             _logger.Error(ex);
         }
+
         /// <summary>
         /// LogInfo
         /// </summary>

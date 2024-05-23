@@ -10,14 +10,12 @@ namespace TAT.StoreLocator.API.Controllers
     [Authorize]
     public class CategoryController : ControllerBase
     {
-
         private readonly ICategoryService _categoryService;
 
         public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
         }
-
 
         [HttpGet("{id}")]
         [AllowAnonymous]
@@ -67,6 +65,7 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
             }
         }
+
         [HttpGet("getListSubCategory")]
         [AllowAnonymous]
         public async Task<IActionResult> GetListSubCategory([FromQuery] BasePaginationRequest request)
@@ -82,7 +81,5 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
             }
         }
-
-
     }
 }

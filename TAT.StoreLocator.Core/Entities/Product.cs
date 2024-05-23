@@ -27,7 +27,6 @@ namespace TAT.StoreLocator.Core.Entities
         public string? CategoryId { set; get; }
         public Category? Category { get; set; }
 
-
         public virtual ICollection<Gallery>? Galleries { get; set; }
         public virtual ICollection<MapProductWishlist>? MapProductWishlists { get; set; }
 
@@ -36,8 +35,5 @@ namespace TAT.StoreLocator.Core.Entities
 
         public string? StoreId { get; set; }
         public Store? Store { get; set; }
-
-
-
     }
 }

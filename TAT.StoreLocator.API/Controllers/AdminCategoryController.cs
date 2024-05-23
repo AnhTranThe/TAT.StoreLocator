@@ -40,8 +40,6 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-
-
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] CategoryRequestModel request)
         {

@@ -8,7 +8,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "ParentCategoryId",
                 table: "Categories",
                 type: "text",
@@ -19,7 +19,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "ParentCategoryId",
                 table: "Categories",
                 type: "text",
