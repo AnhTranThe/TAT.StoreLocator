@@ -141,6 +141,23 @@ namespace TAT.StoreLocator.Core.Utils
             return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
         }
 
+
+        public static string NormalSearch (string text)
+        {
+            // Loại bỏ dấu tiếng Việt và chuyển đổi về chữ thường
+            string normalizedText = RemoveDiacritics(text).ToLowerInvariant();
+            // Loại bỏ các ký tự không phải chữ cái hoặc số
+            StringBuilder resultBuilder = new StringBuilder();
+            foreach (char c in normalizedText) 
+            { 
+                if (char.IsLetterOrDigit(c))
+                {
+                    resultBuilder.Append(c);    
+                }
+            }
+            return resultBuilder.ToString();
+        }
+
         public static string GenerateRandomPhoneNumber()
         {
             Random random = new();

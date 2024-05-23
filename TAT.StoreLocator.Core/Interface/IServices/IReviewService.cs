@@ -18,9 +18,9 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request);
 
         // GetReviewByUserId
-        Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync (string userId);
+        Task<BasePaginationResult<ReviewResponseModel>> GetReviewByUserIdAsync(string userId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);
 
         //GetReviewByStoreId
-        Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByStoreIdAsync(string storeId);
+        Task<BasePaginationResult<ReviewResponseModel>> GetReviewByStoreIdAsync(string storeId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);
     }
 }
