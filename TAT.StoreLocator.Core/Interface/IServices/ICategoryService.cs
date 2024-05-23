@@ -12,25 +12,30 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         /// <param name="Id"></param>
         /// <returns> Category</returns>
         Task<BaseResponseResult<CategoryResponseModel>> GetById(string Id);
+
         /// <summary>
         /// GetListCategory
         /// </summary>
         /// <param name="request"></param>
         /// <returns> List category with pagination </returns>
         Task<BasePaginationResult<CategoryResponseModel>> GetListAsync(BasePaginationRequest request);
+
         /// <summary>
         /// GetListParentCategory
         /// </summary>
         /// <param name="request"></param>
         /// <returns>List Category with pagination</returns>
         Task<BasePaginationResult<CategoryResponseModel>> GetListParentCategoryAsync(BasePaginationRequest request);
+
         Task<BasePaginationResult<CategoryResponseModel>> GetListSubCategoryAsync(BasePaginationRequest request);
+
         /// <summary>
         /// add new Category
         /// </summary>
         /// <param name="request"></param>
         /// <returns> true or false </returns>
         Task<BaseResponse> Add(CategoryRequestModel request);
+
         /// <summary>
         /// Update Category
         /// </summary>

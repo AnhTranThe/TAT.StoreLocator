@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TAT.StoreLocator.Core.Common;
+﻿using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Models.Request.Review;
 using TAT.StoreLocator.Core.Models.Response.Review;
 
 namespace TAT.StoreLocator.Core.Interface.IServices
 {
-   public interface IReviewService
+    public interface IReviewService
     {
         // Create
         Task<BaseResponseResult<ReviewResponseModel>> CreateReviewAsync(CreateReviewRequestModel request);
@@ -18,9 +13,9 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request);
 
         // GetReviewByUserId
-        Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByUserIdAsync (string userId);
+        Task<BasePaginationResult<ReviewResponseModel>> GetReviewByUserIdAsync(string userId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);
 
         //GetReviewByStoreId
-        Task<BaseResponseResult<List<ReviewResponseModel>>> GetReviewByStoreIdAsync(string storeId);
+        Task<BasePaginationResult<ReviewResponseModel>> GetReviewByStoreIdAsync(string storeId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);
     }
 }

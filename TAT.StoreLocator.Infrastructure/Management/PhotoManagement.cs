@@ -10,6 +10,7 @@ namespace TAT.StoreLocator.Infrastructure.Management
     public class PhotoManagement : IPhotoService
     {
         private readonly Cloudinary _cloudinary;
+
         public PhotoManagement(IOptions<CloudinarySettings> config)
         {
             Account account = new(config.Value.CloudName, config.Value.ApiKey, config.Value.ApiSecret);
@@ -35,6 +36,7 @@ namespace TAT.StoreLocator.Infrastructure.Management
             }
             return uploadResult;
         }
+
         public async Task<DeletionResult?> DeleteImage(string publicId)
         {
             if (string.IsNullOrEmpty(publicId))
@@ -45,7 +47,5 @@ namespace TAT.StoreLocator.Infrastructure.Management
             DeletionParams deleteParams = new(publicId);
             return await _cloudinary.DestroyAsync(deleteParams);
         }
-
-
     }
 }

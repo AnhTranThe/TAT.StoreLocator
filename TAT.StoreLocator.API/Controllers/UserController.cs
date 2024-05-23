@@ -14,20 +14,17 @@ namespace TAT.StoreLocator.API.Controllers
     [Authorize]
     public class UserController : Controller
     {
-
-
         private readonly IUserService _userService;
+
         public UserController(IUserService userService)
         {
             _userService = userService;
-
         }
+
         [HttpGet("get/{userId}")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> GetUserById(string userId)
         {
-
-
             try
             {
                 if (string.IsNullOrWhiteSpace(userId))
@@ -41,16 +38,14 @@ namespace TAT.StoreLocator.API.Controllers
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, ex.Message);
-
             }
         }
+
         [HttpPut("update/{userId}")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> Update([FromBody] UpdateUserRequestModel request)
         {
-
             try
             {
                 if (!ModelState.IsValid)
@@ -63,19 +58,16 @@ namespace TAT.StoreLocator.API.Controllers
                     return BadRequest("User not found");
                 }
 
-
                 UpdateUserResponseModel Response = await _userService.UpdateUserAsync(request);
 
                 return !Response.BaseResponse.Success ? BadRequest(Response.BaseResponse.Message) : Ok(Response);
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, ex.Message);
-
             }
-
         }
+
         [HttpPost("resetPassword")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequestModel request)
@@ -83,6 +75,7 @@ namespace TAT.StoreLocator.API.Controllers
             BaseResponse check = await _userService.ResetPasswordAsync(request);
             return Ok(check);
         }
+
         [HttpPost("changePassword")]
         [Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequestModel request)
@@ -90,7 +83,5 @@ namespace TAT.StoreLocator.API.Controllers
             BaseResponse check = await _userService.ChangePasswordAsync(request);
             return Ok(check);
         }
-
-
     }
 }

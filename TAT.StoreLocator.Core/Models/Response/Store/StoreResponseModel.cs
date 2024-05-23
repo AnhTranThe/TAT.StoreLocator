@@ -11,6 +11,7 @@
         public string? CreatedBy { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; }
         public string? UpdatedBy { get; set; }
+        public bool IsActive { get; set; }
 
         public RatingStore RatingStore { get; set; } = new RatingStore();
 
@@ -27,6 +28,7 @@
 
     public class AddressResponseModel
     {
+        public string? Id { get; set; }
         public string? RoadName { get; set; }
         public string? Province { get; set; }
         public string? District { get; set; }

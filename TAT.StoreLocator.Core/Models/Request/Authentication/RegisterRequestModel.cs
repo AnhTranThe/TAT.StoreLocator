@@ -6,6 +6,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Authentication
     {
         [Required(ErrorMessage = "First name cannot be empty")]
         public string? FirstName { get; set; }
+
         [Required(ErrorMessage = "Last name cannot be empty")]
         public string? LastName { get; set; }
 

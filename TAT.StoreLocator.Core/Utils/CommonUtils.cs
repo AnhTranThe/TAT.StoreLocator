@@ -84,17 +84,18 @@ namespace TAT.StoreLocator.Core.Utils
                 fileBytes = memoryStream.ToArray();
             }
             return fileBytes;
-
         }
 
         public static string GetClaimUserName(this ClaimsPrincipal claims)
         {
             return claims.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
         }
+
         public static string GetClaimUserId(this ClaimsPrincipal claims)
         {
             return claims.FindFirst(UserClaims.Id)?.Value ?? "";
         }
+
         public static string vietnameseReplace(string str)
         {
             for (int i = 1; i < GlobalConstants.VietNamChar.Length; i++)
@@ -122,6 +123,39 @@ namespace TAT.StoreLocator.Core.Utils
                 // If the provided email address is not in a valid format, return null or throw an exception
                 return null; // or throw new ArgumentException("Invalid email address.");
             }
+        }
+
+        public static string RemoveDiacritics(string text)
+        {
+            string normalizedString = text.Normalize(NormalizationForm.FormD);
+            StringBuilder stringBuilder = new();
+
+            foreach (char c in normalizedString)
+            {
+                UnicodeCategory unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    _ = stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        public static string NormalSearch(string text)
+        {
+            // Loại bỏ dấu tiếng Việt và chuyển đổi về chữ thường
+            string normalizedText = RemoveDiacritics(text).ToLowerInvariant();
+            // Loại bỏ các ký tự không phải chữ cái hoặc số
+            StringBuilder resultBuilder = new();
+            foreach (char c in normalizedText)
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    _ = resultBuilder.Append(c);
+                }
+            }
+            return resultBuilder.ToString();
         }
 
         public static string GenerateRandomPhoneNumber()
@@ -166,10 +200,10 @@ namespace TAT.StoreLocator.Core.Utils
 
             return dateOfBirth;
         }
+
         public static DateTimeOffset ToDatetimeOffsetFromUtc(this DateTime date)
         {
             return new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc));
         }
-
     }
 }

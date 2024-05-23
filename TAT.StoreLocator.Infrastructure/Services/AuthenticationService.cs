@@ -23,7 +23,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
         private readonly ILogger _logger;
         private readonly AppDbContext _context;
 
-
         public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, ILogger logger, IMapper mapper, AppDbContext context)
         {
             _userManager = userManager;
@@ -31,20 +30,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _logger = logger;
             _mapper = mapper;
             _context = context;
-
-
         }
+
         public async Task<RegisterResponseModel> RegisterUserAsync(RegisterRequestModel model)
         {
-
-
             RegisterResponseModel response = new();
             BaseResponse baseResponse = response.BaseResponse;
             baseResponse.Success = false;
 
             try
             {
-
                 User existedUser = await _userManager.FindByEmailAsync(model.Email);
                 if (existedUser != null)
                 {
@@ -69,7 +64,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     Email = model.Email,
                     UserName = userName,
                     AddressId = Guid.NewGuid().ToString()
-
                 };
                 Address newAddress = new()
                 {
@@ -92,22 +86,19 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     return response;
                 }
 
-
                 response.UserResponseModel = _mapper.Map<UserResponseModel>(newUser);
                 baseResponse.Success = true;
                 baseResponse.Message = "Register success";
-
             }
             catch (Exception ex)
             {
                 baseResponse.Message = $"An error occurred while check existed the entity: {ex.Message}";
                 _logger.LogError(ex);
-
             }
 
             return response;
-
         }
+
         public async Task<LoginResponseModel> LoginUserAsync(LoginRequestModel model)
         {
             LoginResponseModel response = new();
@@ -148,9 +139,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     response.claims = claims;
                     baseResponse.Success = true;
                     baseResponse.Message = "Login success";
-
                 }
-
             }
             catch (Exception ex)
             {
@@ -159,7 +148,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
 
             return response;
-
         }
 
         public async Task<BaseResponse> LogoutUserAsync(string UserId)
@@ -180,20 +168,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 await _signInManager.SignOutAsync();
 
-
                 response.Success = true;
-
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex);
-
             }
             return response;
-
-
         }
-
-
     }
 }

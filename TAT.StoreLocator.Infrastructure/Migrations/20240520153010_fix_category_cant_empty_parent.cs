@@ -8,11 +8,11 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Categories_Categories_ParentCategoryId",
                 table: "Categories");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Categories_Categories_ParentCategoryId",
                 table: "Categories",
                 column: "ParentCategoryId",
@@ -22,11 +22,11 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Categories_Categories_ParentCategoryId",
                 table: "Categories");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Categories_Categories_ParentCategoryId",
                 table: "Categories",
                 column: "ParentCategoryId",

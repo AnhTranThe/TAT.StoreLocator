@@ -16,7 +16,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class JwtService : IJwtService
     {
-
         private readonly JwtTokenSettings _jwtTokenSettings;
         protected IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<User> _userManager;
@@ -33,6 +32,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             _userManager = userManager;
         }
+
         public string GenerateAccessToken(IEnumerable<Claim> claims)
         {
             SymmetricSecurityKey secretKey = new(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key));
@@ -49,6 +49,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             string tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
             return tokenString;
         }
+
         public string GenerateRefreshToken(string email, string userName, ICollection<string>? roles, string userId)
         {
             Claim[] claims = new[]
@@ -79,6 +80,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
         public async Task<string> GenerateAccessTokenV2(string userName)
         {
             User user = await _userManager.FindByNameAsync(userName);
@@ -86,7 +88,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 throw new ArgumentException(GlobalConstants.USER_NOT_FOUND);
             }
-
 
             IList<string> roles = await _userManager.GetRolesAsync(user);
             Claim[] claims = new[]
@@ -99,8 +100,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     new Claim(UserClaims.Roles, string.Join(";", roles)),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-
-
 
             //byte[] key = new byte[32]; // 256 bits
             //using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
@@ -116,7 +115,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             expires: DateTime.Now.AddMinutes(_jwtTokenSettings.ExpireInMinutes),
             signingCredentials: creds);
             return new JwtSecurityTokenHandler().WriteToken(token);
-
         }
 
         public async Task<string> GenerateRefreshTokenV2(string userName)
@@ -140,8 +138,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     new Claim("refresh", "true")
             };
 
-
-
             //byte[] key = new byte[32]; // 256 bits
             //using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             //{
@@ -149,7 +145,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             //}
             //  SymmetricSecurityKey securityKey = new(key);
             SymmetricSecurityKey secretKey = new(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key));
-
 
             SigningCredentials creds = new(secretKey, SecurityAlgorithms.HmacSha256);
 
@@ -160,9 +155,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 expires: DateTime.Now.AddMinutes(_jwtTokenSettings.ExpireInMinutes),
                 signingCredentials: creds);
             return new JwtSecurityTokenHandler().WriteToken(token);
-
         }
-
 
         public async Task<BaseResponseResult<NewToken>> RefreshToken(RefreshTokenRequest tokenRequest)
         {
@@ -199,7 +192,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return result;
         }
 
-
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
             TokenValidationParameters tokenValidationParameters = new()
@@ -211,16 +203,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 ValidateLifetime = false //here we are saying that we don't care about the token's expiration date
             };
 
-
             JwtSecurityTokenHandler tokenHandler = new();
             ClaimsPrincipal principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
             return securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)
                 ? throw new SecurityTokenException("Invalid token")
                 : principal;
         }
-
-
-
 
         //public ClaimsPrincipal? GetPrincipalFromExpiredTokenv2(string token)
         //{
@@ -239,10 +227,5 @@ namespace TAT.StoreLocator.Infrastructure.Services
         //        ? throw new SecurityTokenException("Invalid token")
         //        : principal;
         //}
-
-
     }
-
-
 }
-

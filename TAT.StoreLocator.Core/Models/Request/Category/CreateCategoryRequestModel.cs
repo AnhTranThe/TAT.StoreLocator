@@ -7,12 +7,10 @@ namespace TAT.StoreLocator.Core.Models.Request.Category
     {
         [Required]
         public string? Name { get; set; }
+
         public string? Description { get; set; }
         public IFormFile? Image { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ParentCategoryId { get; set; }
-
-
-
     }
 }

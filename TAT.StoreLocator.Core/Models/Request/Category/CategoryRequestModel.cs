@@ -7,6 +7,5 @@
         public string? Slug { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ParentCategoryId { get; set; } = string.Empty;
-
     }
 }

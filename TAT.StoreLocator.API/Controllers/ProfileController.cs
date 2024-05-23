@@ -5,20 +5,19 @@ namespace TAT.StoreLocator.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
     public class ProfileController : Controller
     {
         private readonly IProfileService _profileService;
+
         public ProfileController(IProfileService profileService)
         {
             _profileService = profileService;
         }
 
         [HttpGet("gets")]
-        //[Authorize(Roles = GlobalConstants.RoleUserName)]
         public async Task<IActionResult> GetProfile()
         {
-            var check = await _profileService.GetByProfile();
+            Core.Common.BaseResponseResult<Core.Models.Response.User.UserResponseModel> check = await _profileService.GetByProfile();
             return Ok(check);
         }
     }

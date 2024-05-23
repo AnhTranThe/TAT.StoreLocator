@@ -2,16 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
-using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Product;
 
 namespace TAT.StoreLocator.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
-
         private readonly IProductService _productService;
 
         public ProductController(IProductService productService)
@@ -36,18 +35,16 @@ namespace TAT.StoreLocator.API.Controllers
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, ex.Message);
-
             }
         }
 
         [HttpGet("getListProducts")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetListProduct([FromQuery]BasePaginationRequest request)
-        {   
+        public async Task<IActionResult> GetListProduct([FromQuery] BasePaginationRequest request)
+        {
             request ??= new BasePaginationRequest();
-            
+
             try
             {
                 BasePaginationResult<ProductResponseModel> Products = await _productService.GetListProductAsync(request);
@@ -56,59 +53,8 @@ namespace TAT.StoreLocator.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
-
             }
         }
-
-        [HttpPost("addProduct")]
-        [AllowAnonymous]
-        public async Task<ActionResult> AddProduct([FromBody] ProductRequestModel request)
-        {
-
-            try
-            {
-
-                if (string.IsNullOrWhiteSpace(request.StoreId))
-                {
-                    return BadRequest("StoreId is not null");
-                }
-
-
-                BaseResponse Response = await _productService.AddProduct(request);
-
-                return !Response.Success ? BadRequest(Response.Message) : Ok(Response);
-            }
-            catch (Exception ex)
-            {
-
-                return StatusCode(500, ex.Message);
-
-            }
-
-        }
-
-        [HttpPut("update/{Id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateProduct(string Id ,[FromBody] ProductRequestModel request)
-        {
-            if (request == null || string.IsNullOrEmpty(Id))
-            {
-                return BadRequest(new BaseResponse
-                {
-                    Success = false,
-                    Message = "Invalid request data."
-                });
-            }
-
-            var response = await _productService.UpdateProduct(Id,request);
-            if (!response.Success)
-            {
-                return BadRequest(response);
-            }
-
-            return Ok(response);
-        }
-
 
         [HttpGet("Product/{storeId}")]
         [AllowAnonymous]
@@ -122,8 +68,8 @@ namespace TAT.StoreLocator.API.Controllers
 
             try
             {
-                var response = await _productService.GetByIdStore(storeId, request);
-                
+                BasePaginationResult<ProductResponseModel> response = await _productService.GetByIdStore(storeId, request);
+
                 return Ok(response);
             }
             catch (ArgumentNullException ex)
@@ -132,7 +78,6 @@ namespace TAT.StoreLocator.API.Controllers
             }
             catch (Exception ex)
             {
-               
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred." + ex.Message);
             }
         }

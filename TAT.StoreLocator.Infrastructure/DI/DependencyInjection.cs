@@ -16,18 +16,15 @@ using TAT.StoreLocator.Infrastructure.Mapper;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 using TAT.StoreLocator.Infrastructure.Services;
 
-
 namespace TAT.StoreLocator.Infrastructure.DI
 {
     public static class DependencyInjection
 
     {
-
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
         {
-
-
             #region Cors
+
             _ = services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
@@ -35,27 +32,26 @@ namespace TAT.StoreLocator.Infrastructure.DI
                 .AllowAnyMethod()
                 .AllowAnyHeader());
             });
-            #endregion
+
+            #endregion Cors
 
             #region SQL Connection
+
             _ = services.AddDbContext<AppDbContext>(options =>
             {
                 _ = options.UseNpgsql(config.GetConnectionString("DefaultConnection"));
             });
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-            #endregion
+            #endregion SQL Connection
 
             #region authentication and JWt
 
             //Authen and author
             _ = services.Configure<JwtTokenSettings>(config.GetSection("JwtTokenSettings"));
 
-
-
             _ = services.AddIdentity<User, Role>(opt => { opt.Password.RequireNonAlphanumeric = false; })
                .AddEntityFrameworkStores<AppDbContext>();
-
 
             _ = services.Configure<IdentityOptions>(options =>
             {
@@ -77,7 +73,6 @@ namespace TAT.StoreLocator.Infrastructure.DI
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = true;
             });
-
 
             _ = services.AddAuthentication(o =>
             {
@@ -116,9 +111,10 @@ namespace TAT.StoreLocator.Infrastructure.DI
             });
             _ = services.AddAuthorization();
 
-            #endregion
+            #endregion authentication and JWt
 
             #region Services
+
             _ = services.AddScoped(typeof(IJwtService), typeof(JwtService));
             _ = services.AddScoped(typeof(IUserService), typeof(UserService));
             _ = services.AddTransient(typeof(ILogger), typeof(LoggerService));
@@ -135,21 +131,22 @@ namespace TAT.StoreLocator.Infrastructure.DI
             //PhucThinh-dev
             _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
             _ = services.AddScoped(typeof(IReviewService), typeof(ReviewService));
-            #endregion
+
+            #endregion Services
 
             #region Mapper
+
             _ = services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
-
-            #endregion
+            #endregion Mapper
 
             #region Cloudinary
-            _ = services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
-            #endregion
 
+            _ = services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+
+            #endregion Cloudinary
 
             return services;
         }
-
     }
 }

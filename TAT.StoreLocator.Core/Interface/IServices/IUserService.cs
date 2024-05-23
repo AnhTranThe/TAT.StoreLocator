@@ -10,16 +10,23 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     public interface IUserService
     {
         Task<BasePaginationResult<UserResponseModel>> GetListUserAsync(BasePaginationRequest request);
+
         Task<BasePaginationResult<UserResponseModel>> SearchUserAsync(SearchUserPagingRequestModel request);
+
         Task<BaseResponseResult<UserResponseModel>> GetById(string id);
+
         Task<UpdateUserResponseModel> UpdateUserAsync(UpdateUserRequestModel request);
+
         Task<BaseResponse> UpdateUserPhoto(UploadPhotoRequestModel request);
+
         Task<AssignRoleResponseModel> RoleAssign(AssignRoleRequestModel request);
+
         Task<BaseResponse> Delete(string id);
+
         Task<BaseResponse> ChangePasswordAsync(ChangePasswordRequestModel request);
+
         Task<BaseResponse> ResetPasswordAsync(ResetPasswordRequestModel request);
+
         Task<BaseResponse> ChangeStatusUser(ChangeStatusUserRequestModel request);
-
-
     }
 }
