@@ -28,7 +28,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request)
         {
-            var response = new CreateStoreResponseModel();
+            CreateStoreResponseModel response = new();
 
             try
             {
@@ -54,13 +54,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         latitude = request.Address.Latitude,
                         longitude = request.Address.Longitude
                     };
-                    _appDbContext.Addresses.Add(newAddressEntity);
+                    _ = _appDbContext.Addresses.Add(newAddressEntity);
 
                 }
 
                 // Create new store entity
-                var newStoreId = Guid.NewGuid().ToString();
-                var newStoreEntity = new Store
+                string newStoreId = Guid.NewGuid().ToString();
+                Store newStoreEntity = new()
                 {
                     Id = newStoreId,
                     Name = request.Name,
@@ -71,16 +71,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 };
                 if (request.files != null)
                 {
-                    foreach (var file in request.files)
+                    foreach (IFormFile file in request.files)
                     {
                         await UpdateStorePhotoAsync(newStoreId, file);
                     }
                 }
 
                 // Add new store entity to context
-                _appDbContext.Stores.Add(newStoreEntity);
+                _ = _appDbContext.Stores.Add(newStoreEntity);
                 // Save changes to the database
-                await _appDbContext.SaveChangesAsync();
+                _ = await _appDbContext.SaveChangesAsync();
 
                 // Populate response
                 response.Id = newStoreId;
@@ -137,9 +137,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
 
         }
-        public async Task<BaseResponseResult<GetAllStoreResponseModel>> GetAllStoreAsync(BasePaginationRequest paginationRequest)
+        public async Task<BasePaginationResult<StoreResponseModel>> GetAllStoreAsync(BasePaginationRequest paginationRequest)
         {
-            BaseResponseResult<GetAllStoreResponseModel> response = new();
+            BasePaginationResult<StoreResponseModel> response = new();
 
             try
             {
@@ -189,22 +189,24 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
                     .Take(paginationRequest.PageSize);
 
+
                 List<StoreResponseModel> storeList = await pagedQuery.ToListAsync();
+                response.SearchString = paginationRequest.SearchString;
+                response.PageIndex = paginationRequest.PageIndex;
+                response.PageSize = paginationRequest.PageSize;
+                response.TotalCount = totalCount;
+                response.Data = storeList;
 
                 if (storeList.Any())
                 {
                     response.Code = GlobalConstants.SUCCESSFULL;
                     response.Message = System.Net.HttpStatusCode.OK.ToString();
-                    response.Data = new GetAllStoreResponseModel
-                    {
-                        PaginationRequest = paginationRequest,
-                        StoreResponseList = storeList,
-                        TotalCount = totalCount
-                    };
                     response.Success = true;
+
                 }
                 else
                 {
+                    response.Code = GlobalConstants.FAIL;
                     response.Success = false;
                     response.Message = "Stores not found";
                 }
@@ -487,9 +489,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 _ => await Task.FromResult(new List<string>())
             };
         }
-
-
-
 
 
     }

@@ -168,7 +168,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        private static Category MapToCategory(CategoryRequestModel request)
+        private Category MapToCategory(CategoryRequestModel request)
         {
             if (!string.IsNullOrWhiteSpace(request.Name))
             {
@@ -184,7 +184,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             };
         }
 
-        private static void UpdateCategory(Category category, CategoryRequestModel request)
+        private void UpdateCategory(Category category, CategoryRequestModel request)
         {
             category.Name = request.Name;
             category.Description = request.Description;

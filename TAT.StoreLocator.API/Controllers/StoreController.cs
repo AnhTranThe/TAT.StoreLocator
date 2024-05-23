@@ -28,8 +28,8 @@ namespace TAT.StoreLocator.API.Controllers
             try
             {
 
-                BaseResponseResult<Core.Models.Response.Store.GetAllStoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
-                return response != null && response.Success ? Ok(response.Data) : (IActionResult)StatusCode(500, "Failed to get stores");
+                BasePaginationResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
+                return response != null && response.Success ? Ok(response) : (IActionResult)StatusCode(500, "Failed to get stores");
             }
             catch (Exception ex)
             {
