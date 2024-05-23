@@ -26,7 +26,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _photoService = photoService;
         }
 
-        public async Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request)
+        public async Task<CreateStoreResponseModel> CreateStoreAsync(StoreRequestModel request)
         {
             CreateStoreResponseModel response = new();
 

@@ -7,7 +7,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     public interface IStoreService
     {
         //Create
-        Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request);
+        Task<CreateStoreResponseModel> CreateStoreAsync(StoreRequestModel request);
 
         //GetAllStore
         Task<BasePaginationResult<StoreResponseModel>> GetAllStoreAsync(BasePaginationRequest paginationRequest);

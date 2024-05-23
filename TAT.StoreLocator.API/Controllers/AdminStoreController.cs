@@ -22,7 +22,7 @@ namespace TAT.StoreLocator.API.Controllers
 
         [HttpPost("create")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> CreateStore([FromForm] CreateStoreRequestModel request)
+        public async Task<IActionResult> CreateStore([FromForm] StoreRequestModel request)
         {
             try
             {
