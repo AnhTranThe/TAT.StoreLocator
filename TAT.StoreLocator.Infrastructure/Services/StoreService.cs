@@ -18,9 +18,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
     public class StoreService : IStoreService
     {
         private readonly AppDbContext _appDbContext;
+        private readonly ILogger<StoreService> _logger;
         private readonly IMapper _mapper;
         private readonly IPhotoService _photoService;
-        ILogger<StoreService> _logger;
         public StoreService(AppDbContext appDbContext, IMapper mapper, IPhotoService photoService, ILogger<StoreService> logger)
         {
             _appDbContext = appDbContext;
@@ -146,10 +146,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             try
             {
+                response.SearchString = paginationRequest.SearchString;
                 response.PageIndex = paginationRequest.PageIndex;
                 response.PageSize = paginationRequest.PageSize;
-                response.SearchString = paginationRequest.SearchString;
-
                 IQueryable<StoreResponseModel> query = from store in _appDbContext.Stores
                                                        join mapGalleryStore in _appDbContext.MapGalleryStores
                                                            on store.Id equals mapGalleryStore.StoreId
@@ -183,7 +182,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                                    FileName = gallery.FileName,
                                                                    Url = gallery.Url,
                                                                    IsThumbnail = gallery.IsThumbnail
-                                                               }).ToList()
+                                                               }).ToList(),
+                                                           RatingStore = new RatingStore()
+                                                           {
+                                                               NumberRating = store.Reviews == null ? 0 : store.Reviews.Count(),
+                                                               PointOfRating = store.Reviews == null || !store.Reviews.Any()
+                                                                                               ? 0
+                                                                                                : store.Reviews.Average(r => r.RatingValue)
+                                                           }
+
                                                        };
 
                 //Thêm điều kiện tìm kiếm theo tên
@@ -207,7 +214,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving Store list");
+                _logger.LogError(ex, "Error retrieving category list");
             }
             await Task.Yield(); /*Thêm một câu lệnh await Task.Yield() để đảm bảo phương thức trả về một Task*/
             return response;
