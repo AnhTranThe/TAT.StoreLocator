@@ -16,7 +16,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId);
 
         //UpdateStore
-        Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request);
+        Task<BaseResponseResult<string>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request);
 
         ////DeleteStore
         Task<BaseResponse> DeleteStoreAsync(string storeId);

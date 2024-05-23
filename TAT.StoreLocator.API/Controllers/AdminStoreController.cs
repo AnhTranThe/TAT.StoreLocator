@@ -50,7 +50,7 @@ namespace TAT.StoreLocator.API.Controllers
         {
             try
             {
-                Core.Common.BaseResponseResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.UpdateStoreAsync(storeId, request);
+                Core.Common.BaseResponseResult<string> response = await _storeService.UpdateStoreAsync(storeId, request);
                 return response.Success ? Ok(response.Data) : (IActionResult)StatusCode(500, response.Message);
             }
             catch (Exception ex)
