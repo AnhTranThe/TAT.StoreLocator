@@ -1,6 +1,6 @@
 ﻿namespace TAT.StoreLocator.Core.Common
 {
-    public class BasePaginationResponse
+    public class BasePaginationResponse : BaseResponse
     {
         public int PageSize { get; set; }
 

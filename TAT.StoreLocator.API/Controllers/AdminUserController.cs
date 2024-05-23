@@ -8,7 +8,7 @@ using TAT.StoreLocator.Core.Models.Response.User;
 
 namespace TAT.StoreLocator.API.Controllers
 {
-    [Route("api/admin/[controller]")]
+    [Route("api/admin/user")]
     [ApiController]
     [Authorize(Roles = GlobalConstants.RoleAdminName)]
     public class AdminUserController : ControllerBase
