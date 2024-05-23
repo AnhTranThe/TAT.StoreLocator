@@ -11,7 +11,6 @@ namespace TAT.StoreLocator.API.Controllers
     [Authorize]
     public class ProductController : ControllerBase
     {
-
         private readonly IProductService _productService;
 
         public ProductController(IProductService productService)
@@ -36,9 +35,7 @@ namespace TAT.StoreLocator.API.Controllers
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, ex.Message);
-
             }
         }
 
@@ -56,10 +53,8 @@ namespace TAT.StoreLocator.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
-
             }
         }
-
 
         [HttpGet("Product/{storeId}")]
         [AllowAnonymous]
@@ -83,16 +78,8 @@ namespace TAT.StoreLocator.API.Controllers
             }
             catch (Exception ex)
             {
-
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred." + ex.Message);
             }
         }
-
-
-
-
-
-
-
     }
 }

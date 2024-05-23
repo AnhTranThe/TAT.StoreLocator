@@ -15,22 +15,19 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
 {
     public class AutoMapperProfile : Profile
     {
-
         public AutoMapperProfile()
 
         {
-
             #region from entities to DTOs
 
             _ = CreateMap<User, UserResponseModel>()
                  .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.LastName + " " + src.FirstName))
                  .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.Dob.ToString("yyyy-MM-ddTHH:mm:sszzz")));
 
-
-            #endregion
-
+            #endregion from entities to DTOs
 
             #region from DTOs to entities
+
             _ = CreateMap<UserResponseModel, User>()
                  .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
                  .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => DateTimeOffset.ParseExact(src.Dob, "yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture)));
@@ -41,19 +38,15 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                  .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.UserResponseModel.Email))
                  .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserResponseModel.Id));
 
-
             _ = CreateMap<UpdateUserRequestModel, User>()
                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.RequestId))
               .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.LastName + " " + src.FirstName))
               .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
 
-
-
             _ = CreateMap<UpdateUserRequestModel, Address>()
               .ForMember(dest => dest.RoadName, opt => opt.MapFrom(src => src.RoadName))
               .ForMember(dest => dest.Province, opt => opt.MapFrom(src => src.Province))
                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District));
-
 
             _ = CreateMap<UpdateUserRequestModel, Address>()
                   .ForMember(dest => dest.RoadName, opt => opt.MapFrom(src => src.RoadName))
@@ -75,29 +68,27 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
 
                      .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward));
 
+            _ = CreateMap<Store, StoreResponseModel>()
+                .ForMember(dest => dest.MapGalleryStores, opt => opt.Ignore()) // We handle this manually
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address != null ?
+                    new AddressResponseModel
+                    {
+                        RoadName = src.Address.RoadName,
+                        Province = src.Address.Province,
+                        District = src.Address.District,
+                        Ward = src.Address.Ward,
+                        PostalCode = src.Address.PostalCode,
+                        Latitude = src.Address.latitude,
+                        Longitude = src.Address.longitude
+                    } : null));
 
-                CreateMap<Store, StoreResponseModel>()
-                    .ForMember(dest => dest.MapGalleryStores, opt => opt.Ignore()) // We handle this manually
-                    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address != null ?
-                        new AddressResponseModel
-                        {
-                            RoadName = src.Address.RoadName,
-                            Province = src.Address.Province,
-                            District = src.Address.District,
-                            Ward = src.Address.Ward,
-                            PostalCode = src.Address.PostalCode,
-                            Latitude = src.Address.latitude,
-                            Longitude = src.Address.longitude
-                        } : null));
-
-                CreateMap<MapGalleryStore, MapGalleryStoreResponse>()
-                  .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery != null ?
-                      src.Gallery.FileName : string.Empty))
-                  .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Gallery != null ?
-                      src.Gallery.Url : string.Empty))
-                  .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery != null &&
-                      src.Gallery.IsThumbnail));
-
+            _ = CreateMap<MapGalleryStore, MapGalleryStoreResponse>()
+              .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery != null ?
+                  src.Gallery.FileName : string.Empty))
+              .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Gallery != null ?
+                  src.Gallery.Url : string.Empty))
+              .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery != null &&
+                  src.Gallery.IsThumbnail));
 
             _ = CreateMap<CreateReviewRequestModel, Review>()
                 .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
@@ -109,7 +100,6 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
-
 
             _ = CreateMap<Review, ReviewResponseModel>()
                 .ForMember(dest => dest.StoreId, opt => opt.MapFrom(src => src.StoreId))
@@ -130,7 +120,6 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                     Discount = src.Product.Discount,
                     Quantity = src.Product.Quantity,
                 }));
-
 
             _ = CreateMap<UpdateReviewRequestModel, Review>()
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
@@ -160,12 +149,8 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt.ToString("yyyy-MM-ddTHH:mm:sszzz")))
                 .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy));
-            #endregion
 
-
-
+            #endregion from DTOs to entities
         }
     }
 }
-
-

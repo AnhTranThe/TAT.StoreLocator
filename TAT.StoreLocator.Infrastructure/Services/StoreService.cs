@@ -12,7 +12,6 @@ using TAT.StoreLocator.Core.Models.Response.Store;
 using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
-
 namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class StoreService : IStoreService
@@ -29,9 +28,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task<CreateStoreResponseModel> CreateStoreAsync(CreateStoreRequestModel request)
+        public async Task<CreateStoreResponseModel> CreateStoreAsync(StoreRequestModel request)
         {
-            var response = new CreateStoreResponseModel();
+            CreateStoreResponseModel response = new();
 
             try
             {
@@ -57,33 +56,32 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         latitude = request.Address.Latitude,
                         longitude = request.Address.Longitude
                     };
-                    _appDbContext.Addresses.Add(newAddressEntity);
-
+                    _ = _appDbContext.Addresses.Add(newAddressEntity);
                 }
 
                 // Create new store entity
-                var newStoreId = Guid.NewGuid().ToString();
-                var newStoreEntity = new Store
+                string newStoreId = Guid.NewGuid().ToString();
+                Store newStoreEntity = new()
                 {
                     Id = newStoreId,
                     Name = request.Name,
                     PhoneNumber = request.PhoneNumber,
                     Email = request.Email,
                     AddressId = newAddressEntity?.Id,
-                    IsDeleted = false
+                    IsActive = true
                 };
                 if (request.files != null)
                 {
-                    foreach (var file in request.files)
+                    foreach (IFormFile file in request.files)
                     {
                         await UpdateStorePhotoAsync(newStoreId, file);
                     }
                 }
 
                 // Add new store entity to context
-                _appDbContext.Stores.Add(newStoreEntity);
+                _ = _appDbContext.Stores.Add(newStoreEntity);
                 // Save changes to the database
-                await _appDbContext.SaveChangesAsync();
+                _ = await _appDbContext.SaveChangesAsync();
 
                 // Populate response
                 response.Id = newStoreId;
@@ -94,6 +92,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     Name = request.Name,
                     PhoneNumber = request.PhoneNumber,
                     Email = request.Email,
+                    IsActive = request.IsActive,
                     Address = newAddressEntity == null ? null : new AddressResponseModel
                     {
                         Id = newAddressEntity.Id,
@@ -106,7 +105,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         Longitude = newAddressEntity.longitude
                     }
                 };
-
             }
             catch (Exception ex)
             {
@@ -118,7 +116,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         private async Task UpdateStorePhotoAsync(string storeId, IFormFile file)
         {
-
             CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await _photoService.UploadImage(file, true);
             Gallery gallery = new()
             {
@@ -137,9 +134,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
             };
 
             _ = _appDbContext.MapGalleryStores.Add(mapGalleryStore);
-
-
         }
+
         public async Task<BasePaginationResult<StoreResponseModel>> GetAllStoreAsync(BasePaginationRequest paginationRequest)
         {
             BasePaginationResult<StoreResponseModel> response = new();
@@ -170,6 +166,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                                Latitude = store.Address.latitude,
                                                                Longitude = store.Address.longitude
                                                            },
+                                                           IsActive = store.IsActive,
                                                            CreatedAt = store.CreatedAt,
                                                            CreatedBy = store.CreatedBy,
                                                            UpdatedAt = store.UpdatedAt,
@@ -205,11 +202,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
                     .Take(paginationRequest.PageSize);
 
-                List<StoreResponseModel> storeList = await pagedQuery.ToListAsync();
-                response.Data = storeList;
-
-                return response;
-
+                response.Data = await pagedQuery.ToListAsync();
+                response.SearchString = paginationRequest.SearchString;
+                response.PageIndex = paginationRequest.PageIndex;
+                response.PageSize = paginationRequest.PageSize;
 
             }
             catch (Exception ex)
@@ -219,7 +215,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             await Task.Yield(); /*Thêm một câu lệnh await Task.Yield() để đảm bảo phương thức trả về một Task*/
             return response;
         }
-
 
         public async Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId)
         {
@@ -279,6 +274,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 store.Name = request.Name;
                 store.Email = request.Email;
                 store.PhoneNumber = request.PhoneNumber;
+                store.IsActive = request.IsActive;
 
                 _ = await _appDbContext.SaveChangesAsync();
 
@@ -313,8 +309,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     return response;
                 }
 
-
-                store.IsDeleted = true;
+                store.IsActive = false;
                 _ = _appDbContext.Stores.Update(store);
 
                 _ = await _appDbContext.SaveChangesAsync();
@@ -329,6 +324,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
             return response;
         }
+
         public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(string district, string ward, string province, string keyWord)
         {
             BaseResponseResult<List<SimpleStoreResponse>> response = new();
@@ -457,7 +453,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-
         private async Task<List<string>> GetNearDistrict(string district)
         {
             district = CommonUtils.RemoveDiacritics(district).ToUpper(); // Chuyển đổi chuỗi đầu vào thành chữ hoa
@@ -489,23 +484,5 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 _ => await Task.FromResult(new List<string>())
             };
         }
-
-
-
-
-
     }
-
-
 }
-
-
-
-
-
-
-
-
-
-
-

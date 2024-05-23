@@ -11,7 +11,6 @@ namespace TAT.StoreLocator.API.Controllers
     [Authorize(Roles = GlobalConstants.RoleAdminName)]
     public class AdminStoreController : ControllerBase
     {
-
         //Depency Injection
         private readonly IStoreService _storeService;
 
@@ -19,20 +18,15 @@ namespace TAT.StoreLocator.API.Controllers
         public AdminStoreController(IStoreService storeService)
         {
             _storeService = storeService;
-
         }
-
 
         [HttpPost("create")]
         [Consumes("multipart/form-data")]
-
-        public async Task<IActionResult> CreateStore([FromForm] CreateStoreRequestModel request)
+        public async Task<IActionResult> CreateStore([FromForm] StoreRequestModel request)
         {
             try
             {
-
                 Core.Models.Response.Store.CreateStoreResponseModel response = await _storeService.CreateStoreAsync(request);
-
 
                 return response == null
                     ? StatusCode(500, "Failed to create store")
@@ -43,7 +37,6 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
 
         [HttpPut("update/{storeId}")]
         public async Task<IActionResult> UpdateStore(string storeId, [FromBody] UpdateStoreRequestModel request)
@@ -59,7 +52,6 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-
         [HttpDelete("delete/{storeId}")]
         public async Task<IActionResult> DeleteStore(string storeId)
         {
@@ -73,11 +65,5 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
-
-
-
-
-
     }
 }

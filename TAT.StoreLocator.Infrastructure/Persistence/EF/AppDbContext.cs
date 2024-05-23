@@ -8,8 +8,6 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
 {
     public class AppDbContext : IdentityDbContext<User, Role, string>
     {
-
-
         public AppDbContext(DbContextOptions<AppDbContext> options)
       : base(options)
         {
@@ -18,7 +16,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // identity 
+            // identity
             _ = builder.ApplyConfiguration(new AppRoleClaimConfiguration());
             _ = builder.ApplyConfiguration(new AppRoleConfiguration());
             _ = builder.ApplyConfiguration(new AppUserClaimConfiguration());
@@ -40,12 +38,10 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
             _ = builder.ApplyConfiguration(new WishlistConfiguration());
         }
 
-
         public virtual async Task<int> SaveChangesAsync(string userId = "")
         {
             foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<BaseEntity> entry in ChangeTracker.Entries<BaseEntity>())
             {
-
                 if (entry.State == EntityState.Modified)
                 {
                     entry.Entity.UpdatedAt = DateTime.Now;
@@ -59,10 +55,9 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
                 }
             }
 
-
             return await base.SaveChangesAsync();
-
         }
+
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Gallery> Galleries { get; set; }
@@ -74,9 +69,5 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Store> Stores { get; set; }
         public DbSet<Wishlist> Wishlist { get; set; }
-
     }
-
-
-
 }

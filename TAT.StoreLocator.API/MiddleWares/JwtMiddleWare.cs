@@ -18,6 +18,7 @@ namespace TAT.StoreLocator.API.MiddleWares
             _next = next;
             _jwtTokenSettings = jwtTokenSettings.Value;
         }
+
         public async Task Invoke(HttpContext context)
         {
             Endpoint? endpoint = context.GetEndpoint();
@@ -42,6 +43,7 @@ namespace TAT.StoreLocator.API.MiddleWares
                 await context.Response.WriteAsync("Unauthorized");
             }
         }
+
         private bool ValidationJwtToken(string jwt)
         {
             try
@@ -72,10 +74,8 @@ namespace TAT.StoreLocator.API.MiddleWares
             }
             catch (Exception)
             {
-
                 return false;
             }
         }
-
     }
 }

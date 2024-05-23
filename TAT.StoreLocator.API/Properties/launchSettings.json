@@ -18,7 +18,6 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DATABASE_URL": ""
-
       }
     },
     "IIS Express": {

@@ -21,6 +21,4 @@ namespace TAT.StoreLocator.Core.Models.Response.Review
         public string? UpdatedAt { get; set; }
         public string? UpdatedBy { get; set; }
     }
-
-
 }

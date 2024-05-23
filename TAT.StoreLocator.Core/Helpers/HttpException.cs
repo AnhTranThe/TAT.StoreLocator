@@ -8,6 +8,7 @@ namespace TAT.StoreLocator.Core.Helpers
         {
             StatusCode = statusCode;
         }
+
         public HttpException(string message, Exception inner, int statusCode = StatusCodes.Status400BadRequest) : base(message, inner)
         {
             StatusCode = statusCode;

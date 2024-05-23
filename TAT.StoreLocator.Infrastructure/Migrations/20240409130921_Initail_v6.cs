@@ -8,51 +8,51 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Galleries_Categories_CategoryId",
                 table: "Galleries");
 
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Galleries_Products_ProductId",
                 table: "Galleries");
 
-            migrationBuilder.DropPrimaryKey(
+            _ = migrationBuilder.DropPrimaryKey(
                 name: "PK_MapStoreWishlists",
                 table: "MapStoreWishlists");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_MapStoreWishlists_StoreId",
                 table: "MapStoreWishlists");
 
-            migrationBuilder.DropPrimaryKey(
+            _ = migrationBuilder.DropPrimaryKey(
                 name: "PK_MapProductWishlists",
                 table: "MapProductWishlists");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_MapProductWishlists_ProductId",
                 table: "MapProductWishlists");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_Galleries_CategoryId",
                 table: "Galleries");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "Id",
                 table: "MapStoreWishlists");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "Id",
                 table: "MapProductWishlists");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "CategoryId",
                 table: "Galleries");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "FileStatus",
                 table: "Galleries");
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "WishlistId",
                 table: "MapStoreWishlists",
                 type: "text",
@@ -62,7 +62,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldType: "text",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "StoreId",
                 table: "MapStoreWishlists",
                 type: "text",
@@ -72,7 +72,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldType: "text",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "WishlistId",
                 table: "MapProductWishlists",
                 type: "text",
@@ -82,7 +82,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldType: "text",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "ProductId",
                 table: "MapProductWishlists",
                 type: "text",
@@ -92,23 +92,23 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldType: "text",
                 oldNullable: true);
 
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "GalleryId",
                 table: "Categories",
                 type: "text",
                 nullable: true);
 
-            migrationBuilder.AddPrimaryKey(
+            _ = migrationBuilder.AddPrimaryKey(
                 name: "PK_MapStoreWishlists",
                 table: "MapStoreWishlists",
                 columns: new[] { "StoreId", "WishlistId" });
 
-            migrationBuilder.AddPrimaryKey(
+            _ = migrationBuilder.AddPrimaryKey(
                 name: "PK_MapProductWishlists",
                 table: "MapProductWishlists",
                 columns: new[] { "ProductId", "WishlistId" });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "MapGalleryProducts",
                 columns: table => new
                 {
@@ -117,14 +117,14 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MapGalleryProducts", x => new { x.ProductId, x.GalleryId });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_MapGalleryProducts", x => new { x.ProductId, x.GalleryId });
+                    _ = table.ForeignKey(
                         name: "FK_MapGalleryProducts_Galleries_GalleryId",
                         column: x => x.GalleryId,
                         principalTable: "Galleries",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_MapGalleryProducts_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
@@ -132,7 +132,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "MapGalleryStores",
                 columns: table => new
                 {
@@ -141,14 +141,14 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MapGalleryStores", x => new { x.StoreId, x.GalleryId });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_MapGalleryStores", x => new { x.StoreId, x.GalleryId });
+                    _ = table.ForeignKey(
                         name: "FK_MapGalleryStores_Galleries_GalleryId",
                         column: x => x.GalleryId,
                         principalTable: "Galleries",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_MapGalleryStores_Stores_StoreId",
                         column: x => x.StoreId,
                         principalTable: "Stores",
@@ -156,23 +156,23 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Categories_GalleryId",
                 table: "Categories",
                 column: "GalleryId",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_MapGalleryProducts_GalleryId",
                 table: "MapGalleryProducts",
                 column: "GalleryId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_MapGalleryStores_GalleryId",
                 table: "MapGalleryStores",
                 column: "GalleryId");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Categories_Galleries_GalleryId",
                 table: "Categories",
                 column: "GalleryId",
@@ -180,7 +180,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Galleries_Products_ProductId",
                 table: "Galleries",
                 column: "ProductId",
@@ -190,37 +190,37 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Categories_Galleries_GalleryId",
                 table: "Categories");
 
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Galleries_Products_ProductId",
                 table: "Galleries");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "MapGalleryProducts");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "MapGalleryStores");
 
-            migrationBuilder.DropPrimaryKey(
+            _ = migrationBuilder.DropPrimaryKey(
                 name: "PK_MapStoreWishlists",
                 table: "MapStoreWishlists");
 
-            migrationBuilder.DropPrimaryKey(
+            _ = migrationBuilder.DropPrimaryKey(
                 name: "PK_MapProductWishlists",
                 table: "MapProductWishlists");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_Categories_GalleryId",
                 table: "Categories");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "GalleryId",
                 table: "Categories");
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "WishlistId",
                 table: "MapStoreWishlists",
                 type: "text",
@@ -228,7 +228,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "StoreId",
                 table: "MapStoreWishlists",
                 type: "text",
@@ -236,14 +236,14 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "Id",
                 table: "MapStoreWishlists",
                 type: "text",
                 nullable: false,
                 defaultValue: "");
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "WishlistId",
                 table: "MapProductWishlists",
                 type: "text",
@@ -251,7 +251,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "ProductId",
                 table: "MapProductWishlists",
                 type: "text",
@@ -259,52 +259,52 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "Id",
                 table: "MapProductWishlists",
                 type: "text",
                 nullable: false,
                 defaultValue: "");
 
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "CategoryId",
                 table: "Galleries",
                 type: "text",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
+            _ = migrationBuilder.AddColumn<int>(
                 name: "FileStatus",
                 table: "Galleries",
                 type: "integer",
                 nullable: true);
 
-            migrationBuilder.AddPrimaryKey(
+            _ = migrationBuilder.AddPrimaryKey(
                 name: "PK_MapStoreWishlists",
                 table: "MapStoreWishlists",
                 column: "Id");
 
-            migrationBuilder.AddPrimaryKey(
+            _ = migrationBuilder.AddPrimaryKey(
                 name: "PK_MapProductWishlists",
                 table: "MapProductWishlists",
                 column: "Id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_MapStoreWishlists_StoreId",
                 table: "MapStoreWishlists",
                 column: "StoreId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_MapProductWishlists_ProductId",
                 table: "MapProductWishlists",
                 column: "ProductId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Galleries_CategoryId",
                 table: "Galleries",
                 column: "CategoryId",
                 unique: true);
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Galleries_Categories_CategoryId",
                 table: "Galleries",
                 column: "CategoryId",
@@ -312,7 +312,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Galleries_Products_ProductId",
                 table: "Galleries",
                 column: "ProductId",

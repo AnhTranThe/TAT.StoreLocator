@@ -19,12 +19,14 @@ namespace TAT.StoreLocator.Infrastructure.Services
         private readonly IPhotoService _photoService;
         private readonly ILogger _logger;
         private readonly AppDbContext _dbContext;
+
         public ProductService(ILogger logger, AppDbContext dbContext, IPhotoService photoService)
         {
             _logger = logger;
             _dbContext = dbContext;
             _photoService = photoService;
         }
+
         /// <summary>
         /// getproductbyid Last
         /// </summary>
@@ -101,11 +103,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-
         public Task<BasePaginationResult<ProductResponseModel>> SearchProductAsync(SearchProductPagingRequestModel request)
         {
             throw new NotImplementedException();
         }
+
         /// <summary>
         /// getProductList
         /// </summary>
@@ -174,6 +176,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             return response;
         }
+
         /// <summary>
         /// Update product
         /// </summary>
@@ -372,6 +375,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             response.Success = true;
             return response;
         }
+
         /// <summary>
         /// add new product
         /// </summary>
@@ -443,6 +447,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             return response;
         }
+
         /// <summary>
         /// get Product By StoreId
         /// </summary>
@@ -473,7 +478,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     IsActive = product.IsActive,
                     ProductViewCount = product.ProductViewCount,
                     CategoryId = product.CategoryId,
-
                 });
 
             int totalCount = await query.CountAsync();

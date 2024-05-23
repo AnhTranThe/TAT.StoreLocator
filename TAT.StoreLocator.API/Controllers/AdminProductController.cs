@@ -12,7 +12,6 @@ namespace TAT.StoreLocator.API.Controllers
     [Authorize(Roles = GlobalConstants.RoleAdminName)]
     public class AdminProductController : ControllerBase
     {
-
         private readonly IProductService _productService;
 
         public AdminProductController(IProductService productService)
@@ -23,15 +22,12 @@ namespace TAT.StoreLocator.API.Controllers
         [HttpPost("addProduct")]
         public async Task<ActionResult> AddProduct([FromBody] ProductRequestModel request)
         {
-
             try
             {
-
                 if (string.IsNullOrWhiteSpace(request.StoreId))
                 {
                     return BadRequest("StoreId is not null");
                 }
-
 
                 BaseResponse Response = await _productService.AddProduct(request);
 
@@ -39,17 +35,11 @@ namespace TAT.StoreLocator.API.Controllers
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, ex.Message);
-
             }
-
         }
 
-
-
         [HttpPut("update/{Id}")]
-
         public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductRequestModel request)
         {
             if (request == null || string.IsNullOrEmpty(Id))
@@ -64,7 +54,5 @@ namespace TAT.StoreLocator.API.Controllers
             BaseResponse response = await _productService.UpdateProduct(Id, request);
             return !response.Success ? BadRequest(response) : Ok(response);
         }
-
-
     }
 }

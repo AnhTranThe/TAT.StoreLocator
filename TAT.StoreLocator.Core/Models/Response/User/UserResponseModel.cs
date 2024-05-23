@@ -17,7 +17,5 @@ namespace TAT.StoreLocator.Core.Models.Response.User
         public string AccessToken { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public ICollection<string>? Roles { get; set; }
-
-
     }
 }

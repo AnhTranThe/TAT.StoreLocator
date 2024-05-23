@@ -31,15 +31,14 @@ namespace TAT.StoreLocator.Core.Helpers
             StoreOwner,
             Customer
         }
+
         public enum EGenderType
         {
             NotInformation,
             Men,
             Women,
             Other,
-
         }
-
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum EOrderBy
@@ -60,16 +59,17 @@ namespace TAT.StoreLocator.Core.Helpers
         //}
         //#endregion
 
-        #region TagType 
+        #region TagType
+
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum ETagType
         {
             Category,
             Product,
             Post
-
         }
-        #endregion
+
+        #endregion TagType
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum EReviewStatus
@@ -77,6 +77,5 @@ namespace TAT.StoreLocator.Core.Helpers
             Pending = 0,
             Approved = 1,
         }
-
     }
 }

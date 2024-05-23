@@ -1,18 +1,12 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
-using TAT.StoreLocator.Core.Interface.IPaging;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Review;
 using TAT.StoreLocator.Core.Models.Response.Product;
 using TAT.StoreLocator.Core.Models.Response.Review;
-using TAT.StoreLocator.Core.Models.Response.Store;
-using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
 
 namespace TAT.StoreLocator.Infrastructure.Services
 {
@@ -31,9 +25,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             Review? existingReview = await _appDbContext.Reviews
                   .Include(r => r.Product)
-                      .ThenInclude(p => p!.Store) // Thêm dấu ! để chỉ định rằng nó k null 
+                      .ThenInclude(p => p!.Store) // Thêm dấu ! để chỉ định rằng nó k null
                .FirstOrDefaultAsync(r => r.UserId == request.UserId && r.Product != null && r.Product.StoreId == request.StoreId);
-
 
             if (existingReview != null)
             {
@@ -52,7 +45,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                .Include(r => r.Product)
                .ThenInclude(p => p!.Store)
                .FirstOrDefaultAsync(r => r.Id == review.Id);
-
 
             ReviewResponseModel responseModel = _mapper.Map<ReviewResponseModel>(review);
             return new BaseResponseResult<ReviewResponseModel>
@@ -143,7 +135,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             List<ReviewResponseModel> reviewResponseModel = _mapper.Map<List<ReviewResponseModel>>(reviewList);
 
             // Tạo kết quả trả về
-            BasePaginationResult<ReviewResponseModel> paginationResult = new BasePaginationResult<ReviewResponseModel>
+            BasePaginationResult<ReviewResponseModel> paginationResult = new()
             {
                 Data = reviewResponseModel,
                 PageSize = paginationRequest.PageSize,
@@ -185,5 +177,3 @@ namespace TAT.StoreLocator.Infrastructure.Services
         }
     }
 }
-
-

@@ -7,8 +7,7 @@ namespace TAT.StoreLocator.Core.Models.Request.User
     {
         [Required]
         public string? UserId { get; set; }
+
         public List<BaseSelectItem> Roles { get; set; } = new List<BaseSelectItem>();
-
-
     }
 }
