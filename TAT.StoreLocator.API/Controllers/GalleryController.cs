@@ -52,7 +52,7 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpPut("update")]
+        [HttpPut("update/{Id}")]
         public async Task<IActionResult> Update(string Id, [FromBody] PhotoRequestModel request)
         {
 
@@ -76,7 +76,7 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpDelete("delete")]
+        [HttpDelete("delete/{Id}")]
         public async Task<IActionResult> Delete(string Id)
         {
 
