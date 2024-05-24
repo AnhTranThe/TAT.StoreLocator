@@ -226,7 +226,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                             return response;
                         }
-                        CloudinaryDotNet.Actions.DeletionResult? deleteOldFileResult = await _photoService.DeleteImage(gallery.PublicId ?? "");
+                        CloudinaryDotNet.Actions.DeletionResult? deleteOldFileResult = await _photoService.DeleteImageCloudinary(gallery.PublicId ?? "");
                         if (deleteOldFileResult != null && deleteOldFileResult.Error != null)
                         {
                             response.Message = deleteOldFileResult.Error.Message;
