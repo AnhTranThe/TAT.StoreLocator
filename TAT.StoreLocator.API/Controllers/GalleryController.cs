@@ -61,7 +61,7 @@ namespace TAT.StoreLocator.API.Controllers
             try
             {
 
-                if (request.FileUpload == null)
+                if (request.ListFilesUpload == null)
                 {
                     return BadRequest("File upload not found");
                 }

@@ -238,17 +238,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 // Update the specified image
                 image.IsThumbnail = request.IsThumbnail;
 
-                // Update the FileName if it has changed
-                //if (request.FileName != null && request.FileName != image.FileName)
-                //{
-                //    image.FileName = request.FileName;
-                //}
-
-                //// Update the Url if it has changed
-                //if (request.Url != null && request.Url != image.Url)
-                //{
-                //    image.Url = request.Url;
-                //}
 
                 // Save the changes to the database
                 _ = await _appDbContext.SaveChangesAsync();

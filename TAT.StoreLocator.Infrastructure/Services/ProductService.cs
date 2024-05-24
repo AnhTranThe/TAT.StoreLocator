@@ -215,7 +215,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                     UpdateProductProperties(product, request);
 
-                    await UpdateCategoryAsync(product, request);
 
                     /*if (request.UploadPhoto?.FileUpload != null)
                     {
@@ -318,60 +317,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
         }
 
-        private async Task AddCategoryAsync(Product product, ProductRequestModel request)
-        {
-            if (!string.IsNullOrEmpty(request.CategoryId))
-            {
-                Category? existingCategory = await _dbContext.Categories.FindAsync(request.CategoryId);
-                if (existingCategory == null)
-                {
-                    _logger.LogError(new Exception());
-                }
-                product.CategoryId = request.CategoryId;
-            }
-            else if (request.Category != null)
-            {
-                Category newCategory = new()
-                {
-                    Name = request.Category.Name,
-                    Description = request.Category.Description,
-                    Slug = request.Category.Slug,
-                    IsActive = request.Category.IsActive,
-                    ParentCategoryId = request.Category.ParentCategoryId
-                };
-                _ = _dbContext.Categories.Add(newCategory);
-                _ = await _dbContext.SaveChangesAsync();
-                product.CategoryId = newCategory.Id;
-            }
-        }
-
-        private async Task UpdateCategoryAsync(Product product, UpdateProductRequestModel request)
-        {
-            if (!string.IsNullOrEmpty(request.CategoryId))
-            {
-                Category? existingCategory = await _dbContext.Categories.FindAsync(request.CategoryId);
-                if (existingCategory == null)
-                {
-                    _logger.LogError(new Exception());
-                }
-                product.CategoryId = request.CategoryId;
-            }
-            else if (request.Category != null)
-            {
-                Category newCategory = new()
-                {
-                    Name = request.Category.Name,
-                    Description = request.Category.Description,
-                    Slug = request.Category.Slug,
-                    IsActive = request.Category.IsActive,
-                    ParentCategoryId = request.Category.ParentCategoryId
-                };
-                _ = _dbContext.Categories.Add(newCategory);
-                _ = await _dbContext.SaveChangesAsync();
-                product.CategoryId = newCategory.Id;
-            }
-        }
-
 
         public async Task AddPhotoProductAsync(string productId, IFormFile file)
         {
@@ -435,11 +380,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     };
 
                     _ = _dbContext.Products.Add(product);
-                    await AddCategoryAsync(product, request);
 
-                    if (request.UploadPhoto?.FileUpload != null)
+
+                    if (request.UploadPhoto?.ListFilesUpload != null)
                     {
-                        foreach (IFormFile file in request.UploadPhoto.FileUpload)
+                        foreach (IFormFile file in request.UploadPhoto.ListFilesUpload)
                         {
                             await AddPhotoProductAsync(product.Id, file);
                         }
