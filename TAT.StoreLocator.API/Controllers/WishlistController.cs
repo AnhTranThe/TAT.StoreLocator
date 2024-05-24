@@ -11,7 +11,6 @@ namespace TAT.StoreLocator.API.Controllers
     public class WishlistController : ControllerBase
     {
         private readonly IWishlistService _wishlistService;
-
         public WishlistController(IWishlistService wishlistService)
         {
             _wishlistService = wishlistService;
@@ -75,9 +74,5 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-
-
-
-
     }
 }

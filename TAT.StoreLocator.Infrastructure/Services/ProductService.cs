@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.ILogger;
-using TAT.StoreLocator.Core.Interface.IPaging;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Category;
@@ -14,7 +13,6 @@ using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;
 using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TAT.StoreLocator.Infrastructure.Services
 {
@@ -176,7 +174,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                             IsThumbnail = m.Gallery.IsThumbnail
                         }).ToList() : null,
                 }).ToListAsync();
-         
+
             BasePaginationResult<ProductResponseModel> response = new()
             {
                 TotalCount = totalRow,

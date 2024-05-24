@@ -1,12 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.WishList;
-using TAT.StoreLocator.Core.Models.Response.Wishlist;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
 namespace TAT.StoreLocator.Infrastructure.Services
@@ -29,14 +25,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
         /// <returns>added wislist</returns>
         public async Task<BaseResponseResult<bool>> ChangeStatusProduct(WishListRequestProduct request, bool status)
         {
-         
+
             try
             {
-                if (request.UserId == null || request.ProductId == null ){
+                if (request.UserId == null || request.ProductId == null)
+                {
 
                     return CreateErrorResponse("Request is null");
                 }
-                Wishlist? wishlist = await GetOrCreateWishlistAsync(request.UserId,!status);
+                Wishlist? wishlist = await GetOrCreateWishlistAsync(request.UserId, !status);
 
                 if (wishlist == null)
                 {
@@ -63,10 +60,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
         }
         public async Task<BaseResponseResult<bool>> GetStatusProduct(WishListRequestProduct request)
         {
-           
+
             try
             {
-                if(request.UserId == null)
+                if (request.UserId == null)
                 {
                     return CreateErrorResponse("userId is null or emty");
                 }
@@ -176,11 +173,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 throw new ArgumentNullException(nameof(wishlist), "MapStoreWishlists is null. Wishlist data may be corrupted.");
             }
 
-            var mapStoreWishlist = wishlist.MapStoreWishlists.FirstOrDefault(mp => mp.StoreId == storeId);
+            MapStoreWishlist? mapStoreWishlist = wishlist.MapStoreWishlists.FirstOrDefault(mp => mp.StoreId == storeId);
             if (mapStoreWishlist != null)
             {
-                _dbContext.mapStoreWishlists.Remove(mapStoreWishlist);
-                _dbContext.SaveChanges();
+                _ = _dbContext.mapStoreWishlists.Remove(mapStoreWishlist);
+                _ = _dbContext.SaveChanges();
             }
         }
 
@@ -193,19 +190,17 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             if (!wishlist.MapStoreWishlists.Any(mp => mp.StoreId == storeId))
             {
-                var mapStoreWishlist = new MapStoreWishlist { WishlistId = wishlist.Id, StoreId = storeId };
-                _dbContext.mapStoreWishlists.Add(mapStoreWishlist);
-                _dbContext.SaveChanges();
+                MapStoreWishlist mapStoreWishlist = new() { WishlistId = wishlist.Id, StoreId = storeId };
+                _ = _dbContext.mapStoreWishlists.Add(mapStoreWishlist);
+                _ = _dbContext.SaveChanges();
             }
         }
 
         private bool StoreExistsInWishlist(Wishlist wishlist, string StoreId)
         {
-            if (wishlist.MapStoreWishlists == null)
-            {
-                throw new ArgumentNullException(nameof(wishlist), "MapStoreWhislist is null. Wishlist data may be corrupted.");
-            }
-            return wishlist.MapStoreWishlists.Any(mp => mp.StoreId == StoreId);
+            return wishlist.MapStoreWishlists == null
+                ? throw new ArgumentNullException(nameof(wishlist), "MapStoreWhislist is null. Wishlist data may be corrupted.")
+                : wishlist.MapStoreWishlists.Any(mp => mp.StoreId == StoreId);
         }
         private async Task<Wishlist?> GetWishlistAsync(string userId)
         {
@@ -221,8 +216,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
             if (wishlist == null && status)
             {
                 wishlist = new Wishlist { UserId = userId };
-                _dbContext.Wishlist.Add(wishlist);
-                await _dbContext.SaveChangesAsync();
+                _ = _dbContext.Wishlist.Add(wishlist);
+                _ = await _dbContext.SaveChangesAsync();
             }
             return await GetWishlistAsync(userId);
         }
@@ -236,9 +231,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             if (!wishlist.MapProductWishlists.Any(mp => mp.ProductId == productId))
             {
-                var mapProductWishlist = new MapProductWishlist { WishlistId = wishlist.Id, ProductId = productId };
-                _dbContext.MapProductWishlists.Add(mapProductWishlist);
-                _dbContext.SaveChanges();
+                MapProductWishlist mapProductWishlist = new() { WishlistId = wishlist.Id, ProductId = productId };
+                _ = _dbContext.MapProductWishlists.Add(mapProductWishlist);
+                _ = _dbContext.SaveChanges();
             }
         }
 
@@ -249,21 +244,19 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 throw new ArgumentNullException(nameof(wishlist), "MapProductWishlists is null. Wishlist data may be corrupted.");
             }
 
-            var mapProductWishlist = wishlist.MapProductWishlists.FirstOrDefault(mp => mp.ProductId == productId);
+            MapProductWishlist? mapProductWishlist = wishlist.MapProductWishlists.FirstOrDefault(mp => mp.ProductId == productId);
             if (mapProductWishlist != null)
             {
-                _dbContext.MapProductWishlists.Remove(mapProductWishlist);
-                _dbContext.SaveChanges();
+                _ = _dbContext.MapProductWishlists.Remove(mapProductWishlist);
+                _ = _dbContext.SaveChanges();
             }
         }
 
         private bool ProductExistsInWishlist(Wishlist wishlist, string productId)
         {
-            if (wishlist.MapProductWishlists == null)
-            {
-                throw new ArgumentNullException(nameof(wishlist), "MapProductWishlists is null. Wishlist data may be corrupted.");
-            }
-            return wishlist.MapProductWishlists.Any(mp => mp.ProductId == productId);
+            return wishlist.MapProductWishlists == null
+                ? throw new ArgumentNullException(nameof(wishlist), "MapProductWishlists is null. Wishlist data may be corrupted.")
+                : wishlist.MapProductWishlists.Any(mp => mp.ProductId == productId);
         }
 
 
