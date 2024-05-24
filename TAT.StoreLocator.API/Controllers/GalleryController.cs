@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Photo;
+using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 
 namespace TAT.StoreLocator.API.Controllers
@@ -52,8 +53,31 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
+
+
+        [HttpPost("add")]
+        public async Task<ActionResult> Add([FromBody] UploadPhotoRequestModel request)
+        {
+            try
+            {
+
+                if (request.FileUpload == null)
+                {
+                    return BadRequest("File upload not found");
+                }
+                BaseResponse Response = await _photoService.CreateImage(request);
+
+                return !Response.Success ? BadRequest(Response.Message) : Ok(Response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
         [HttpPut("update/{Id}")]
-        public async Task<IActionResult> Update(string Id, [FromBody] PhotoRequestModel request)
+        public async Task<IActionResult> Update(string Id, [FromBody] UpdatePhotoRequestModel request)
         {
 
             try

@@ -1,6 +1,6 @@
 ﻿namespace TAT.StoreLocator.Core.Models.Request.Photo
 {
-    public class PhotoRequestModel
+    public class UpdatePhotoRequestModel
     {
         public bool IsThumbnail { get; set; } = false;
         public string Type { get; set; } = string.Empty;

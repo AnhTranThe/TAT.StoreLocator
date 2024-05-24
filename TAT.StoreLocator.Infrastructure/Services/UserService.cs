@@ -152,7 +152,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                     if (request.NewFile != null && request.NewFile.Length > 0 && _dbContext.Galleries != null)
                     {
-                        UploadPhotoRequestModel uploadPhotoRequestModel = new()
+                        PhotoUploadProfileRequestModel uploadPhotoRequestModel = new()
                         {
                             FileUpload = request.NewFile,
                             UserId = request.RequestId,
@@ -196,7 +196,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponse> UpdateUserPhoto(UploadPhotoRequestModel request)
+        public async Task<BaseResponse> UpdateUserPhoto(PhotoUploadProfileRequestModel request)
         {
             BaseResponse response = new()
             {

@@ -89,6 +89,7 @@
         public const string USER_NOT_FOUND = "USER_NOT_FOUND";
         public const string USER_DATA_FAILED = "USER_DATA_FAILED";
         public const string NOT_FOUND = "NOT_FOUND";
+        public const string FILE_UPLOAD_NOT_FOUND = "FILE_UPLOAD_NOT_FOUND";
         public const string PROFILE_NOT_FOUND = "PROFILE_NOT_FOUND";
         public const string USER_EXISTED = "USER_EXISTED";
         public const string USER_ALREADY_USED = "USER_ALREADY_USED";

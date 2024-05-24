@@ -8,6 +8,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Photo;
+using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -184,7 +185,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponse> UpdateImage(string Id, PhotoRequestModel request)
+        public async Task<BaseResponse> UpdateImage(string Id, UpdatePhotoRequestModel request)
         {
             BaseResponse response = new() { Success = false };
             try
@@ -318,5 +319,90 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 return response;
             }
         }
+
+        public async Task<BaseResponse> CreateImage(UploadPhotoRequestModel request)
+        {
+            BaseResponse response = new() { Success = false };
+
+            // Check if the file upload is null
+            if (request.FileUpload == null)
+            {
+                response.Message = GlobalConstants.FILE_UPLOAD_NOT_FOUND;
+                return response;
+            }
+
+            // Start a database transaction
+            using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction = await _appDbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // Upload the image to Cloudinary
+                CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await UploadImage(request.FileUpload, true);
+                if (uploadFileResult.Error != null)
+                {
+                    response.Message = uploadFileResult.Error.Message;
+                    return response;
+                }
+
+                // Create a new Gallery entity
+                Gallery gallery = new()
+                {
+                    PublicId = uploadFileResult.PublicId,
+                    Url = uploadFileResult.Url.ToString(),
+                    FileBelongsTo = request.Type,
+                    IsThumbnail = request.IsThumbnail,
+                };
+
+                // Add the new gallery entity to the database
+                _ = _appDbContext.Galleries.Add(gallery);
+                _ = await _appDbContext.SaveChangesAsync();
+
+                // Create and add a new MapGalleryProduct entity if the type is "product"
+                if (!string.IsNullOrEmpty(request.Type) && request.Type == "product")
+                {
+                    MapGalleryProduct mapGalleryProduct = new()
+                    {
+                        ProductId = request.TypeId,
+                        GalleryId = gallery.Id
+                    };
+                    _ = _appDbContext.mapGalleryProducts.Add(mapGalleryProduct);
+                    _ = await _appDbContext.SaveChangesAsync();
+                }
+
+                // Create and add a new MapGalleryStore entity if the type is "store"
+                if (!string.IsNullOrEmpty(request.Type) && request.Type == "store")
+                {
+                    MapGalleryStore mapGalleryStore = new()
+                    {
+                        StoreId = request.TypeId,
+                        GalleryId = gallery.Id
+                    };
+                    _ = _appDbContext.MapGalleryStores.Add(mapGalleryStore);
+                    _ = await _appDbContext.SaveChangesAsync();
+                }
+
+                // Commit the transaction
+                await transaction.CommitAsync();
+
+                // Return a success response
+                response.Message = GlobalConstants.UPLOAD_SUCCESSFULL;
+                response.Success = true;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Rollback the transaction in case of an error
+                await transaction.RollbackAsync();
+
+                // Log the exception (optional)
+                Console.WriteLine(ex);
+
+                // Return an error response
+                response.Message = GlobalConstants.UPLOAD_FAIL;
+                return response;
+            }
+
+        }
+
+
     }
 }

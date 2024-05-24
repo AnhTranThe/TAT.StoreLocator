@@ -338,7 +338,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
         }
 
-        private async Task<BaseResponse> UpdateProductPhotoAsync(Product product, PhotoProductRequestModel uploadPhoto)
+        private async Task<BaseResponse> UpdateProductPhotoAsync(Product product, UploadPhotoRequestModel uploadPhoto)
         {
             BaseResponse response = new() { Success = false };
             if (uploadPhoto.FileUpload == null)

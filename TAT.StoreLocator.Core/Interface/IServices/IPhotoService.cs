@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Models.Request.Photo;
+using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 
 namespace TAT.StoreLocator.Core.Interface.IServices
@@ -13,7 +14,9 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task DeleteDbAndCloudAsync(Guid galleryId, string fileBelongTo, string url);
         Task<BasePaginationResult<GalleryResponseModel>> GetListImagesAsync(BasePaginationRequest request);
         Task<BasePaginationResult<GalleryResponseModel>> GetListImagesById(GetListPhotoByIdRequestModel request);
-        Task<BaseResponse> UpdateImage(string Id, PhotoRequestModel request);
+
+        Task<BaseResponse> CreateImage(UploadPhotoRequestModel request);
+        Task<BaseResponse> UpdateImage(string Id, UpdatePhotoRequestModel request);
         Task<BaseResponse> RemoveImage(string Id);
 
     }

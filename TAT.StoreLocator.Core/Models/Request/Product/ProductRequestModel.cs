@@ -29,6 +29,6 @@ namespace TAT.StoreLocator.Core.Models.Request.Product
         public string? StoreId { get; set; }
 
         // Upload Photo
-        public PhotoProductRequestModel? UploadPhoto { get; set; }
+        public UploadPhotoRequestModel? UploadPhoto { get; set; }
     }
 }
