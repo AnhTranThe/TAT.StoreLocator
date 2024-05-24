@@ -40,7 +40,7 @@
 
     public class RatingStore
     {
-        public int NumberRating { get; set; }
-        public double PointOfRating { get; set; }
+        public int? NumberRating { get; set; }
+        public double? PointOfRating { get; set; }
     }
 }

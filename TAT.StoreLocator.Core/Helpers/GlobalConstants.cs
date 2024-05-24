@@ -81,7 +81,7 @@
         public const string MessagePasswordAndConfirmPasswordNotMatch = "Password and confirm new password do not match.";
         public const string MessageTokenNotFound = "Token not found";
         public const string MessageFailToResetPassword = "Fail to reset password";
-
+        public const string ID_NOT_FOUND = "ID_NOT_FOUND";
         public const string USERNAME_NOT_FOUND = "USERNAME_NOT_FOUND";
         public const string PIN_TIME_OUT = "PIN_TIME_OUT";
         public const string PIN_INVALID = "PIN_INVALID";
@@ -174,6 +174,7 @@
 
         //22/4
         public const string DATE_OUT_RANGE = "DATE_OUT_RANGE";
+        public const string DB_NOT_FOUND = "DB_NOT_FOUND";
 
         public const string MONTH_NOT_SAME = "MONTH_NOT_SAME";
 

@@ -11,7 +11,6 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
-using TAT.StoreLocator.Infrastructure.Management;
 using TAT.StoreLocator.Infrastructure.Mapper;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 using TAT.StoreLocator.Infrastructure.Services;
@@ -118,7 +117,7 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddScoped(typeof(IJwtService), typeof(JwtService));
             _ = services.AddScoped(typeof(IUserService), typeof(UserService));
             _ = services.AddTransient(typeof(ILogger), typeof(LoggerService));
-            _ = services.AddTransient(typeof(IPhotoService), typeof(PhotoManagement));
+            _ = services.AddTransient(typeof(IPhotoService), typeof(PhotoService));
             _ = services.AddScoped(typeof(IAuthenticationService), typeof(AuthenticationService));
             _ = services.AddScoped(typeof(IProfileService), typeof(ProfileService));
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();

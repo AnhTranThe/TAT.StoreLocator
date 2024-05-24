@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Store;
+using TAT.StoreLocator.Core.Models.Response.Store;
 
 namespace TAT.StoreLocator.API.Controllers
 {
@@ -26,8 +27,10 @@ namespace TAT.StoreLocator.API.Controllers
         {
             try
             {
-                BasePaginationResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
-                return response != null && response.Success ? Ok(response) : (IActionResult)StatusCode(500, "Failed to get stores");
+                BasePaginationResult<StoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
+                return Ok(response);
+
+
             }
             catch (Exception ex)
             {
