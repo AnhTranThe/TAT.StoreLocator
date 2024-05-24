@@ -17,13 +17,13 @@ namespace TAT.StoreLocator.API.Controllers
             _wishlistService = wishlistService;
         }
 
-        [HttpPost("product/changestatus")]
+        [HttpPost("product/changeWishlist/Status")]
         [Authorize]
-        public async Task<IActionResult> ChangeStatus([FromBody] WishListRequestProduct request, bool Status)
+        public async Task<IActionResult> ChangeStatusProduct([FromBody] WishListRequestProduct request, bool Status)
         {
             try
             {
-                BaseResponseResult<bool> result = await _wishlistService.ChangeStatus(request, Status);
+                BaseResponseResult<bool> result = await _wishlistService.ChangeStatusProduct(request, Status);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -32,13 +32,13 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpPost("product/getstatus")]
+        [HttpPost("product/getWishlist")]
         [Authorize]
-        public async Task<IActionResult> GetStatus([FromBody] WishListRequestProduct request)
+        public async Task<IActionResult> GetStatusProduct([FromBody] WishListRequestProduct request)
         {
             try
             {
-                BaseResponseResult<bool> result = await _wishlistService.GetStatus(request);
+                BaseResponseResult<bool> result = await _wishlistService.GetStatusProduct(request);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -46,5 +46,38 @@ namespace TAT.StoreLocator.API.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+        [HttpPost("store/getWhislist")]
+        [Authorize]
+        public async Task<IActionResult> GetStatusStore([FromBody] WishListRequestStore request)
+        {
+            try
+            {
+                BaseResponseResult<bool> result = await _wishlistService.GetStatusStore(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("store/changeWhislist/status")]
+        [Authorize]
+        public async Task<IActionResult> ChangeStatusStore([FromBody] WishListRequestStore request, bool Status)
+        {
+            try
+            {
+                BaseResponseResult<bool> result = await _wishlistService.ChangeStatusStore(request, Status);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+
+
+
     }
 }

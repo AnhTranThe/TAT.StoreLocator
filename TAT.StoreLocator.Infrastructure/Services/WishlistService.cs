@@ -20,7 +20,14 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<BaseResponseResult<bool>> ChangeStatus(WishListRequestProduct request, bool status)
+        /// <summary>
+        /// Change Status wishlist
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="status"></param>
+        /// if status is false
+        /// <returns>added wislist</returns>
+        public async Task<BaseResponseResult<bool>> ChangeStatusProduct(WishListRequestProduct request, bool status)
         {
          
             try
@@ -29,7 +36,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                     return CreateErrorResponse("Request is null");
                 }
-                Wishlist? wishlist = await GetOrCreateWishlistAsync(request.UserId, status);
+                Wishlist? wishlist = await GetOrCreateWishlistAsync(request.UserId,!status);
 
                 if (wishlist == null)
                 {
@@ -54,8 +61,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 return CreateErrorResponse("An error occurred while toggling product in wishlist. " + ex.Message);
             }
         }
-
-        public async Task<BaseResponseResult<bool>> GetStatus(WishListRequestProduct request)
+        public async Task<BaseResponseResult<bool>> GetStatusProduct(WishListRequestProduct request)
         {
            
             try
@@ -85,11 +91,128 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
         }
 
+
+        /// <summary>
+        /// Change Status wishlist
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="status"></param>
+        /// if status is false
+        /// <returns>added wislist</returns>
+        public async Task<BaseResponseResult<bool>> ChangeStatusStore(WishListRequestStore request, bool status)
+        {
+
+            try
+            {
+                if (request.UserId == null || request.StoreId == null)
+                {
+
+                    return CreateErrorResponse("Request is null");
+                }
+                Wishlist? wishlist = await GetOrCreateWishlistAsync(request.UserId, !status);
+
+                if (wishlist == null)
+                {
+                    return CreateErrorResponse("Wishlist not found.");
+                }
+
+                if (!status)
+                {
+                    AddStoreToWishlist(wishlist, request.StoreId);
+                    status = true;
+                }
+                else
+                {
+                    RemoveStoreFromWishlist(wishlist, request.StoreId);
+                    status = false;
+                }
+
+                return CreateSuccessResponse(status, status ? "Store added to wishlist." : "Store removed from wishlist.");
+            }
+            catch (Exception ex)
+            {
+                return CreateErrorResponse("An error occurred while toggling Store in wishlist. " + ex.Message);
+            }
+        }
+
+        public async Task<BaseResponseResult<bool>> GetStatusStore(WishListRequestStore request)
+        {
+
+            try
+            {
+                if (request.UserId == null || request.StoreId == null)
+                {
+                    return CreateErrorResponse("userId is null or emty");
+                }
+
+                Wishlist? wishlist = await GetWishlistAsync(request.StoreId);
+
+                if (wishlist == null)
+                {
+                    return CreateErrorResponse("Wishlist not found.");
+                }
+
+                if (string.IsNullOrEmpty(request.StoreId))
+                {
+                    return CreateErrorResponse("StoreId is null or empty.");
+                }
+
+                bool productExists = StoreExistsInWishlist(wishlist, request.StoreId);
+                return CreateSuccessResponse(productExists, productExists ? "Store exist in wishlist." : "Store not found in wishlist.");
+            }
+            catch (Exception ex)
+            {
+                return CreateErrorResponse("An error occurred while getting wishlist status. " + ex.Message);
+            }
+        }
+
+
+
+
+        private void RemoveStoreFromWishlist(Wishlist wishlist, string storeId)
+        {
+            if (wishlist.MapStoreWishlists == null)
+            {
+                throw new ArgumentNullException(nameof(wishlist), "MapStoreWishlists is null. Wishlist data may be corrupted.");
+            }
+
+            var mapStoreWishlist = wishlist.MapStoreWishlists.FirstOrDefault(mp => mp.StoreId == storeId);
+            if (mapStoreWishlist != null)
+            {
+                _dbContext.mapStoreWishlists.Remove(mapStoreWishlist);
+                _dbContext.SaveChanges();
+            }
+        }
+
+        private void AddStoreToWishlist(Wishlist wishlist, string storeId)
+        {
+            if (wishlist.MapStoreWishlists == null)
+            {
+                throw new ArgumentNullException(nameof(wishlist), "MapStoreWishlists is null. Wishlist data may be not here.");
+            }
+
+            if (!wishlist.MapStoreWishlists.Any(mp => mp.StoreId == storeId))
+            {
+                var mapStoreWishlist = new MapStoreWishlist { WishlistId = wishlist.Id, StoreId = storeId };
+                _dbContext.mapStoreWishlists.Add(mapStoreWishlist);
+                _dbContext.SaveChanges();
+            }
+        }
+
+        private bool StoreExistsInWishlist(Wishlist wishlist, string StoreId)
+        {
+            if (wishlist.MapStoreWishlists == null)
+            {
+                throw new ArgumentNullException(nameof(wishlist), "MapStoreWhislist is null. Wishlist data may be corrupted.");
+            }
+            return wishlist.MapStoreWishlists.Any(mp => mp.StoreId == StoreId);
+        }
         private async Task<Wishlist?> GetWishlistAsync(string userId)
         {
             return await _dbContext.Wishlist
-                .Include(w => w.MapProductWishlists)
-                .FirstOrDefaultAsync(w => w.UserId == userId);
+               .Include(w => w.MapProductWishlists)
+               .Include(w => w.MapStoreWishlists)
+               .FirstOrDefaultAsync(w => w.UserId == userId);
         }
 
         private async Task<Wishlist?> GetOrCreateWishlistAsync(string userId, bool status)
@@ -101,7 +224,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 _dbContext.Wishlist.Add(wishlist);
                 await _dbContext.SaveChangesAsync();
             }
-            return wishlist;
+            return await GetWishlistAsync(userId);
         }
 
         private void AddProductToWishlist(Wishlist wishlist, string productId)

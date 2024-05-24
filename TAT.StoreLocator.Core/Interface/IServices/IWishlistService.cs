@@ -11,9 +11,21 @@ using TAT.StoreLocator.Core.Models.Response.Wishlist;
 namespace TAT.StoreLocator.Core.Interface.IServices
 {
     public interface IWishlistService
-    {
-        Task<BaseResponseResult<bool>> GetStatus(WishListRequestProduct request);
+    {   
+        /// <summary>
+        /// Get Status whislist of product
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>true if not null</returns>
+        Task<BaseResponseResult<bool>> GetStatusProduct(WishListRequestProduct request);
+        Task<BaseResponseResult<bool>> ChangeStatusProduct (WishListRequestProduct request, bool status);
+        /// <summary>
+        /// Get Status Whislist Store
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>true if not null</returns>
+        Task<BaseResponseResult<bool>> GetStatusStore(WishListRequestStore request);
+        Task<BaseResponseResult<bool>> ChangeStatusStore(WishListRequestStore request, bool status);
 
-        Task<BaseResponseResult<bool>> ChangeStatus (WishListRequestProduct request, bool status);
     }
 }
