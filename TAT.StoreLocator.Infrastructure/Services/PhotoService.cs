@@ -189,43 +189,65 @@ namespace TAT.StoreLocator.Infrastructure.Services
             BaseResponse response = new() { Success = false };
             try
             {
-                // Retrieve the image from the database based on the provided Id
+                // Check if the provided Id is null or empty
                 if (string.IsNullOrWhiteSpace(Id))
                 {
                     response.Message = GlobalConstants.ID_NOT_FOUND;
                     return response;
                 }
+
+                // Check if the DbContext is null
                 if (_appDbContext == null)
                 {
                     response.Message = GlobalConstants.DB_NOT_FOUND;
                     return response;
                 }
 
+                // Retrieve the image from the database based on the provided Id
                 Gallery? image = await _appDbContext.Galleries.FindAsync(Id);
-
                 if (image == null)
                 {
-
                     response.Message = "Image not found";
                     return response;
                 }
 
-                // Update the IsThumbnail property of the retrieved image if necessary
-                if (request.IsThumbnail != image.IsThumbnail)
+                // If IsThumbnail is being set to true, ensure no other image is a thumbnail
+                if (request.IsThumbnail)
                 {
-                    image.IsThumbnail = request.IsThumbnail;
+                    IQueryable<Gallery> query = _appDbContext.Galleries.AsQueryable();
+                    if (request.Type == "store" && !string.IsNullOrEmpty(request.StoreId))
+                    {
+                        query = query.Include(g => g.MapGalleryStores)
+                                     .Where(g => g.MapGalleryStores != null && g.MapGalleryStores.Any(mgs => mgs.StoreId == request.StoreId));
+                    }
+                    else if (request.Type == "product" && !string.IsNullOrEmpty(request.ProductId))
+                    {
+                        query = query.Include(g => g.MapGalleryProducts)
+                                     .Where(g => g.MapGalleryProducts != null && g.MapGalleryProducts.Any(mgp => mgp.ProductId == request.ProductId));
+                    }
+
+                    // Set IsThumbnail to false for all other images
+                    IQueryable<Gallery> otherThumbnails = query.Where(g => g.IsThumbnail);
+                    foreach (Gallery? otherThumbnail in otherThumbnails)
+                    {
+                        otherThumbnail.IsThumbnail = false;
+                    }
                 }
 
-                // Check if Name or Url has changed
-                if (request.FileName != null && request.FileName != image.FileName)
-                {
-                    image.FileName = request.FileName;
-                }
+                // Update the specified image
+                image.IsThumbnail = request.IsThumbnail;
 
-                if (request.Url != null && request.Url != image.Url)
-                {
-                    image.Url = request.Url;
-                }
+                // Update the FileName if it has changed
+                //if (request.FileName != null && request.FileName != image.FileName)
+                //{
+                //    image.FileName = request.FileName;
+                //}
+
+                //// Update the Url if it has changed
+                //if (request.Url != null && request.Url != image.Url)
+                //{
+                //    image.Url = request.Url;
+                //}
 
                 // Save the changes to the database
                 _ = await _appDbContext.SaveChangesAsync();
@@ -235,10 +257,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.Success = true;
                 return response;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Log the exception
                 // You can log the exception details for debugging purposes
+                Console.WriteLine(ex);
 
                 // Return an error response
                 response.Message = GlobalConstants.UPDATE_FAIL;
