@@ -126,6 +126,7 @@ namespace TAT.StoreLocator.Infrastructure.DI
             //huy_dev
             _ = services.AddScoped(typeof(IProductService), typeof(ProductService));
             _ = services.AddScoped(typeof(ICategoryService), typeof(CategoryService));
+            _ = services.AddScoped(typeof(IWishlistService), typeof(WishlistService));
 
             //PhucThinh-dev
             _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
