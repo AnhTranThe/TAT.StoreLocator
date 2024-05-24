@@ -9,6 +9,7 @@ using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Photo;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
+using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
 namespace TAT.StoreLocator.Infrastructure.Services
@@ -100,10 +101,17 @@ namespace TAT.StoreLocator.Infrastructure.Services
         public async Task<BasePaginationResult<GalleryResponseModel>> GetListImagesAsync(BasePaginationRequest request)
         {
 
-            IQueryable<Gallery> query = _appDbContext.Galleries;
+            IQueryable<Gallery> query = _appDbContext.Galleries.AsQueryable();
 
             int totalRow = await query.CountAsync();
 
+            if (!string.IsNullOrWhiteSpace(request.SearchString))
+            {
+                string normalizedSearchString = CommonUtils.vietnameseReplace(request.SearchString);
+                query = query.
+              Where(item => item.FileName != null && item.FileName.ToUpper().Contains(normalizedSearchString))
+              .AsQueryable();
+            }
 
             List<GalleryResponseModel> data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
@@ -131,7 +139,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         public async Task<BasePaginationResult<GalleryResponseModel>> GetListImagesById(GetListPhotoByIdRequestModel request)
         {
 
-            IQueryable<Gallery> query = _appDbContext.Galleries;
+            IQueryable<Gallery> query = _appDbContext.Galleries.AsQueryable();
             if (request.Type == "store" && !string.IsNullOrEmpty(request.Id))
             {
                 query = query.Include(g => g.MapGalleryStores)
@@ -144,6 +152,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
 
             int totalRow = await query.CountAsync();
+            if (!string.IsNullOrWhiteSpace(request.SearchString))
+            {
+                string normalizedSearchString = CommonUtils.vietnameseReplace(request.SearchString);
+                query = query.
+              Where(item => item.FileName != null && item.FileName.ToUpper().Contains(normalizedSearchString))
+              .AsQueryable();
+            }
 
 
             List<GalleryResponseModel> data = await query.Skip((request.PageIndex - 1) * request.PageSize)
