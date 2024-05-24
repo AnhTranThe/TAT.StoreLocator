@@ -40,7 +40,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPut("update/{Id}")]
-        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductRequestModel request)
+        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] UpdateProductRequestModel request)
         {
             if (request == null || string.IsNullOrEmpty(Id))
             {

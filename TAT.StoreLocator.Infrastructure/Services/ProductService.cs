@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.ILogger;
+using TAT.StoreLocator.Core.Interface.IPaging;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Category;
@@ -10,7 +12,9 @@ using TAT.StoreLocator.Core.Models.Response.Gallery;
 using TAT.StoreLocator.Core.Models.Response.Product;
 using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;
+using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TAT.StoreLocator.Infrastructure.Services
 {
@@ -119,6 +123,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
                  .Include(p => p.Category)
                  .Include(p => p.MapGalleryProducts)
                  .Include(p => p.Store);
+            //Thêm điều kiện tìm kiếm theo tên
+            if (!string.IsNullOrWhiteSpace(request.SearchString))
+            {
+                string normalizedSearchString = CommonUtils.vietnameseReplace(request.SearchString);
+                productQuery = productQuery.Where(store => store.Name != null && store.Name.ToUpper().Contains(normalizedSearchString));
+            }
+
             int totalRow = await productQuery.CountAsync();
             List<ProductResponseModel> data = await productQuery.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
@@ -165,7 +176,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                             IsThumbnail = m.Gallery.IsThumbnail
                         }).ToList() : null,
                 }).ToListAsync();
-
+         
             BasePaginationResult<ProductResponseModel> response = new()
             {
                 TotalCount = totalRow,
@@ -183,7 +194,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         /// <param name="Id"></param>
         /// <param name="request"></param>
         /// <returns> BaseResponse </returns>
-        public async Task<BaseResponse> UpdateProduct(string Id, ProductRequestModel request)
+        public async Task<BaseResponse> UpdateProduct(string Id, UpdateProductRequestModel request)
         {
             BaseResponse response = new() { Success = false };
 
@@ -206,18 +217,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                     UpdateProductProperties(product, request);
 
-                    await UpdateOrAddCategoryAsync(product, request);
+                    await UpdateCategoryAsync(product, request);
 
-                    if (request.UploadPhoto?.FileUpload != null && request.UploadPhoto.FileUpload.Length > 0)
+                    /*if (request.UploadPhoto?.FileUpload != null)
                     {
-                        BaseResponse photoResponse = await UpdateProductPhotoAsync(product, request.UploadPhoto);
-                        if (!photoResponse.Success)
+                        foreach (IFormFile file in request.UploadPhoto.FileUpload)
                         {
-                            return photoResponse;
+                            await AddPhotoProductAsync(product.Id, file);
                         }
                     }
-
-                    _ = await _dbContext.SaveChangesAsync();
+                    _ = await _dbContext.SaveChangesAsync();*/
                     await transaction.CommitAsync();
 
                     response.Success = true;
@@ -238,7 +247,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        private static void UpdateProductProperties(Product product, ProductRequestModel request)
+        private static void UpdateProductProperties(Product product, UpdateProductRequestModel request)
         {
             if (!string.IsNullOrEmpty(request.Name))
             {
@@ -311,7 +320,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
         }
 
-        private async Task UpdateOrAddCategoryAsync(Product product, ProductRequestModel request)
+        private async Task AddCategoryAsync(Product product, ProductRequestModel request)
         {
             if (!string.IsNullOrEmpty(request.CategoryId))
             {
@@ -338,42 +347,54 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
         }
 
-        private async Task<BaseResponse> UpdateProductPhotoAsync(Product product, PhotoProductRequestModel uploadPhoto)
+        private async Task UpdateCategoryAsync(Product product, UpdateProductRequestModel request)
         {
-            BaseResponse response = new() { Success = false };
-            if (uploadPhoto.FileUpload == null)
+            if (!string.IsNullOrEmpty(request.CategoryId))
             {
-                return response;
+                Category? existingCategory = await _dbContext.Categories.FindAsync(request.CategoryId);
+                if (existingCategory == null)
+                {
+                    _logger.LogError(new Exception());
+                }
+                product.CategoryId = request.CategoryId;
             }
-            CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await _photoService.UploadImage(uploadPhoto.FileUpload, true);
-            if (uploadFileResult.Error != null)
+            else if (request.Category != null)
             {
-                response.Message = uploadFileResult.Error.Message;
-                return response;
+                Category newCategory = new()
+                {
+                    Name = request.Category.Name,
+                    Description = request.Category.Description,
+                    Slug = request.Category.Slug,
+                    IsActive = request.Category.IsActive,
+                    ParentCategoryId = request.Category.ParentCategoryId
+                };
+                _ = _dbContext.Categories.Add(newCategory);
+                _ = await _dbContext.SaveChangesAsync();
+                product.CategoryId = newCategory.Id;
             }
+        }
 
+
+        public async Task AddPhotoProductAsync(string productId, IFormFile file)
+        {
+            CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await _photoService.UploadImage(file, true);
             Gallery gallery = new()
             {
                 PublicId = uploadFileResult.PublicId,
                 Url = uploadFileResult.Url.ToString(),
                 FileBelongsTo = "Product",
-                IsThumbnail = uploadPhoto.IsThumbnail,
+                // IsThumbnail = uploadPhoto.IsThumbnail,
             };
 
             _ = _dbContext.Galleries.Add(gallery);
-            _ = await _dbContext.SaveChangesAsync();
 
-            MapGalleryProduct mapGalleryProduct = new()
+            MapGalleryStore mapGalleryStore = new()
             {
-                ProductId = product.Id,
+                StoreId = productId.ToString(),
                 GalleryId = gallery.Id
             };
 
-            _ = _dbContext.mapGalleryProducts.Add(mapGalleryProduct);
-            _ = await _dbContext.SaveChangesAsync();
-
-            response.Success = true;
-            return response;
+            _ = _dbContext.MapGalleryStores.Add(mapGalleryStore);
         }
 
         /// <summary>
@@ -416,14 +437,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     };
 
                     _ = _dbContext.Products.Add(product);
-                    await UpdateOrAddCategoryAsync(product, request);
+                    await AddCategoryAsync(product, request);
 
-                    if (request.UploadPhoto?.FileUpload != null && request.UploadPhoto.FileUpload.Length > 0)
+                    if (request.UploadPhoto?.FileUpload != null)
                     {
-                        BaseResponse photoResponse = await UpdateProductPhotoAsync(product, request.UploadPhoto);
-                        if (!photoResponse.Success)
+                        foreach (IFormFile file in request.UploadPhoto.FileUpload)
                         {
-                            return photoResponse;
+                            await AddPhotoProductAsync(product.Id, file);
                         }
                     }
 

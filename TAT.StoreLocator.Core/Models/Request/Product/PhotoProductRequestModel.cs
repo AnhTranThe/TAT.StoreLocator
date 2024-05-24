@@ -4,7 +4,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Product
 {
     public class PhotoProductRequestModel
     {
-        public IFormFile? FileUpload { get; set; }
+        public List<IFormFile>? FileUpload { get; set; }
         public bool IsThumbnail { get; set; } = false;
     }
 }
