@@ -100,31 +100,18 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpDelete("delete/{Id}")]
-        public async Task<IActionResult> Delete(string Id)
+        [HttpDelete("delete")]
+        public async Task<IActionResult> Delete(DeleteFileRequest request)
         {
-
             try
             {
-                if (string.IsNullOrEmpty(Id))
-                {
-                    return BadRequest(new BaseResponse
-                    {
-                        Success = false,
-                        Message = "Invalid request data."
-                    });
-                }
-
-                BaseResponse response = await _photoService.RemoveImage(Id);
-                return !response.Success ? BadRequest(response) : Ok(response);
+                var response = await _photoService.DeleteDbAndCloudAsyncResultt(request.GalleryId, request.FileBelongTo, request.PublicId);
+                return response == null ? BadRequest("Delete Fail") : Ok(response.Result);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
-
-
-
     }
 }

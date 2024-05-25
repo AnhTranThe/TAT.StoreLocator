@@ -21,6 +21,7 @@
     public class MapGalleryStoreResponse
     {
         public string? GalleryId { get; set; }
+        public string? Key { get; set; } = string.Empty;
         public string? FileName { get; set; }
         public string? Url { get; set; }
         public bool IsThumbnail { get; set; }
