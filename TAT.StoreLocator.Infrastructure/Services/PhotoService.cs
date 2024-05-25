@@ -34,9 +34,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             CloudinaryDotNet.Transformation transformation = profile
                 ? new CloudinaryDotNet.Transformation().Width(500).Height(500).Crop("fill").Gravity(Gravity.Face)
                 : new CloudinaryDotNet.Transformation().Height(512).Crop("fit");
+
             if (formFile.Length > 0)
             {
                 await using Stream stream = formFile.OpenReadStream();
+
                 ImageUploadParams uploadParams = new()
                 {
                     File = new FileDescription(formFile.FileName, stream),
@@ -45,6 +47,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 };
                 uploadResult = await _cloudinary.UploadAsync(uploadParams);
             }
+
             return uploadResult;
         }
 
@@ -59,7 +62,57 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return await _cloudinary.DestroyAsync(deleteParams);
         }
 
-        public async Task DeleteDbAndCloudAsync(Guid galleryId, string fileBelongTo, string url)
+        public async Task<DeletionResult?> DeleteDbAndCloudAsyncResultt(Guid galleryId, string fileBelongTo, string publicId)
+        {
+            switch (fileBelongTo)
+            {
+                case "Product":
+                    MapGalleryProduct? mapGalleryProduct = _appDbContext.mapGalleryProducts
+                        .FirstOrDefault(x => x.GalleryId == galleryId.ToString());
+                    if (mapGalleryProduct != null)
+                    {
+                        _ = _appDbContext.mapGalleryProducts.Remove(mapGalleryProduct);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    break;
+
+                case "Store":
+                    MapGalleryStore? mapGalleryStore = _appDbContext.MapGalleryStores
+                        .FirstOrDefault(x => x.GalleryId == galleryId.ToString());
+                    if (mapGalleryStore != null)
+                    {
+                        _ = _appDbContext.MapGalleryStores.Remove(mapGalleryStore);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentException("Invalid value for FilebeLongto");
+            }
+            Gallery? gallery = _appDbContext.Galleries
+                .FirstOrDefault(x => x.Id == galleryId.ToString());
+            if (gallery != null)
+            {
+                _ = _appDbContext.Galleries.Remove(gallery);
+            }
+            _ = await _appDbContext.SaveChangesAsync();
+            if (publicId != null)
+            {
+                DeletionParams deleteParams = new(publicId);
+                return await _cloudinary.DestroyAsync(deleteParams);
+            }
+            return null;
+        }
+
+
+
+        public async Task DeleteDbAndCloudAsync(Guid galleryId, string fileBelongTo, string PublicId)
         {
             switch (fileBelongTo)
             {
@@ -91,11 +144,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 _ = _appDbContext.Galleries.Remove(gallery);
             }
-
             _ = await _appDbContext.SaveChangesAsync();
-            if (url != null)
+            if (PublicId != null)
             {
-                _ = await DeleteImageCloudinary(url);
+                await DeleteImageCloudinary(PublicId);
             }
         }
 
@@ -119,6 +171,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 .Select(e => new GalleryResponseModel()
                 {
                     Id = e.Id,
+                    Key = e.PublicId,
                     FileName = e.FileName,
                     Url = e.Url,
                     FileBelongsTo = e.FileBelongsTo,

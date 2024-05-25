@@ -11,7 +11,8 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     {
         Task<ImageUploadResult> UploadImage(IFormFile formFile, bool profile);
         Task<DeletionResult?> DeleteImageCloudinary(string publicId);
-        Task DeleteDbAndCloudAsync(Guid galleryId, string fileBelongTo, string url);
+        Task<DeletionResult?> DeleteDbAndCloudAsyncResultt(Guid galleryId, string fileBelongTo, string publicId);
+
         Task<BasePaginationResult<GalleryResponseModel>> GetListImagesAsync(BasePaginationRequest request);
         Task<BasePaginationResult<GalleryResponseModel>> GetListImagesById(GetListPhotoByIdRequestModel request);
 

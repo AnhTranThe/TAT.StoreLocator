@@ -12,6 +12,8 @@ namespace TAT.StoreLocator.Core.Models.Response.Gallery
         [Required]
         public string? Url { get; set; }
 
+        public string? Key { get; set; }
+
         public bool IsThumbnail { get; set; }
         public string? FileBelongsTo { get; set; }
     }

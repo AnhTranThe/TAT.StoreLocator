@@ -235,6 +235,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         .Select(mgs => new MapGalleryStoreResponse
                         {
                             GalleryId = mgs.GalleryId,
+                            Key = mgs.Gallery?.PublicId,
                             FileName = mgs.Gallery?.FileName,
                             Url = mgs.Gallery?.Url,
                             IsThumbnail = mgs.Gallery?.IsThumbnail ?? false
