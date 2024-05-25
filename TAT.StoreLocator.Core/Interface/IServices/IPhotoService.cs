@@ -17,7 +17,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
 
         Task<BaseResponse> CreateImage(UploadPhotoRequestModel request);
         Task<BaseResponse> UpdateImage(string Id, UpdatePhotoRequestModel request);
-        Task<BaseResponse> RemoveImage(string Id);
+        Task<BaseResponse> RemoveImage(string Id, DeletePhotoRequestModel request);
 
     }
 }

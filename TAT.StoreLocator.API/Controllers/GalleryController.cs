@@ -101,7 +101,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpDelete("delete/{Id}")]
-        public async Task<IActionResult> Delete(string Id)
+        public async Task<IActionResult> Delete(string Id, [FromQuery] DeletePhotoRequestModel request)
         {
 
             try
