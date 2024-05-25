@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
+using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Review;
 using TAT.StoreLocator.Core.Models.Response.Product;
@@ -21,37 +22,58 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<BaseResponseResult<ReviewResponseModel>> CreateReviewAsync(CreateReviewRequestModel request)
+        public async Task<BaseResponse> CreateReviewAsync(CreateReviewRequestModel request)
         {
-            Review? existingReview = await _appDbContext.Reviews
-                  .Include(r => r.Product)
-                      .ThenInclude(p => p!.Store) // Thêm dấu ! để chỉ định rằng nó k null
-               .FirstOrDefaultAsync(r => r.UserId == request.UserId && r.Product != null && r.Product.StoreId == request.StoreId);
+            IQueryable<Review> existingReviewQuery = _appDbContext.Reviews.AsQueryable();
 
+            BaseResponse response = new() { Success = false };
+
+            if (string.IsNullOrEmpty(request.Type) || string.IsNullOrEmpty(request.TypeId) || string.IsNullOrEmpty(request.UserId))
+            {
+                response.Message = GlobalConstants.REQUEST_INVALID;
+                return response;
+
+            }
+
+            existingReviewQuery = existingReviewQuery.Where(r => r.UserId == request.UserId);
+
+            if (request.Type == "store")
+            {
+                existingReviewQuery = existingReviewQuery.Where(g => g.StoreId == request.TypeId);
+            }
+            if (request.Type == "product")
+            {
+                existingReviewQuery = existingReviewQuery.Where(g => g.ProductId == request.TypeId);
+            }
+
+
+            Review? existingReview = await existingReviewQuery.FirstOrDefaultAsync();
             if (existingReview != null)
             {
-                return new BaseResponseResult<ReviewResponseModel>()
-                {
-                    Success = false,
-                    Message = "User has already reviewed this store",
-                    Errors = new List<string> { "User has already reviewed this store" }
-                };
+                response.Message = GlobalConstants.USER_HAVE_REVIEW_ALREADY;
+                return response;
             }
+
             Review? review = _mapper.Map<Review>(request);
-            _ = _appDbContext.Reviews.Add(review);
-            _ = await _appDbContext.SaveChangesAsync();
-
-            review = await _appDbContext.Reviews
-               .Include(r => r.Product)
-               .ThenInclude(p => p!.Store)
-               .FirstOrDefaultAsync(r => r.Id == review.Id);
-
-            ReviewResponseModel responseModel = _mapper.Map<ReviewResponseModel>(review);
-            return new BaseResponseResult<ReviewResponseModel>
+            if (request.Type == "store")
             {
-                Success = true,
-                Data = responseModel
-            };
+                review.StoreId = request.TypeId;
+            }
+            if (request.Type == "product")
+            {
+                review.ProductId = request.TypeId;
+            }
+
+            _ = _appDbContext.Reviews.Add(review);
+            if (await _appDbContext.SaveChangesAsync() <= 0)
+            {
+                response.Message = GlobalConstants.FAIL;
+                return response;
+
+            }
+            response.Success = true;
+            response.Message = GlobalConstants.SUCCESSFULL;
+            return response;
         }
 
         public async Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request)
@@ -110,7 +132,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewByUserIdAsync(string userId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
+        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByUserIdAsync(string userId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
         {
             IQueryable<Review> query = _appDbContext.Reviews
                 .Include(r => r.Product)
@@ -146,11 +168,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return paginationResult;
         }
 
-        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewByStoreIdAsync(string storeId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
+        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByStoreIdAsync(BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
         {
             IQueryable<Review> query = _appDbContext.Reviews
                 .Include(r => r.Product)
-                .Where(r => r.StoreId == storeId);
+                .Where(r => r.StoreId == filterRequest.TypeId);
 
             if (filterRequest.SearchRatingKey.HasValue)
             {
@@ -174,6 +196,46 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 SearchString = paginationRequest.SearchString
             };
             return paginationResult;
+        }
+
+        public async Task<BaseResponseResult<ReviewResponseModel>> GetReviewByUserAndStoreAsync(GetReviewByUserAndStoreRequestModel request)
+        {
+            BaseResponseResult<ReviewResponseModel> response = new() { Success = false };
+            try
+            {
+                if (string.IsNullOrEmpty(request.UserId) || string.IsNullOrEmpty(request.StoreId))
+                {
+
+                    response.Message = GlobalConstants.REQUEST_INVALID;
+                    return response;
+
+                }
+
+                Review? review = await _appDbContext.Reviews
+          .Include(r => r.Product)
+          .Include(r => r.User)
+          .Include(r => r.Store)
+          .FirstOrDefaultAsync(r => r.UserId == request.UserId && r.StoreId == request.StoreId);
+                if (review == null)
+                {
+                    response.Message = "User didn't review store";
+                    return response;
+                }
+                response.Success = true;
+                response.Data = _mapper.Map<ReviewResponseModel>(review);
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                response.Message += ex.ToString();
+                return response;
+
+            }
+
+
+
+
         }
     }
 }
