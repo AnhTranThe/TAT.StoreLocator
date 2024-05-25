@@ -19,7 +19,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.UserServiceTest
         public async Task GetUserById_Returns_OkResult_With_UserData()
         {
             // Arrange
-            var userId = "1"; // Đây là ID của người dùng mà bạn muốn kiểm tra
+            var userId = "1"; // Đây là ID của người dùng  muốn kiểm tra
             var expectedUserResponse = new BaseResponseResult<UserResponseModel>
             {
                 Success = true,
@@ -28,7 +28,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.UserServiceTest
                     Id = userId,
                     UserName = "testuser",
                     Email = "testuser@example.com",
-                    Roles = new[] { "Role1", "Role2" } // Các vai trò của người dùng
+                    Roles = new[] { "Role1", "Role2" } 
                 }
             };
 
@@ -45,8 +45,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.UserServiceTest
             var resultData = Assert.IsAssignableFrom<BaseResponseResult<UserResponseModel>>(okResult.Value);
             Assert.True(resultData.Success);
             Assert.NotNull(resultData.Data);
-            Assert.Equal(expectedUserResponse.Data.Id, resultData.Data.Id);
-            // Kiểm tra các thuộc tính khác nếu cần
+            Assert.Equal(expectedUserResponse.Data.Id, resultData.Data?.Id);
         }
 
         [Fact]

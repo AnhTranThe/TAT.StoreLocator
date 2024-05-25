@@ -50,9 +50,8 @@ namespace TAT.StoreLocator.Test.ServiceTests
                 Assert.NotNull(result);
                 Assert.True(result.Success);
                 Assert.NotNull(result.Data);
-                Assert.Equal("1", result.Data.Id);
-                Assert.Equal("Category 1", result.Data.Name);
-                // Add more assertions for other properties if needed
+                Assert.Equal("1", result.Data?.Id);
+                Assert.Equal("Category 1", result.Data?.Name);
             }
         }
 
@@ -76,7 +75,6 @@ namespace TAT.StoreLocator.Test.ServiceTests
                 Assert.NotNull(result);
                 Assert.False(result.Success);
                 Assert.Null(result.Data);
-                // Add more assertions if needed
             }
         }
 
@@ -100,7 +98,6 @@ namespace TAT.StoreLocator.Test.ServiceTests
                 Assert.NotNull(result);
                 Assert.False(result.Success);
                 Assert.Null(result.Data);
-                // Add more assertions if needed
             }
         }
 
