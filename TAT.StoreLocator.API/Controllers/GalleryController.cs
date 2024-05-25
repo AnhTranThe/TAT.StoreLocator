@@ -114,8 +114,7 @@ namespace TAT.StoreLocator.API.Controllers
                         Message = "Invalid request data."
                     });
                 }
-
-                BaseResponse response = await _photoService.RemoveImage(Id);
+                BaseResponse response = await _photoService.RemoveImage(Id, request);
                 return !response.Success ? BadRequest(response) : Ok(response);
             }
             catch (Exception ex)
