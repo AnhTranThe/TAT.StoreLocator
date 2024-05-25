@@ -175,7 +175,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     FileName = e.FileName,
                     Url = e.Url,
                     FileBelongsTo = e.FileBelongsTo,
-                    IsThumbnail = e.IsThumbnail
+                    IsThumbnail = e.IsThumbnail,
+                    PublicId = e.PublicId
+
 
                 }).ToListAsync();
 
@@ -223,7 +225,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     FileName = e.FileName,
                     Url = e.Url,
                     FileBelongsTo = e.FileBelongsTo,
-                    IsThumbnail = e.IsThumbnail
+                    IsThumbnail = e.IsThumbnail,
+                    PublicId = e.PublicId
 
                 }).ToListAsync();
 
@@ -269,15 +272,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 if (request.IsThumbnail)
                 {
                     IQueryable<Gallery> query = _appDbContext.Galleries.AsQueryable();
-                    if (request.Type == "store" && !string.IsNullOrEmpty(request.StoreId))
+                    if (request.Type == "store" && !string.IsNullOrEmpty(request.TypeId))
                     {
                         query = query.Include(g => g.MapGalleryStores)
-                                     .Where(g => g.MapGalleryStores != null && g.MapGalleryStores.Any(mgs => mgs.StoreId == request.StoreId));
+                                     .Where(g => g.MapGalleryStores != null && g.MapGalleryStores.Any(mgs => mgs.StoreId == request.TypeId));
                     }
-                    else if (request.Type == "product" && !string.IsNullOrEmpty(request.ProductId))
+                    else if (request.Type == "product" && !string.IsNullOrEmpty(request.TypeId))
                     {
                         query = query.Include(g => g.MapGalleryProducts)
-                                     .Where(g => g.MapGalleryProducts != null && g.MapGalleryProducts.Any(mgp => mgp.ProductId == request.ProductId));
+                                     .Where(g => g.MapGalleryProducts != null && g.MapGalleryProducts.Any(mgp => mgp.ProductId == request.TypeId));
                     }
 
                     // Set IsThumbnail to false for all other images
@@ -290,6 +293,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 // Update the specified image
                 image.IsThumbnail = request.IsThumbnail;
+
+
 
 
                 // Save the changes to the database
@@ -313,7 +318,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         }
 
-        public async Task<BaseResponse> RemoveImage(string Id)
+        public async Task<BaseResponse> RemoveImage(string Id, DeletePhotoRequestModel request)
         {
             BaseResponse response = new() { Success = false };
             try
@@ -346,6 +351,27 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     response.Message = "Failed to delete image from Cloudinary";
                     return response;
                 }
+
+
+                if (request.Type == "store" && !string.IsNullOrEmpty(request.TypeId))
+                {
+                    IQueryable<MapGalleryStore> query = _appDbContext.MapGalleryStores.AsQueryable();
+                    query = query.Where(g => g.StoreId == request.TypeId);
+                    foreach (MapGalleryStore item in query)
+                    {
+                        _ = _appDbContext.MapGalleryStores.Remove(item);
+                    }
+                }
+                else if (request.Type == "product" && !string.IsNullOrEmpty(request.TypeId))
+                {
+                    IQueryable<MapGalleryProduct> query = _appDbContext.mapGalleryProducts.AsQueryable();
+                    query = query.Where(g => g.ProductId == request.TypeId);
+                    foreach (MapGalleryProduct item in query)
+                    {
+                        _ = _appDbContext.mapGalleryProducts.Remove(item);
+                    }
+                }
+
                 // Remove the image from the database
                 _ = _appDbContext.Galleries.Remove(image);
                 _ = await _appDbContext.SaveChangesAsync();
