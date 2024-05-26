@@ -216,6 +216,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
+
         public async Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId)
         {
             BaseResponseResult<StoreResponseModel> response = new();

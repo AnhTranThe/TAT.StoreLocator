@@ -36,12 +36,14 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        protected string GetGuidUserIdLogin()
+        //protected string GetGuidUserIdLogin()
+        public string GetGuidUserIdLogin() // tesst
         {
-            ClaimsPrincipal? user = _httpContextAccessor.HttpContext?.User;
-            string hello = user.FindFirstValue(UserClaims.Id);
-            return hello;
+                ClaimsPrincipal? user = _httpContextAccessor.HttpContext?.User;
+                string hello = user.FindFirstValue(UserClaims.Id);
+                return hello;
         }
+            
 
         public async Task<BaseResponseResult<UserResponseModel>> GetByProfile()
         {
@@ -53,35 +55,36 @@ namespace TAT.StoreLocator.Infrastructure.Services
             try
             {
                 User user = await _userManager.FindByIdAsync(loginId.ToString());
-                if (user == null)
+                    if (user == null)
+                    {
+                        response.Success = false;
+                        response.Message = GlobalConstants.MessageUserNotFound;
+                        return response;
+                    }
+
+                    IList<string> roles = await _userManager.GetRolesAsync(user);
+
+                    UserResponseModel userResponse = new()
+                    {
+                        Id = user.Id,
+                        Email = user.Email,
+                        UserName = user.UserName,
+                        Roles = roles.ToList() // Convert roles to a list
+                    };
+
+                    response.Data = userResponse;
+                    response.Success = true;
+                    response.Message = "User found";
+                }
+                catch (Exception ex)
                 {
                     response.Success = false;
-                    response.Message = GlobalConstants.MessageUserNotFound;
-                    return response;
+                    response.Message = $"An error occurred: {ex.Message}";
+                    // Log the exception if needed
                 }
 
-                IList<string> roles = await _userManager.GetRolesAsync(user);
-
-                UserResponseModel userResponse = new()
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    UserName = user.UserName,
-                    Roles = roles.ToList() // Convert roles to a list
-                };
-
-                response.Data = userResponse;
-                response.Success = true;
-                response.Message = "User found";
+                return response;
             }
-            catch (Exception ex)
-            {
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                // Log the exception if needed
-            }
-
-            return response;
         }
-    }
 }
+//}
