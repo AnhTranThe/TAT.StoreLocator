@@ -13,7 +13,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request);
 
         // GetReviewByUserId
-        Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByUserIdAsync(string userId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);
+        Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByUserIdAsync(BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);
 
         //GetReviewByStoreId
         Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByStoreIdAsync(BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);

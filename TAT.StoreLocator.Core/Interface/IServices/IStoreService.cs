@@ -26,6 +26,6 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         /// </summary>
         /// <param name="district"></param>
         /// <returns></returns>
-        Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(string district, string ward, string province, string keyWord);
+        Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(GetNearStoreRequestModel getNearStoreRequest, BasePaginationRequest paginationRequest);
     }
 }

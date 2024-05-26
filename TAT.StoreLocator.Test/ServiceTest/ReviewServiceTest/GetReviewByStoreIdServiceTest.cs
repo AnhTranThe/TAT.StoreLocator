@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Models.Request.Review;
@@ -19,10 +17,10 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
         public async Task GetReviewByStoreIdAsync_ReturnsPaginatedReviews()
         {
             // Arrange
-            var config = new MapperConfiguration(cfg =>
+            MapperConfiguration config = new(cfg =>
             {
-                cfg.CreateMap<CreateReviewRequestModel, Review>();
-                cfg.CreateMap<Review, ReviewResponseModel>()
+                _ = cfg.CreateMap<CreateReviewRequestModel, Review>();
+                _ = cfg.CreateMap<Review, ReviewResponseModel>()
                     .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product == null ? null : new BaseProductResponseModel
                     {
                         Id = src.Product.Id,
@@ -34,36 +32,36 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
                         Quantity = src.Product.Quantity
                     }));
             });
-            var mapper = config.CreateMapper();
+            IMapper mapper = config.CreateMapper();
 
-            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            DbContextOptions<AppDbContext> dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                                     .UseInMemoryDatabase(databaseName: "GetReviewByStoreIdAsync_TestDatabase")
                                     .Options;
 
-            using (var dbContext = new AppDbContext(dbContextOptions))
+            using (AppDbContext dbContext = new(dbContextOptions))
             {
-                var storeId = "store1";
-                var productId = "product1";
+                string storeId = "store1";
+                string productId = "product1";
 
-                dbContext.Products.Add(new Product { Id = productId, Name = "Product 1", StoreId = storeId });
+                _ = dbContext.Products.Add(new Product { Id = productId, Name = "Product 1", StoreId = storeId });
                 dbContext.Reviews.AddRange(
                     new Review { Id = "review1", StoreId = storeId, ProductId = productId, Content = "Review 1", RatingValue = 5 },
                     new Review { Id = "review2", StoreId = storeId, ProductId = productId, Content = "Review 2", RatingValue = 4 },
                     new Review { Id = "review3", StoreId = storeId, ProductId = productId, Content = "Review 3", RatingValue = 3 },
                     new Review { Id = "review4", StoreId = storeId, ProductId = productId, Content = "Review 4", RatingValue = 4 }
                 );
-                await dbContext.SaveChangesAsync();
+                _ = await dbContext.SaveChangesAsync();
             }
 
-            using (var dbContext = new AppDbContext(dbContextOptions))
+            using (AppDbContext dbContext = new(dbContextOptions))
             {
-                var reviewService = new ReviewService(dbContext, mapper);
+                ReviewService reviewService = new(dbContext, mapper);
 
-                var filterRequest = new BaseReviewFilterRequest
+                BaseReviewFilterRequest filterRequest = new()
                 {
                     SearchRatingKey = 4
                 };
-                var paginationRequest = new BasePaginationRequest
+                BasePaginationRequest paginationRequest = new()
                 {
                     PageIndex = 1,
                     PageSize = 10,
@@ -71,7 +69,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
                 };
 
                 // Act
-                var result = await reviewService.GetReviewByStoreIdAsync("store1", filterRequest, paginationRequest);
+                BasePaginationResult<ReviewResponseModel> result = await reviewService.GetReviewsByStoreIdAsync(filterRequest, paginationRequest);
 
                 // Assert
                 Assert.NotNull(result);

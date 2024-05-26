@@ -1,10 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Models.Request.Review;
@@ -22,10 +17,10 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
         public async Task GetReviewByUserIdAsync_ReturnsPaginatedReviews()
         {
             // Arrange
-            var config = new MapperConfiguration(cfg =>
+            MapperConfiguration config = new(cfg =>
             {
-                cfg.CreateMap<CreateReviewRequestModel, Review>();
-                cfg.CreateMap<Review, ReviewResponseModel>()
+                _ = cfg.CreateMap<CreateReviewRequestModel, Review>();
+                _ = cfg.CreateMap<Review, ReviewResponseModel>()
                 .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product == null ? null : new BaseProductResponseModel
                 {
                     Id = src.Product.Id,
@@ -37,36 +32,37 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
                     Quantity = src.Product.Quantity
                 }));
             });
-             var _mapper = config.CreateMapper();
+            IMapper _mapper = config.CreateMapper();
 
-            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            DbContextOptions<AppDbContext> dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                                     .UseInMemoryDatabase(databaseName: "GetReviewByUserIdAsync_TestDatabase")
                                     .Options;
 
-            using (var dbContext = new AppDbContext(dbContextOptions))
+            using (AppDbContext dbContext = new(dbContextOptions))
             {
-                var userId = "user1";
-                var productId = "product1";
+                string userId = "user1";
+                string productId = "product1";
 
-                dbContext.Products.Add(new Product { Id = productId, Name = "Product 1" });
+                _ = dbContext.Products.Add(new Product { Id = productId, Name = "Product 1" });
                 dbContext.Reviews.AddRange(
                     new Review { Id = "review1", UserId = userId, ProductId = productId, Content = "Review 1", RatingValue = 5 },
                     new Review { Id = "review2", UserId = userId, ProductId = productId, Content = "Review 2", RatingValue = 4 },
                     new Review { Id = "review3", UserId = userId, ProductId = productId, Content = "Review 3", RatingValue = 3 },
                     new Review { Id = "review4", UserId = userId, ProductId = productId, Content = "Review 5", RatingValue = 5 }
                 );
-                await dbContext.SaveChangesAsync();
+                _ = await dbContext.SaveChangesAsync();
             }
 
-            using (var dbContext = new AppDbContext(dbContextOptions))
+            using (AppDbContext dbContext = new(dbContextOptions))
             {
-                var reviewService = new ReviewService(dbContext, _mapper);
+                ReviewService reviewService = new(dbContext, _mapper);
 
-                var filterRequest = new BaseReviewFilterRequest
+                BaseReviewFilterRequest filterRequest = new()
                 {
-                    SearchRatingKey = 5
+                    SearchRatingKey = 5,
+                    TypeId = ""
                 };
-                var paginationRequest = new BasePaginationRequest
+                BasePaginationRequest paginationRequest = new()
                 {
                     PageIndex = 1,
                     PageSize = 10,
@@ -74,7 +70,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
                 };
 
                 // Act
-                var result = await reviewService.GetReviewByUserIdAsync("user1", filterRequest, paginationRequest);
+                BasePaginationResult<ReviewResponseModel> result = await reviewService.GetReviewsByUserIdAsync(filterRequest, paginationRequest);
 
                 // Assert
                 Assert.NotNull(result);

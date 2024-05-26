@@ -41,28 +41,29 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             );
                         _ = await context.SaveChangesAsync();
                     }
-                    if (context.Addresses != null && !context.Addresses.Any())
+                    //if (context.Addresses != null && !context.Addresses.Any())
 
-                    {
-                        // Create address entities
-                        List<Address> addresses = new()
-                        {
-                            new Address
-                            {
-                                Id = GlobalConstants.AddressAdminId
-                            },
-                            new Address
-                            {
-                                Id = GlobalConstants.AddressUserId
-                            }
-                        };
-                        await context.Addresses.AddRangeAsync(addresses);
+                    //{
+                    //    // Create address entities
+                    //    List<Address> addresses = new()
+                    //    {
+                    //        new Address
+                    //        {
+                    //            Id = GlobalConstants.AddressAdminId
+                    //        },
+                    //        new Address
+                    //        {
+                    //            Id = GlobalConstants.AddressUserId
+                    //        }
+                    //    };
+                    //    await context.Addresses.AddRangeAsync(addresses);
 
-                        _ = await context.SaveChangesAsync();
-                    }
+                    //    _ = await context.SaveChangesAsync();
+                    //}
 
                     if (!context.Users.Any())
                     {
+
                         List<User> UserLs = new()
                                         {
                         new User
@@ -78,7 +79,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             IsActive = true,
                             SecurityStamp = Guid.NewGuid().ToString(),
                             LockoutEnabled = false,
-                            AddressId = GlobalConstants.AddressAdminId,
+
                         },
 
                         new User
@@ -93,7 +94,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             IsActive = true,
                             SecurityStamp = Guid.NewGuid().ToString(),
                             LockoutEnabled = false,
-                            AddressId = GlobalConstants.AddressUserId,
+
                         }
                         };
                         foreach (User user in UserLs)
