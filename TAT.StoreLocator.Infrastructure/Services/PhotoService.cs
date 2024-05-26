@@ -62,7 +62,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return await _cloudinary.DestroyAsync(deleteParams);
         }
 
-        public async Task<DeletionResult?> DeleteDbAndCloudAsyncResultt(Guid galleryId, string fileBelongTo, string publicId)
+        public async Task<DeletionResult?> DeleteDbAndCloudAsyncResult(Guid galleryId, string fileBelongTo, string publicId)
         {
             switch (fileBelongTo)
             {
@@ -147,7 +147,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _ = await _appDbContext.SaveChangesAsync();
             if (PublicId != null)
             {
-                await DeleteImageCloudinary(PublicId);
+                _ = await DeleteImageCloudinary(PublicId);
             }
         }
 

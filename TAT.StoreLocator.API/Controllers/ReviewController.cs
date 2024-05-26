@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Review;
@@ -7,6 +8,7 @@ namespace TAT.StoreLocator.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ReviewController : ControllerBase
     {
         private readonly IReviewService _reviewService;
@@ -19,8 +21,17 @@ namespace TAT.StoreLocator.API.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateReview([FromBody] CreateReviewRequestModel request)
         {
-            BaseResponseResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.CreateReviewAsync(request);
-            return !response.Success ? BadRequest(response) : Ok(response);
+
+            try
+            {
+                BaseResponse response = await _reviewService.CreateReviewAsync(request);
+                return response.Success ? Ok(response) : BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
         }
 
         [HttpPut("update")]
@@ -37,10 +48,11 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpGet("getReviewByUserId/{userId}")]
+        [HttpGet("getReviewByUser/{userId}")]
+
         public async Task<IActionResult> GetReviewByUserId(string userId, [FromQuery] BaseReviewFilterRequest filterRequest, [FromQuery] BasePaginationRequest paginationRequest)
         {
-            BasePaginationResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.GetReviewByUserIdAsync(userId, filterRequest, paginationRequest);
+            BasePaginationResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.GetReviewsByUserIdAsync(userId, filterRequest, paginationRequest);
 
             return response.Data != null
                 ? Ok(new
@@ -54,10 +66,11 @@ namespace TAT.StoreLocator.API.Controllers
                 : (IActionResult)StatusCode(500, "Can not find review by userId");
         }
 
-        [HttpGet("getReviewByStoreId/{storeId}")]
-        public async Task<IActionResult> GetReviewByStoreId(string storeId, [FromQuery] BaseReviewFilterRequest filterRequest, [FromQuery] BasePaginationRequest paginationRequest)
+        [HttpGet("getReviewByStore")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetReviewByStoreId([FromQuery] BaseReviewFilterRequest filterRequest, [FromQuery] BasePaginationRequest paginationRequest)
         {
-            BasePaginationResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.GetReviewByStoreIdAsync(storeId, filterRequest, paginationRequest);
+            BasePaginationResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.GetReviewsByStoreIdAsync(filterRequest, paginationRequest);
             return response.Data != null
                 ? Ok(new
                 {

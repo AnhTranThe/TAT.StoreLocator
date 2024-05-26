@@ -105,7 +105,7 @@ namespace TAT.StoreLocator.API.Controllers
         {
             try
             {
-                var response = await _photoService.DeleteDbAndCloudAsyncResultt(request.GalleryId, request.FileBelongTo, request.PublicId);
+                CloudinaryDotNet.Actions.DeletionResult? response = await _photoService.DeleteDbAndCloudAsyncResult(request.GalleryId, request.FileBelongTo, request.PublicId);
                 return response == null ? BadRequest("Delete Fail") : Ok(response.Result);
             }
             catch (Exception ex)

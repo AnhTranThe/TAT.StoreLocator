@@ -76,6 +76,7 @@
 
         public static readonly string[] VietNamChar = new string[] { "aAeEoOuUiIdDyY", "áàạảãâấầậẩẫăắằặẳẵ", "ÁÀẠẢÃÂẤẦẬẨẪĂẮẰẶẲẴ", "éèẹẻẽêếềệểễ", "ÉÈẸẺẼÊẾỀỆỂỄ", "óòọỏõôốồộổỗơớờợởỡ", "ÓÒỌỎÕÔỐỒỘỔỖƠỚỜỢỞỠ", "úùụủũưứừựửữ", "ÚÙỤỦŨƯỨỪỰỬỮ", "íìịỉĩ", "ÍÌỊỈĨ", "đ", "Đ", "ýỳỵỷỹ", "ÝỲỴỶỸ" };
 
+        public const string REQUEST_INVALID = "REQUEST_INVALID";
         public const string RefreshTokenCookieName = "refreshToken";
         public const string MessageUserNotFound = "User not found";
         public const string MessagePasswordAndConfirmPasswordNotMatch = "Password and confirm new password do not match.";
@@ -143,7 +144,7 @@
 
         //NEW 10/4
         public const string CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND";
-
+        public const string USER_HAVE_REVIEW_ALREADY = "USER_HAVE_REVIEW_ALREADY";
         public const string WARD_NOT_FOUND = "WARD_NOT_FOUND";
         public const string DISTRICT_NOT_FOUND = "DISTRICT_NOT_FOUND";
         public const string UPLOAD_FAIL = "UPLOAD_FAIL";
@@ -155,7 +156,7 @@
         public const string SUPERVISOR_NOT_SAME_BRANCH = "SUPERVISOR_NOT_SAME_BRAND";
 
         //new 12/4
-        public const string CREATE_HISTORY_FAIL = "CREATE_HISTORY_FAIL";
+        public const string CREATE_FAIL = "CREATE_FAIL";
 
         public const string RATING_SUCCESSFUL = "RATING_SUCCESSFUL";
         public const string CANCEL_SUCCESSFUL = "CANCEL_SUCCESSFUL";
