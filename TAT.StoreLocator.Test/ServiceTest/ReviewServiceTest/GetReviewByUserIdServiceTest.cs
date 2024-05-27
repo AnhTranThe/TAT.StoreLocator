@@ -45,10 +45,10 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
 
                 _ = dbContext.Products.Add(new Product { Id = productId, Name = "Product 1" });
                 dbContext.Reviews.AddRange(
-                    new Review { Id = "review1", UserId = userId, ProductId = productId, Content = "Review 1", RatingValue = 5 },
-                    new Review { Id = "review2", UserId = userId, ProductId = productId, Content = "Review 2", RatingValue = 4 },
-                    new Review { Id = "review3", UserId = userId, ProductId = productId, Content = "Review 3", RatingValue = 3 },
-                    new Review { Id = "review4", UserId = userId, ProductId = productId, Content = "Review 5", RatingValue = 5 }
+                    new Review { Id = "review1", UserId = "user1", ProductId = productId, Content = "Review 1", RatingValue = 5 },
+                    new Review { Id = "review2", UserId = "user2", ProductId = productId, Content = "Review 2", RatingValue = 4 },
+                    new Review { Id = "review3", UserId = "user2", ProductId = productId, Content = "Review 3", RatingValue = 3 },
+                    new Review { Id = "review4", UserId = "user1", ProductId = productId, Content = "Review 5", RatingValue = 5 }
                 );
                 _ = await dbContext.SaveChangesAsync();
             }
@@ -60,7 +60,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
                 BaseReviewFilterRequest filterRequest = new()
                 {
                     SearchRatingKey = 5,
-                    TypeId = ""
+                    TypeId = "user1"
                 };
                 BasePaginationRequest paginationRequest = new()
                 {

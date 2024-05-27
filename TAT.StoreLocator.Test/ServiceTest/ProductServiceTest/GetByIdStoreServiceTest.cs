@@ -1,77 +1,63 @@
-﻿//using log4net.Core;
-//using Microsoft.EntityFrameworkCore;
-//using Moq;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using TAT.StoreLocator.Core.Common;
-//using TAT.StoreLocator.Core.Entities;
-//using TAT.StoreLocator.Core.Interface.ILogger;
-//using TAT.StoreLocator.Core.Interface.IServices;
-//using TAT.StoreLocator.Core.Models.Response.Product;
-//using TAT.StoreLocator.Infrastructure.Persistence.EF;
-//using TAT.StoreLocator.Infrastructure.Services;
-//using Xunit;
-//using ILogger = TAT.StoreLocator.Core.Interface.ILogger.ILogger;
+﻿using log4net.Core;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Entities;
+using TAT.StoreLocator.Core.Interface.ILogger;
+using TAT.StoreLocator.Core.Interface.IServices;
+using TAT.StoreLocator.Core.Models.Response.Product;
+using TAT.StoreLocator.Infrastructure.Persistence.EF;
+using TAT.StoreLocator.Infrastructure.Services;
+using Xunit;
+using ILogger = TAT.StoreLocator.Core.Interface.ILogger.ILogger;
 
-//namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
-//{
-//    public class GetByIdStoreServiceTest
-//    {
-//        [Fact]
-//        public async Task GetByIdStore_ReturnsCorrectProductList()
-//        {
-//            // Arrange
-//            var expectedProduct = new List<ProductResponseModel>
-//    {
-//        new ProductResponseModel
-//        {
-//            Id = "product1",
-//            Name = "Product 1",
-//            Description = "Description of Product 1",
-//        },
+namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
+{
+    public class GetByIdStoreServiceTest
+    {
+        [Fact]
+        public async Task GetByIdStore_ReturnsActiveProducts()
+        {
+            // Setup
+            var loggerMock = new Mock<ILogger>();
+            var photoServiceMock = new Mock<IPhotoService>();
+            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDb")
+                .Options;
 
-//        new ProductResponseModel
-//        {
-//            Id = "product2",
-//            Name = "Product 2",
-//            Description = "Description of Product 2",
-//        },
-//    };
+            await using var dbContext = new AppDbContext(dbContextOptions);
 
-//            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
-//                .UseInMemoryDatabase(databaseName: "GetByIdStore_TestDatabase")
-//                .Options;
+            var storeId = "test-store-id";
+            var products = new List<Product>
+            {
+                new Product { Id = "1", Name = "Product 1", StoreId = storeId, IsActive = true },
+                new Product { Id = "2", Name = "Product 2", StoreId = storeId, IsActive = true },
+                new Product { Id = "3", Name = "Product 3", StoreId = "other-store-id", IsActive = true },
+                new Product { Id = "4", Name = "Product 4", StoreId = storeId, IsActive = false }
+            };
 
-//            using var dbContextMock = new AppDbContext(dbContextOptions);
+            await dbContext.Products.AddRangeAsync(products);
+            await dbContext.SaveChangesAsync();
 
-//            // Add data from expectedProduct list to the in-memory database
-//            dbContextMock.Products.AddRange(expectedProduct.Select(p => new Product
-//            {
-//                Id = p.Id,
-//                Name = p.Name,
-//                Description = p.Description
-//            }));
-//            await dbContextMock.SaveChangesAsync();
+            var productService = new ProductService(loggerMock.Object, dbContext, photoServiceMock.Object);
 
-//            var productService = new ProductService(Mock.Of<ILogger>(), dbContextMock, Mock.Of<IPhotoService>());
+            var request = new BasePaginationRequest { PageIndex = 1, PageSize = 10 };
 
-//            // Act
-//            var result = await productService.GetByIdStore("store1", new BasePaginationRequest { PageSize = 10, PageIndex = 1 });
+            // Act
+            var result = await productService.GetByIdStore(storeId, request);
 
-//            // Assert
-//            Assert.NotNull(result);
-//            Assert.Equal(expectedProduct.Count, result.Data.Count);
+            // Assert
+            Assert.Equal(2, result.TotalCount);
+            Assert.Contains(result.Data, p => p.Name == "Product 1");
+            Assert.Contains(result.Data, p => p.Name == "Product 2");
+            Assert.DoesNotContain(result.Data, p => p.Name == "Product 3");
+            Assert.DoesNotContain(result.Data, p => p.Name == "Product 4");
+        }
+    }
 
-//            // Assert each product in the result matches the expected products
-//            for (int i = 0; i < expectedProduct.Count; i++)
-//            {
-//                Assert.Equal(expectedProduct[i].Id, result.Data[i].Id);
-//                Assert.Equal(expectedProduct[i].Name, result.Data[i].Name);
-//                Assert.Equal(expectedProduct[i].Description, result.Data[i].Description);
-//            }
-//        }
-//    }
-//}
+}

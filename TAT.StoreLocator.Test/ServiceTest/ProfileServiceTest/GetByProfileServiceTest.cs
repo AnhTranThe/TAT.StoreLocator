@@ -41,10 +41,10 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProfileServiceTest
 
             // Assert
             Assert.Equal("1", userId);
+
         }
-
-
     }
 }
+
 
 

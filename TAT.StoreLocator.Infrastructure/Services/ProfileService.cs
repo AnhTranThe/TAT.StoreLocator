@@ -37,7 +37,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         }
 
         //protected string GetGuidUserIdLogin()
-        public string GetGuidUserIdLogin() // tesst
+        public string GetGuidUserIdLogin() // test
         {
                 ClaimsPrincipal? user = _httpContextAccessor.HttpContext?.User;
                 string hello = user.FindFirstValue(UserClaims.Id);

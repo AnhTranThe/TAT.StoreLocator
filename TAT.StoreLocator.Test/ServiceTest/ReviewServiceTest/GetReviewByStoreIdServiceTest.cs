@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using System.Linq;
+using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Models.Request.Review;
@@ -14,70 +17,75 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
     public class GetReviewByStoreIdServiceTest
     {
         [Fact]
-        public async Task GetReviewByStoreIdAsync_ReturnsPaginatedReviews()
+        public async Task GetReviewsByStoreIdAsync_ReturnsPaginatedReviews()
         {
             // Arrange
-            MapperConfiguration config = new(cfg =>
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(databaseName: "GetReviewsByStoreIdAsync_ReturnsPaginatedReviews_TestDatabase")
+                .Options;
+
+            // Create and seed the in-memory database
+            using (var dbContext = new AppDbContext(options))
             {
-                _ = cfg.CreateMap<CreateReviewRequestModel, Review>();
-                _ = cfg.CreateMap<Review, ReviewResponseModel>()
-                    .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product == null ? null : new BaseProductResponseModel
-                    {
-                        Id = src.Product.Id,
-                        Name = src.Product.Name,
-                        Description = src.Product.Description,
-                        Content = src.Product.Content,
-                        Price = src.Product.Price,
-                        Discount = src.Product.Discount,
-                        Quantity = src.Product.Quantity
-                    }));
-            });
-            IMapper mapper = config.CreateMapper();
-
-            DbContextOptions<AppDbContext> dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
-                                    .UseInMemoryDatabase(databaseName: "GetReviewByStoreIdAsync_TestDatabase")
-                                    .Options;
-
-            using (AppDbContext dbContext = new(dbContextOptions))
-            {
-                string storeId = "store1";
-                string productId = "product1";
-
-                _ = dbContext.Products.Add(new Product { Id = productId, Name = "Product 1", StoreId = storeId });
                 dbContext.Reviews.AddRange(
-                    new Review { Id = "review1", StoreId = storeId, ProductId = productId, Content = "Review 1", RatingValue = 5 },
-                    new Review { Id = "review2", StoreId = storeId, ProductId = productId, Content = "Review 2", RatingValue = 4 },
-                    new Review { Id = "review3", StoreId = storeId, ProductId = productId, Content = "Review 3", RatingValue = 3 },
-                    new Review { Id = "review4", StoreId = storeId, ProductId = productId, Content = "Review 4", RatingValue = 4 }
+                    new Core.Entities.Review { Id = "review1", StoreId = "store1", Content = "Review 1", RatingValue = 4 },
+                    new Core.Entities.Review { Id = "review2", StoreId = "store1", Content = "Review 2", RatingValue = 4 },
+                    new Core.Entities.Review { Id = "review3", StoreId = "store2", Content = "Review 3", RatingValue = 5 }
                 );
-                _ = await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
             }
 
-            using (AppDbContext dbContext = new(dbContextOptions))
+            var filterRequest = new BaseReviewFilterRequest
             {
-                ReviewService reviewService = new(dbContext, mapper);
+                TypeId = "store1", 
+                SearchRatingKey = 4
+            };
+            var paginationRequest = new BasePaginationRequest
+            {
+                PageIndex = 1,
+                PageSize = 10,
+                SearchString = ""
+            };
 
-                BaseReviewFilterRequest filterRequest = new()
+            // Mock IMapper
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<List<ReviewResponseModel>>(It.IsAny<List<Review>>()))
+                .Returns((List<Review> reviews) => reviews.Select(r => new ReviewResponseModel
                 {
-                    SearchRatingKey = 4
-                };
-                BasePaginationRequest paginationRequest = new()
-                {
-                    PageIndex = 1,
-                    PageSize = 10,
-                    SearchString = ""
-                };
+                    Id = r.Id,
+                    StoreId = r.StoreId,
+                    Content = r.Content,
+                    RatingValue = r.RatingValue,
+                    // Map other properties as needed
+                }).ToList());
+
+            using (var dbContext = new AppDbContext(options))
+            {
+                var reviewService = new ReviewService(dbContext, mapperMock.Object);
 
                 // Act
-                BasePaginationResult<ReviewResponseModel> result = await reviewService.GetReviewsByStoreIdAsync(filterRequest, paginationRequest);
+                var result = await reviewService.GetReviewsByStoreIdAsync(filterRequest, paginationRequest);
+
+                // Print debug information
+                Console.WriteLine($"Total Count: {result.TotalCount}");
+                if (result.Data != null)
+                {
+                    foreach (var review in result.Data)
+                    {
+                        Console.WriteLine($"Review Id: {review.Id}, Store Id: {review.StoreId}, Rating Value: {review.RatingValue}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Result data is null.");
+                }
 
                 // Assert
                 Assert.NotNull(result);
                 Assert.NotNull(result.Data);
-                Assert.True(result.Data.Any());
                 Assert.Equal(1, result.PageIndex);
                 Assert.Equal(10, result.PageSize);
-                Assert.Equal(2, result.Data.Count(x => x.RatingValue == 4)); // Kiểm tra số lượng các phần tử có RatingValue bằng 4
+                Assert.Equal(2, result.Data.Count(x => x.RatingValue == 4));
             }
         }
     }
