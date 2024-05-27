@@ -34,7 +34,7 @@ namespace TAT.StoreLocator.API.Controllers
 
         }
 
-        [HttpPut("update")]
+        [HttpPut("update/{reviewId}")]
         public async Task<IActionResult> UpdateReview(string reviewId, [FromBody] UpdateReviewRequestModel request)
         {
             try

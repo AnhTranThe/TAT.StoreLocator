@@ -70,6 +70,7 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
 
             _ = CreateMap<Store, StoreResponseModel>()
                 .ForMember(dest => dest.MapGalleryStores, opt => opt.Ignore()) // We handle this manually
+                .ForMember(dest => dest.Reviews, opt => opt.Ignore())
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address != null ?
                     new AddressResponseModel
                     {
@@ -82,7 +83,7 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                         Longitude = src.Address.longitude
                     } : null));
 
-            _ = CreateMap<MapGalleryStore, MapGalleryStoreResponse>()
+            _ = CreateMap<MapGalleryStore, MapGalleryStoreResponseModel>()
               .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery != null ?
                   src.Gallery.FileName : string.Empty))
               .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Gallery != null ?
@@ -122,7 +123,7 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
             _ = CreateMap<UpdateReviewRequestModel, Review>()
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
                 .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? Enums.EReviewStatus.Pending))
+
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
             _ = CreateMap<Review, ReviewResponseModel>()

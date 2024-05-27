@@ -5,22 +5,22 @@ namespace TAT.StoreLocator.Core.Models.Request.Review
 {
     public class UpdateReviewRequestModel
     {
-        [Required]
-        public string? StoreId { get; set; }
+
 
         [Required]
-        public string? Content { get; set; }
+        public string Content { get; set; } = string.Empty;
+        [Required]
+        public string Type { get; set; } = string.Empty;
+        [Required]
+        public string TypeId { get; set; } = string.Empty;
 
         [Required]
-        public string? ProductId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [Required]
-        public string? UserId { get; set; }
+        public int RatingValue { get; set; } = 0;
 
-        [Required]
-        public int? RatingValue { get; set; }
-
-        public EReviewStatus? Status { get; set; }
+        public EReviewStatus Status { get; set; } = EReviewStatus.Approved;
         //public string? UpdatedBy { get; set; }
     }
 }

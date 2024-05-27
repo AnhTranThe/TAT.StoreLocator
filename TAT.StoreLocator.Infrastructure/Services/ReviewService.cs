@@ -5,7 +5,6 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Review;
-using TAT.StoreLocator.Core.Models.Response.Product;
 using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 
@@ -78,59 +77,53 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         public async Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request)
         {
-            BaseResponseResult<ReviewResponseModel> response = new();
+            BaseResponseResult<ReviewResponseModel> response = new() { Success = false };
+
             try
             {
-                Review? review = await _appDbContext.Reviews
-                    .Include(r => r.Product)
-                        .ThenInclude(p => p!.Store)
-                      .FirstOrDefaultAsync(r => r.Id == reviewId);
+                // Include the relevant navigation property based on the type
+                IQueryable<Review> reviewQuery = _appDbContext.Reviews.Include(r => r.User);
+                if (request.Type == "store")
+                {
+                    reviewQuery = reviewQuery.Include(r => r.Store);
+                }
+                else if (request.Type == "product")
+                {
+                    reviewQuery = reviewQuery.Include(r => r.Product);
+                }
+                // Fetch the review
+                Review? review = await reviewQuery.FirstOrDefaultAsync(r => r.Id == reviewId);
 
                 if (review == null)
                 {
-                    response.Success = false;
-                    response.Message = "Can not found review";
+                    response.Message = "Review not found";
                     return response;
                 }
 
-                // Sử dụng AutoMapper để map các thuộc tính từ request đến thực thể review
-                _ = _mapper.Map(request, review);
-                //review.UpdatedBy = request.UpdatedBy;
+                // Update review properties
+                review.Content = request.Content;
+                review.RatingValue = request.RatingValue;
+                review.Status = request.Status;
+                review.UserId = request.UserId;
+
 
                 _ = await _appDbContext.SaveChangesAsync();
-                ReviewResponseModel updateReviewResponse = new()
-                {
-                    Id = reviewId,
-                    Content = review.Content,
-                    RatingValue = review.RatingValue,
-                    Status = review.Status,
-                    UserId = request.UserId,
-                    StoreId = review.StoreId,
-                    Product = review.Product == null ? null : new BaseProductResponseModel
-                    {
-                        Id = review.Product.Id,
-                        Name = review.Product.Name,
-                        Description = review.Product.Description,
-                        Content = review.Product.Content,
-                        Price = review.Product.Price,
-                        Discount = review.Product.Discount,
-                        Quantity = review.Product.Quantity,
-                    },
-                    CreatedAt = review.CreatedAt.ToString(),
-                    CreatedBy = review.CreatedBy,
-                    UpdatedAt = review.UpdatedAt.ToString(),
-                    //UpdatedBy = review.UpdatedBy
-                };
+
+                // Map the updated review to a response model
+                ReviewResponseModel updatedReviewResponse = _mapper.Map<ReviewResponseModel>(review);
+
                 response.Success = true;
-                response.Data = updateReviewResponse;
+                response.Data = updatedReviewResponse;
             }
             catch (Exception ex)
             {
                 response.Success = false;
                 response.Message = ex.Message;
             }
+
             return response;
         }
+
 
         public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByUserIdAsync(BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
         {
