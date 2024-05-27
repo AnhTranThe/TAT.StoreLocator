@@ -132,12 +132,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByUserIdAsync(string userId, BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
+        public async Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByUserIdAsync(BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest)
         {
             IQueryable<Review> query = _appDbContext.Reviews
                 .Include(r => r.Product)
                 .ThenInclude(p => p!.Store)
-                .Where(r => r.UserId == userId);
+                .Where(r => r.UserId == filterRequest.TypeId);
 
             // Lọc theo rating nếu có giá trị được chỉ định
             if (filterRequest.SearchRatingKey.HasValue)
@@ -237,5 +237,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
 
         }
+
+
     }
 }

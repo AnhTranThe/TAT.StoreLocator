@@ -327,37 +327,35 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(string district, string ward, string province, string keyWord)
+        public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(GetNearStoreRequestModel getNearStoreRequest, BasePaginationRequest paginationRequest)
         {
-            BaseResponseResult<List<SimpleStoreResponse>> response = new();
+            BaseResponseResult<List<SimpleStoreResponse>> response = new() { Success = false };
 
-            if (district.IsNullOrEmpty() && province.IsNullOrEmpty() && ward.IsNullOrEmpty() && keyWord.IsNullOrEmpty())
+            if (getNearStoreRequest.District.IsNullOrEmpty()
+                && getNearStoreRequest.Province.IsNullOrEmpty()
+                && getNearStoreRequest.Ward.IsNullOrEmpty()
+                && getNearStoreRequest.keyWord.IsNullOrEmpty())
+
             {
-                response.Success = false;
                 response.Message = GlobalConstants.NOT_STORE_NEAR;
                 response.Data = null;
                 return response;
             }
-
-            // Query the stores whose addresses are in the nearby districts
+            // Query to get stores and their addresses
             var storeQuery = from store in _appDbContext.Stores
-                             join address in _appDbContext.Addresses
-                                 on store.AddressId equals address.Id
+                             join address in _appDbContext.Addresses on store.AddressId equals address.Id
                              select new
                              {
                                  Store = store,
                                  Address = address
                              };
 
-            var storesWithAddresses = storeQuery.ToList();
 
-            // Step 2: Fetch products with galleries
+            // Fetch products with galleries
             var productQuery = from product in _appDbContext.Products
-                               join gaProduct in _appDbContext.mapGalleryProducts
-                                   on product.Id equals gaProduct.ProductId into prodGaProducts
+                               join gaProduct in _appDbContext.mapGalleryProducts on product.Id equals gaProduct.ProductId into prodGaProducts
                                from gaProduct in prodGaProducts.DefaultIfEmpty()
-                               join gallery in _appDbContext.Galleries
-                                   on gaProduct.GalleryId equals gallery.Id into gaProductGalleries
+                               join gallery in _appDbContext.Galleries on gaProduct.GalleryId equals gallery.Id into gaProductGalleries
                                from gallery in gaProductGalleries.DefaultIfEmpty()
                                select new
                                {
@@ -365,7 +363,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                    GalleryUrl = gallery != null ? gallery.Url : string.Empty
                                };
 
-            var productsWithGalleries = productQuery.ToList();
+            // Execute queries and load data into memory
+            var storesWithAddresses = await storeQuery.ToListAsync();
+            var productsWithGalleries = await productQuery.ToListAsync();
 
             // Step 3: Combine results in-memory
             List<SimpleStoreResponse> query = storesWithAddresses.Select(s => new SimpleStoreResponse
@@ -394,52 +394,54 @@ namespace TAT.StoreLocator.Infrastructure.Services
                             }).ToList()
             }).ToList();
 
-            if (!province.IsNullOrEmpty())
+            // Apply filters
+            if (!string.IsNullOrEmpty(getNearStoreRequest.Province))
             {
-                province = CommonUtils.RemoveDiacritics(province).ToUpper();
-                query = query.Where(x => province.Contains(x.Address != null ? x.Address.Province ?? "" : "")).ToList();
+
+
+                string province = CommonUtils.RemoveDiacritics(getNearStoreRequest.Province
+      .Replace("city", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("thanh pho", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("tinh", "", StringComparison.OrdinalIgnoreCase)).ToUpper().Trim();
+
+                query = query.Where(x => !string.IsNullOrEmpty(x.Address?.Province) &&
+                               CommonUtils.RemoveDiacritics(x.Address.Province).ToUpper().Contains(province)).ToList();
             }
 
-            if (!district.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(getNearStoreRequest.District))
             {
-                if (district.StartsWith("Quận"))
-                {
-                    district = district.Replace("Quận", "Q.");
-                }
 
-                if (district.StartsWith("Huyện"))
-                {
-                    district = district.Replace("Huyện", "H.");
-                }
 
-                List<string> list = await GetNearDistrict(district);
-                query = query.Where(x => list.Contains(x.Address != null ? x.Address.District ?? "" : "")).ToList();
+                string district = CommonUtils.RemoveDiacritics(getNearStoreRequest.District
+      .Replace("quan", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("district", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("huyen", "", StringComparison.OrdinalIgnoreCase)).ToUpper().Trim();
+
+
+                //List<string> nearbyDistricts = await GetNearDistrict(district);
+                //query = query.Where(x => !string.IsNullOrEmpty(x.Address?.District) &&
+                //            CommonUtils.RemoveDiacritics(x.Address.District).ToUpper().Contains(province)).ToList();
+                //query = query.Where(x => nearbyDistricts.Contains(x.Address?.District ?? string.Empty)).ToList();
+            }
+            if (!string.IsNullOrEmpty(getNearStoreRequest.Ward))
+            {
+                string ward = getNearStoreRequest.Ward.Replace("Quận", "Q.").Replace("Huyện", "H.");
+                List<string> nearbyWards = await GetNearDistrict(ward);
+                query = query.Where(x => nearbyWards.Contains(x.Address?.Ward ?? string.Empty)).ToList();
             }
 
-            if (!ward.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(getNearStoreRequest.keyWord))
             {
-                if (ward.StartsWith("Quận"))
-                {
-                    ward = ward.Replace("Quận", "Q.");
-                }
-
-                if (ward.StartsWith("Huyện"))
-                {
-                    ward = ward.Replace("Huyện", "H.");
-                }
-
-                List<string> list = await GetNearDistrict(ward);
-                query = query.Where(x => list.Contains(x.Address != null ? x.Address.Ward ?? "" : "")).ToList();
+                query = query.Where(store => store.Products.Exists(product => !string.IsNullOrEmpty(product.Name) && product.Name.Contains(getNearStoreRequest.keyWord))).ToList();
             }
 
-            if (!keyWord.IsNullOrEmpty())
-            {
-                query = query.Where(store => store.Products.Any(product => product.Name != null && product.Name.Contains(keyWord))).ToList();
-            }
+            List<SimpleStoreResponse> nearestStores = query
+                 .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
+                 .Take(paginationRequest.PageSize).ToList();
 
-            List<SimpleStoreResponse> nearestStores = query.ToList(); // Make sure it's a List
+            //List<SimpleStoreResponse> nearestStores = query.ToList(); // Make sure it's a List
 
-            if (nearestStores != null && nearestStores.Any())
+            if (nearestStores.Any())
             {
                 response.Code = System.Net.HttpStatusCode.OK.ToString();
                 response.Message = GlobalConstants.SUCCESSFULL;
@@ -464,25 +466,25 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 "1" => await Task.FromResult(new List<string> { "1", "3", "4", "5", "Binh Thanh", "Phu Nhuan" }),
                 "2" => await Task.FromResult(new List<string> { "2", "Binh Thanh", "9", "Thu Duc", "4", "7" }),
                 "3" => await Task.FromResult(new List<string> { "1", "3", "10", "Phu Nhuan", "Tan Binh" }),
-                "4" => await Task.FromResult(new List<string> { "1", "7", "8", "2" }),
+                "4" => await Task.FromResult(new List<string> { "1", "7", "8", "2", "4" }),
                 "5" => await Task.FromResult(new List<string> { "1", "5", "6", "10", "11", "8" }),
                 "6" => await Task.FromResult(new List<string> { "5", "6", "11", "Binh Tan", "8" }),
                 "7" => await Task.FromResult(new List<string> { "2", "4", "8", "Nha Be", "Binh Chanh" }),
-                "8" => await Task.FromResult(new List<string> { "4", "5", "6", "7", "Binh Tan", "Binh Chanh" }),
-                "9" => await Task.FromResult(new List<string> { "2", "Thu Duc" }),
+                "8" => await Task.FromResult(new List<string> { "4", "5", "6", "7", "Binh Tan", "Binh Chanh", "8" }),
+                "9" => await Task.FromResult(new List<string> { "2", "Thu Duc", "9" }),
                 "10" => await Task.FromResult(new List<string> { "3", "5", "10", "11", "Tan Binh" }),
                 "11" => await Task.FromResult(new List<string> { "5", "6", "10", "11", "Tan Binh", "Binh Tan" }),
-                "12" => await Task.FromResult(new List<string> { "Go Vap", "Binh Thanh", "Thu Duc", "Tan Binh", "Hoc Mon" }),
-                "BINH THANH" => await Task.FromResult(new List<string> { "1", "2", "Go Vap", "Phu Nhuan", "Thu Duc" }),
-                "TAN BINH" => await Task.FromResult(new List<string> { "3", "10", "11", "Phu Nhuan", "Tan Phu" }),
-                "TAN PHU" => await Task.FromResult(new List<string> { "Tan Binh", "Binh Tan", "11" }),
-                "PHU NHUAN" => await Task.FromResult(new List<string> { "1", "3", "Binh Thanh", "Tan Binh" }),
+                "12" => await Task.FromResult(new List<string> { "Go Vap", "Binh Thanh", "Thu Duc", "Tan Binh", "Hoc Mon", "12" }),
+                "BINH THANH" => await Task.FromResult(new List<string> { "1", "2", "Go Vap", "Phu Nhuan", "Thu Duc", "BINH THANH" }),
+                "TAN BINH" => await Task.FromResult(new List<string> { "3", "10", "11", "Phu Nhuan", "Tan Phu", "TAN BINH" }),
+                "TAN PHU" => await Task.FromResult(new List<string> { "Tan Binh", "Binh Tan", "11", "TAN PHU" }),
+                "PHU NHUAN" => await Task.FromResult(new List<string> { "1", "3", "Binh Thanh", "Tan Binh", "PHU NHUAN" }),
                 "THU DUC" => await Task.FromResult(new List<string> { "2", "9", "Binh Thanh", "12" }),
-                "BINH TAN" => await Task.FromResult(new List<string> { "6", "8", "Tan Phu", "Binh Chanh" }),
+                "BINH TAN" => await Task.FromResult(new List<string> { "6", "8", "Tan Phu", "Binh Chanh", "BINH TAN" }),
                 "HOC MON" => await Task.FromResult(new List<string> { "12", "Cu Chi", "Binh Tan" }),
-                "CU CHI" => await Task.FromResult(new List<string> { "Hoc Mon", "Binh Chanh" }),
-                "BINH CHANH" => await Task.FromResult(new List<string> { "7", "8", "Binh Tan", "Nha Be", "Cu Chi" }),
-                "NHA BE" => await Task.FromResult(new List<string> { "7", "Binh Chanh" }),
+                "CU CHI" => await Task.FromResult(new List<string> { "Hoc Mon", "Binh Chanh", "CU CHI" }),
+                "BINH CHANH" => await Task.FromResult(new List<string> { "7", "8", "Binh Tan", "Nha Be", "Cu Chi", "BINH CHANH" }),
+                "NHA BE" => await Task.FromResult(new List<string> { "7", "Binh Chanh", "NHA BE" }),
                 _ => await Task.FromResult(new List<string>())
             };
         }

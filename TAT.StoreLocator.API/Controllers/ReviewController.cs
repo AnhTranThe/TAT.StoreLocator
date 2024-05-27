@@ -52,7 +52,7 @@ namespace TAT.StoreLocator.API.Controllers
 
         public async Task<IActionResult> GetReviewByUserId(string userId, [FromQuery] BaseReviewFilterRequest filterRequest, [FromQuery] BasePaginationRequest paginationRequest)
         {
-            BasePaginationResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.GetReviewsByUserIdAsync(userId, filterRequest, paginationRequest);
+            BasePaginationResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.GetReviewsByUserIdAsync(filterRequest, paginationRequest);
 
             return response.Data != null
                 ? Ok(new

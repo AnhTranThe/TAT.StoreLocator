@@ -1,6 +1,6 @@
 ﻿namespace TAT.StoreLocator.Core.Models.Request.Store
 {
-    public class GetNearStore
+    public class GetNearStoreRequestModel
     {
         public string District { get; set; } = string.Empty;
         public string Ward { get; set; } = string.Empty;

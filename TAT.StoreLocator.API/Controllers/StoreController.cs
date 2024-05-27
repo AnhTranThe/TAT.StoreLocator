@@ -53,13 +53,13 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpGet("get/nearStore")]
+        [HttpGet("getNearStore")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetNearStore([FromQuery] GetNearStore getNearStore)
+        public async Task<IActionResult> GetNearStore([FromQuery] GetNearStoreRequestModel getNearStoreRequest, [FromQuery] BasePaginationRequest paginationRequest)
         {
             try
             {
-                BaseResponseResult<List<Core.Models.Response.Store.SimpleStoreResponse>> response = await _storeService.GetTheNearestStore(getNearStore.District, getNearStore.Ward, getNearStore.Province, getNearStore.keyWord);
+                BaseResponseResult<List<Core.Models.Response.Store.SimpleStoreResponse>> response = await _storeService.GetTheNearestStore(getNearStoreRequest, paginationRequest);
                 return response.Success ? Ok(response) : (IActionResult)Ok(response);
             }
             catch (Exception ex)
