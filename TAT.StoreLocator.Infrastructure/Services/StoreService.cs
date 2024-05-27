@@ -358,12 +358,23 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                from gaProduct in prodGaProducts.DefaultIfEmpty()
                                join gallery in _appDbContext.Galleries on gaProduct.GalleryId equals gallery.Id into gaProductGalleries
                                from gallery in gaProductGalleries.DefaultIfEmpty()
+                               join childCategory in _appDbContext.Categories on product.CategoryId equals childCategory.Id into productCategories
+                               from childCategory in productCategories.DefaultIfEmpty()
+                               join parentCategory in _appDbContext.Categories on childCategory.ParentCategoryId equals parentCategory.Id into parentCategories
+                               from parentCategory in parentCategories.DefaultIfEmpty()
+
                                select new
                                {
                                    Product = product,
-                                   GalleryUrl = gallery != null ? gallery.Url : string.Empty
+                                   GalleryUrl = gallery != null ? gallery.Url : string.Empty,
+                                   ChildCategory = childCategory != null ? childCategory.Name : string.Empty,
+                                   ParentCategory = parentCategory != null ? parentCategory.Name : string.Empty,
+                                   ParentCategoryId = parentCategory != null ? parentCategory.ParentCategoryId : string.Empty
                                };
-
+            if (getNearStoreRequest.Categories != null)
+            {
+                productQuery = productQuery.Where(x => getNearStoreRequest.Categories.Contains(x.ParentCategoryId));
+            }
             // Execute queries and load data into memory
             var storesWithAddresses = await storeQuery.ToListAsync();
             var productsWithGalleries = await productQuery.ToListAsync();
@@ -414,12 +425,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
 
                 string district = CommonUtils.vietnameseReplace(getNearStoreRequest.District
-      .Replace("quan", "", StringComparison.OrdinalIgnoreCase)
-      .Replace("q.", "", StringComparison.OrdinalIgnoreCase)
-      .Replace("district", "", StringComparison.OrdinalIgnoreCase)
-      .Replace("h.", "", StringComparison.OrdinalIgnoreCase)
-      .Replace("huyen", "", StringComparison.OrdinalIgnoreCase))
-      .Replace("thanh pho", "", StringComparison.OrdinalIgnoreCase).ToUpper().Trim();
+                      .Replace("quan", "", StringComparison.OrdinalIgnoreCase)
+                      .Replace("q.", "", StringComparison.OrdinalIgnoreCase)
+                      .Replace("district", "", StringComparison.OrdinalIgnoreCase)
+                      .Replace("h.", "", StringComparison.OrdinalIgnoreCase)
+                      .Replace("huyen", "", StringComparison.OrdinalIgnoreCase))
+                      .Replace("thanh pho", "", StringComparison.OrdinalIgnoreCase).ToUpper().Trim();
 
 
                 List<string> nearbyDistricts = await GetNearDistrict(district);
@@ -428,16 +439,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     nearbyDistricts.Add(district);
                 }
                 query = query.Where(x => nearbyDistricts.Exists(nearbyDistrict =>
-            CommonUtils.vietnameseReplace(x.Address?.District ?? "").ToUpper() == nearbyDistrict.ToUpper())).ToList();
+                                 CommonUtils.vietnameseReplace(x.Address?.District ?? "").ToUpper() == nearbyDistrict.ToUpper())).ToList();
             }
             if (!string.IsNullOrEmpty(getNearStoreRequest.Ward))
             {
 
                 string ward = CommonUtils.vietnameseReplace(getNearStoreRequest.Ward
-      .Replace("phuong", "", StringComparison.OrdinalIgnoreCase)
-      .Replace("p.", "", StringComparison.OrdinalIgnoreCase)
-      .Replace("ward", "", StringComparison.OrdinalIgnoreCase))
-     .ToUpper().Trim();
+                              .Replace("phuong", "", StringComparison.OrdinalIgnoreCase)
+                              .Replace("p.", "", StringComparison.OrdinalIgnoreCase)
+                              .Replace("ward", "", StringComparison.OrdinalIgnoreCase))
+                             .ToUpper().Trim();
 
                 query = query.Where(x => !string.IsNullOrEmpty(x.Address?.Ward) &&
                              CommonUtils.vietnameseReplace(x.Address.Ward).ToUpper().Contains(ward)).ToList();
@@ -452,11 +463,14 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 // If no products match the keyword, search by store name
                 if (!filteredStores.Any())
                 {
-                    filteredStores = query.Where(store => !string.IsNullOrEmpty(store.Name) && CommonUtils.vietnameseReplace(store.Name).ToUpper().Contains(keyword)).ToList();
+                    filteredStores = query
+                        .Where(store => !string.IsNullOrEmpty(store.Name)
+                        && CommonUtils.vietnameseReplace(store.Name).ToUpper().Contains(keyword)).ToList();
                 }
 
                 query = filteredStores;
             }
+
             List<SimpleStoreResponse> nearestStores = query
                  .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
                  .Take(paginationRequest.PageSize).ToList();
