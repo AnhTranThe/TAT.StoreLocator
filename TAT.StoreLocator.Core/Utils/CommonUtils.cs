@@ -145,7 +145,7 @@ namespace TAT.StoreLocator.Core.Utils
         public static string NormalSearch(string text)
         {
             // Loại bỏ dấu tiếng Việt và chuyển đổi về chữ thường
-            string normalizedText = RemoveDiacritics(text).ToLowerInvariant();
+            string normalizedText = vietnameseReplace(text).ToLowerInvariant();
             // Loại bỏ các ký tự không phải chữ cái hoặc số
             StringBuilder resultBuilder = new();
             foreach (char c in normalizedText)

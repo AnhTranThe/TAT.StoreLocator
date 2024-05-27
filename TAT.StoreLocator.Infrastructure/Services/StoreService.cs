@@ -333,7 +333,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
             if (getNearStoreRequest.District.IsNullOrEmpty()
                 && getNearStoreRequest.Province.IsNullOrEmpty()
                 && getNearStoreRequest.Ward.IsNullOrEmpty()
-                && getNearStoreRequest.keyWord.IsNullOrEmpty())
+                && getNearStoreRequest.keyWord.IsNullOrEmpty()
+                && getNearStoreRequest.Categories.IsNullOrEmpty())
 
             {
                 response.Message = GlobalConstants.NOT_STORE_NEAR;
@@ -353,6 +354,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             // Fetch products with galleries
             var productQuery = from product in _appDbContext.Products
                                join gaProduct in _appDbContext.mapGalleryProducts on product.Id equals gaProduct.ProductId into prodGaProducts
+
                                from gaProduct in prodGaProducts.DefaultIfEmpty()
                                join gallery in _appDbContext.Galleries on gaProduct.GalleryId equals gallery.Id into gaProductGalleries
                                from gallery in gaProductGalleries.DefaultIfEmpty()
@@ -398,42 +400,63 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
 
 
-                string province = CommonUtils.RemoveDiacritics(getNearStoreRequest.Province
+                string province = CommonUtils.vietnameseReplace(getNearStoreRequest.Province
       .Replace("city", "", StringComparison.OrdinalIgnoreCase)
       .Replace("thanh pho", "", StringComparison.OrdinalIgnoreCase)
       .Replace("tinh", "", StringComparison.OrdinalIgnoreCase)).ToUpper().Trim();
 
                 query = query.Where(x => !string.IsNullOrEmpty(x.Address?.Province) &&
-                               CommonUtils.RemoveDiacritics(x.Address.Province).ToUpper().Contains(province)).ToList();
+                               CommonUtils.vietnameseReplace(x.Address.Province).ToUpper().Contains(province)).ToList();
             }
 
             if (!string.IsNullOrEmpty(getNearStoreRequest.District))
             {
 
 
-                string district = CommonUtils.RemoveDiacritics(getNearStoreRequest.District
+                string district = CommonUtils.vietnameseReplace(getNearStoreRequest.District
       .Replace("quan", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("q.", "", StringComparison.OrdinalIgnoreCase)
       .Replace("district", "", StringComparison.OrdinalIgnoreCase)
-      .Replace("huyen", "", StringComparison.OrdinalIgnoreCase)).ToUpper().Trim();
+      .Replace("h.", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("huyen", "", StringComparison.OrdinalIgnoreCase))
+      .Replace("thanh pho", "", StringComparison.OrdinalIgnoreCase).ToUpper().Trim();
 
 
-                //List<string> nearbyDistricts = await GetNearDistrict(district);
-                //query = query.Where(x => !string.IsNullOrEmpty(x.Address?.District) &&
-                //            CommonUtils.RemoveDiacritics(x.Address.District).ToUpper().Contains(province)).ToList();
-                //query = query.Where(x => nearbyDistricts.Contains(x.Address?.District ?? string.Empty)).ToList();
+                List<string> nearbyDistricts = await GetNearDistrict(district);
+                if (!nearbyDistricts.Contains(district))
+                {
+                    nearbyDistricts.Add(district);
+                }
+                query = query.Where(x => nearbyDistricts.Exists(nearbyDistrict =>
+            CommonUtils.vietnameseReplace(x.Address?.District ?? "").ToUpper() == nearbyDistrict.ToUpper())).ToList();
             }
             if (!string.IsNullOrEmpty(getNearStoreRequest.Ward))
             {
-                string ward = getNearStoreRequest.Ward.Replace("Quận", "Q.").Replace("Huyện", "H.");
-                List<string> nearbyWards = await GetNearDistrict(ward);
-                query = query.Where(x => nearbyWards.Contains(x.Address?.Ward ?? string.Empty)).ToList();
+
+                string ward = CommonUtils.vietnameseReplace(getNearStoreRequest.Ward
+      .Replace("phuong", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("p.", "", StringComparison.OrdinalIgnoreCase)
+      .Replace("ward", "", StringComparison.OrdinalIgnoreCase))
+     .ToUpper().Trim();
+
+                query = query.Where(x => !string.IsNullOrEmpty(x.Address?.Ward) &&
+                             CommonUtils.vietnameseReplace(x.Address.Ward).ToUpper().Contains(ward)).ToList();
             }
+
 
             if (!string.IsNullOrEmpty(getNearStoreRequest.keyWord))
             {
-                query = query.Where(store => store.Products.Exists(product => !string.IsNullOrEmpty(product.Name) && product.Name.Contains(getNearStoreRequest.keyWord))).ToList();
-            }
+                string keyword = CommonUtils.vietnameseReplace(getNearStoreRequest.keyWord).ToUpper();
+                List<SimpleStoreResponse> filteredStores = query.Where(store => store.Products.Exists(product => !string.IsNullOrEmpty(product.Name) && CommonUtils.vietnameseReplace(product.Name).ToUpper().Contains(keyword))).ToList();
 
+                // If no products match the keyword, search by store name
+                if (!filteredStores.Any())
+                {
+                    filteredStores = query.Where(store => !string.IsNullOrEmpty(store.Name) && CommonUtils.vietnameseReplace(store.Name).ToUpper().Contains(keyword)).ToList();
+                }
+
+                query = filteredStores;
+            }
             List<SimpleStoreResponse> nearestStores = query
                  .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
                  .Take(paginationRequest.PageSize).ToList();
@@ -458,7 +481,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         private async Task<List<string>> GetNearDistrict(string district)
         {
-            district = CommonUtils.RemoveDiacritics(district).ToUpper(); // Chuyển đổi chuỗi đầu vào thành chữ hoa
+            district = CommonUtils.vietnameseReplace(district).ToUpper(); // Chuyển đổi chuỗi đầu vào thành chữ hoa
 
             return district switch
             {
