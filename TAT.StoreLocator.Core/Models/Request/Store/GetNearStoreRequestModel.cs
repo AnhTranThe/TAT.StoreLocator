@@ -6,5 +6,6 @@
         public string Ward { get; set; } = string.Empty;
         public string Province { get; set; } = string.Empty;
         public string keyWord { get; set; } = string.Empty;
+        public string Categories { get; set; } = string.Empty;
     }
 }
