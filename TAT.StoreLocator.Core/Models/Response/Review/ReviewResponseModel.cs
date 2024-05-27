@@ -11,6 +11,7 @@ namespace TAT.StoreLocator.Core.Models.Response.Review
         public int RatingValue { get; set; }
         public EReviewStatus Status { get; set; }
 
+        public string? UserEmail { get; set; }
         public string? UserId { get; set; }
 
         public string? StoreId { get; set; }

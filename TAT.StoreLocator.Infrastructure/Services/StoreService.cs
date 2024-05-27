@@ -8,6 +8,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Store;
+using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;
 using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -173,7 +174,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                            UpdatedBy = store.UpdatedBy,
                                                            MapGalleryStores = _appDbContext.MapGalleryStores
                                                                .Where(mgs => mgs.StoreId == store.Id)
-                                                               .Select(mgs => new MapGalleryStoreResponse
+                                                               .Select(mgs => new MapGalleryStoreResponseModel
                                                                {
                                                                    GalleryId = mgs.GalleryId,
                                                                    FileName = gallery.FileName,
@@ -224,16 +225,18 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Store? store = await _appDbContext.Stores
                     .Include(s => s.Address)
+                    .Include(s => s.Reviews!).ThenInclude(s => s.User)
                     .Include(s => s.MapGalleryStores!)
                         .ThenInclude(mgs => mgs.Gallery)  // Ensure Galleries are loaded
                     .FirstOrDefaultAsync(s => s.Id == storeId);
+
 
                 if (store != null)
                 {
                     StoreResponseModel storeResponseModel = _mapper.Map<StoreResponseModel>(store);
                     // Map galleries
                     storeResponseModel.MapGalleryStores = store.MapGalleryStores != null ? store.MapGalleryStores
-                        .Select(mgs => new MapGalleryStoreResponse
+                        .Select(mgs => new MapGalleryStoreResponseModel
                         {
                             GalleryId = mgs.GalleryId,
                             Key = mgs.Gallery?.PublicId,
@@ -241,7 +244,18 @@ namespace TAT.StoreLocator.Infrastructure.Services
                             Url = mgs.Gallery?.Url,
                             IsThumbnail = mgs.Gallery?.IsThumbnail ?? false
                         })
-                        .ToList() : new List<MapGalleryStoreResponse>();
+                        .ToList() : new List<MapGalleryStoreResponseModel>();
+                    storeResponseModel.Reviews = store.Reviews != null ? store.Reviews.Select(m => new ReviewResponseModel
+                    {
+                        Id = m.Id,
+                        Content = m.Content,
+                        RatingValue = m.RatingValue,
+                        Status = m.Status,
+                        UserId = m.UserId,
+                        StoreId = m.StoreId,
+                        UserEmail = m.User != null ? m.User.Email : string.Empty
+
+                    }).ToList() : new List<ReviewResponseModel>();
 
                     response.Success = true;
                     response.Data = storeResponseModel;
@@ -345,6 +359,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             // Query to get stores and their addresses
             var storeQuery = from store in _appDbContext.Stores
                              join address in _appDbContext.Addresses on store.AddressId equals address.Id
+
                              select new
                              {
                                  Store = store,
@@ -355,7 +370,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             // Fetch products with galleries
             var productQuery = from product in _appDbContext.Products
                                join gaProduct in _appDbContext.mapGalleryProducts on product.Id equals gaProduct.ProductId into prodGaProducts
-
                                from gaProduct in prodGaProducts.DefaultIfEmpty()
                                join gallery in _appDbContext.Galleries on gaProduct.GalleryId equals gallery.Id into gaProductGalleries
                                from gallery in gaProductGalleries.DefaultIfEmpty()
@@ -376,9 +390,47 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 productQuery = productQuery.Where(x => getNearStoreRequest.Categories.Contains(x.ParentCategoryId));
             }
-            // Execute queries and load data into memory
+
+
+            // Fetch reviews for stores
+            IQueryable<ReviewResponseModel> reviewQuery = from review in _appDbContext.Reviews
+                                                          join user in _appDbContext.Users on review.UserId equals user.Id into reviewUsers
+                                                          from user in reviewUsers.DefaultIfEmpty()
+
+                                                          select new ReviewResponseModel
+                                                          {
+                                                              Id = review.Id,
+                                                              StoreId = review.StoreId,
+                                                              Content = review.Content,
+                                                              RatingValue = review.RatingValue,
+                                                              Status = review.Status,
+                                                              UserId = review.UserId,
+                                                              UserEmail = user != null ? user.Email : string.Empty
+
+                                                          };
+
+
+
+            // Fetch Images for stores
+            IQueryable<MapGalleryStoreResponseModel> imageQuery = from image in _appDbContext.Galleries
+                                                                  join mapGalleryStore in _appDbContext.MapGalleryStores on image.Id equals mapGalleryStore.GalleryId
+
+                                                                  select new MapGalleryStoreResponseModel
+                                                                  {
+                                                                      GalleryId = image.Id,
+                                                                      Key = image.PublicId,
+                                                                      FileName = image.FileName,
+                                                                      Url = image.Url,
+                                                                      IsThumbnail = image.IsThumbnail,
+                                                                      StoreId = mapGalleryStore.StoreId
+
+                                                                  };
             var storesWithAddresses = await storeQuery.ToListAsync();
             var productsWithGalleries = await productQuery.ToListAsync();
+            List<MapGalleryStoreResponseModel> imageWithStores = await imageQuery.ToListAsync();
+
+
+            List<ReviewResponseModel> reviews = await reviewQuery.ToListAsync();
 
             // Step 3: Combine results in-memory
             List<SimpleStoreResponse> query = storesWithAddresses.Select(s => new SimpleStoreResponse
@@ -404,7 +456,30 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                 Id = p.Product.Id.ToString(),
                                 Name = p.Product.Name,
                                 Image = p.GalleryUrl
-                            }).ToList()
+                            }).ToList(),
+                Reviews = reviews
+                    .Where(r => r.StoreId == s.Store.Id)
+                    .Select(r => new ReviewResponseModel
+                    {
+                        Id = r.Id,
+                        StoreId = r.StoreId,
+                        Content = r.Content,
+                        RatingValue = r.RatingValue,
+                        Status = r.Status,
+                        UserId = r.UserId,
+                        UserEmail = r.UserEmail
+                    }).ToList(),
+                Images = imageWithStores.Where(r => r.StoreId == s.Store.Id)
+                         .Select(i => new MapGalleryStoreResponseModel
+                         {
+                             GalleryId = i.GalleryId,
+                             StoreId = i.StoreId,
+                             Url = i.Url,
+                             FileName = i.FileName,
+                             Key = i.Key,
+
+
+                         }).ToList()
             }).ToList();
 
             // Apply filters
