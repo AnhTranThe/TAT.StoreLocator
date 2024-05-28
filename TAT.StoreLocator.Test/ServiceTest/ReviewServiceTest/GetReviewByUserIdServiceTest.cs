@@ -19,7 +19,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
             // Arrange
             MapperConfiguration config = new(cfg =>
             {
-                _ = cfg.CreateMap<CreateReviewRequestModel, Review>();
+                _ = cfg.CreateMap<ReviewRequestModel, Review>();
                 _ = cfg.CreateMap<Review, ReviewResponseModel>()
                 .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product == null ? null : new BaseProductResponseModel
                 {
