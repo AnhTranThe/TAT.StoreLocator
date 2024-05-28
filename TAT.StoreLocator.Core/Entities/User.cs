@@ -33,10 +33,7 @@ namespace TAT.StoreLocator.Core.Entities
         public string? CreateBy { get; set; }
         public string? UpdateBy { get; set; }
 
-        // relationship
-        public Address? Address { get; set; }
 
-        public string? AddressId { get; set; }
         public Gallery? Gallery { get; set; }
         public Wishlist? Wishlist { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }

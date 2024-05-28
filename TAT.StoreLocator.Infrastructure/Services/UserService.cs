@@ -152,7 +152,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                     if (request.NewFile != null && request.NewFile.Length > 0 && _dbContext.Galleries != null)
                     {
-                        UploadPhotoRequestModel uploadPhotoRequestModel = new()
+                        PhotoUploadProfileRequestModel uploadPhotoRequestModel = new()
                         {
                             FileUpload = request.NewFile,
                             UserId = request.RequestId,
@@ -160,23 +160,23 @@ namespace TAT.StoreLocator.Infrastructure.Services
                         _ = await UpdateUserPhoto(uploadPhotoRequestModel);
                     }
 
-                    // Update or create address
-                    if (_dbContext != null && _dbContext.Addresses != null)
-                    {
-                        Address? address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == user.AddressId);
-                        if (address == null)
-                        {
-                            address = _mapper.Map<Address>(request);
-                            address.Id = user.AddressId ?? "";
-                            _ = _dbContext.Addresses.Add(address);
-                        }
-                        else
-                        {
-                            // Update existing address
-                            _ = _mapper.Map(request, address);
-                            _ = _dbContext.Addresses.Update(address);
-                        }
-                    }
+                    //// Update or create address
+                    //if (_dbContext != null && _dbContext.Addresses != null)
+                    //{
+                    //    Address? address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == user.AddressId);
+                    //    if (address == null)
+                    //    {
+                    //        address = _mapper.Map<Address>(request);
+                    //        address.Id = user.AddressId ?? "";
+                    //        _ = _dbContext.Addresses.Add(address);
+                    //    }
+                    //    else
+                    //    {
+                    //        // Update existing address
+                    //        _ = _mapper.Map(request, address);
+                    //        _ = _dbContext.Addresses.Update(address);
+                    //    }
+                    //}
 
                     _ = await _dbContext.SaveChangesAsync(user.Id);
 
@@ -196,7 +196,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponse> UpdateUserPhoto(UploadPhotoRequestModel request)
+        public async Task<BaseResponse> UpdateUserPhoto(PhotoUploadProfileRequestModel request)
         {
             BaseResponse response = new()
             {

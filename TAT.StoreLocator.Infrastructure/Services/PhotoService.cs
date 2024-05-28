@@ -8,6 +8,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Photo;
+using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -33,9 +34,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
             CloudinaryDotNet.Transformation transformation = profile
                 ? new CloudinaryDotNet.Transformation().Width(500).Height(500).Crop("fill").Gravity(Gravity.Face)
                 : new CloudinaryDotNet.Transformation().Height(512).Crop("fit");
+
             if (formFile.Length > 0)
             {
                 await using Stream stream = formFile.OpenReadStream();
+
                 ImageUploadParams uploadParams = new()
                 {
                     File = new FileDescription(formFile.FileName, stream),
@@ -44,6 +47,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 };
                 uploadResult = await _cloudinary.UploadAsync(uploadParams);
             }
+
             return uploadResult;
         }
 
@@ -58,7 +62,57 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return await _cloudinary.DestroyAsync(deleteParams);
         }
 
-        public async Task DeleteDbAndCloudAsync(Guid galleryId, string fileBelongTo, string url)
+        public async Task<DeletionResult?> DeleteDbAndCloudAsyncResult(Guid galleryId, string fileBelongTo, string publicId)
+        {
+            switch (fileBelongTo)
+            {
+                case "Product":
+                    MapGalleryProduct? mapGalleryProduct = _appDbContext.mapGalleryProducts
+                        .FirstOrDefault(x => x.GalleryId == galleryId.ToString());
+                    if (mapGalleryProduct != null)
+                    {
+                        _ = _appDbContext.mapGalleryProducts.Remove(mapGalleryProduct);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    break;
+
+                case "Store":
+                    MapGalleryStore? mapGalleryStore = _appDbContext.MapGalleryStores
+                        .FirstOrDefault(x => x.GalleryId == galleryId.ToString());
+                    if (mapGalleryStore != null)
+                    {
+                        _ = _appDbContext.MapGalleryStores.Remove(mapGalleryStore);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentException("Invalid value for FilebeLongto");
+            }
+            Gallery? gallery = _appDbContext.Galleries
+                .FirstOrDefault(x => x.Id == galleryId.ToString());
+            if (gallery != null)
+            {
+                _ = _appDbContext.Galleries.Remove(gallery);
+            }
+            _ = await _appDbContext.SaveChangesAsync();
+            if (publicId != null)
+            {
+                DeletionParams deleteParams = new(publicId);
+                return await _cloudinary.DestroyAsync(deleteParams);
+            }
+            return null;
+        }
+
+
+
+        public async Task DeleteDbAndCloudAsync(Guid galleryId, string fileBelongTo, string PublicId)
         {
             switch (fileBelongTo)
             {
@@ -90,11 +144,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 _ = _appDbContext.Galleries.Remove(gallery);
             }
-
             _ = await _appDbContext.SaveChangesAsync();
-            if (url != null)
+            if (PublicId != null)
             {
-                _ = await DeleteImageCloudinary(url);
+                _ = await DeleteImageCloudinary(PublicId);
             }
         }
 
@@ -118,10 +171,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 .Select(e => new GalleryResponseModel()
                 {
                     Id = e.Id,
+                    Key = e.PublicId,
                     FileName = e.FileName,
                     Url = e.Url,
                     FileBelongsTo = e.FileBelongsTo,
-                    IsThumbnail = e.IsThumbnail
+                    IsThumbnail = e.IsThumbnail,
+                    PublicId = e.PublicId
+
 
                 }).ToListAsync();
 
@@ -169,7 +225,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     FileName = e.FileName,
                     Url = e.Url,
                     FileBelongsTo = e.FileBelongsTo,
-                    IsThumbnail = e.IsThumbnail
+                    IsThumbnail = e.IsThumbnail,
+                    PublicId = e.PublicId
 
                 }).ToListAsync();
 
@@ -184,7 +241,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponse> UpdateImage(string Id, PhotoRequestModel request)
+        public async Task<BaseResponse> UpdateImage(string Id, UpdatePhotoRequestModel request)
         {
             BaseResponse response = new() { Success = false };
             try
@@ -215,15 +272,15 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 if (request.IsThumbnail)
                 {
                     IQueryable<Gallery> query = _appDbContext.Galleries.AsQueryable();
-                    if (request.Type == "store" && !string.IsNullOrEmpty(request.StoreId))
+                    if (request.Type == "store" && !string.IsNullOrEmpty(request.TypeId))
                     {
                         query = query.Include(g => g.MapGalleryStores)
-                                     .Where(g => g.MapGalleryStores != null && g.MapGalleryStores.Any(mgs => mgs.StoreId == request.StoreId));
+                                     .Where(g => g.MapGalleryStores != null && g.MapGalleryStores.Any(mgs => mgs.StoreId == request.TypeId));
                     }
-                    else if (request.Type == "product" && !string.IsNullOrEmpty(request.ProductId))
+                    else if (request.Type == "product" && !string.IsNullOrEmpty(request.TypeId))
                     {
                         query = query.Include(g => g.MapGalleryProducts)
-                                     .Where(g => g.MapGalleryProducts != null && g.MapGalleryProducts.Any(mgp => mgp.ProductId == request.ProductId));
+                                     .Where(g => g.MapGalleryProducts != null && g.MapGalleryProducts.Any(mgp => mgp.ProductId == request.TypeId));
                     }
 
                     // Set IsThumbnail to false for all other images
@@ -237,17 +294,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 // Update the specified image
                 image.IsThumbnail = request.IsThumbnail;
 
-                // Update the FileName if it has changed
-                //if (request.FileName != null && request.FileName != image.FileName)
-                //{
-                //    image.FileName = request.FileName;
-                //}
 
-                //// Update the Url if it has changed
-                //if (request.Url != null && request.Url != image.Url)
-                //{
-                //    image.Url = request.Url;
-                //}
+
 
                 // Save the changes to the database
                 _ = await _appDbContext.SaveChangesAsync();
@@ -270,7 +318,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         }
 
-        public async Task<BaseResponse> RemoveImage(string Id)
+        public async Task<BaseResponse> RemoveImage(string Id, DeletePhotoRequestModel request)
         {
             BaseResponse response = new() { Success = false };
             try
@@ -303,6 +351,27 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     response.Message = "Failed to delete image from Cloudinary";
                     return response;
                 }
+
+
+                if (request.Type == "store" && !string.IsNullOrEmpty(request.TypeId))
+                {
+                    IQueryable<MapGalleryStore> query = _appDbContext.MapGalleryStores.AsQueryable();
+                    query = query.Where(g => g.StoreId == request.TypeId);
+                    foreach (MapGalleryStore item in query)
+                    {
+                        _ = _appDbContext.MapGalleryStores.Remove(item);
+                    }
+                }
+                else if (request.Type == "product" && !string.IsNullOrEmpty(request.TypeId))
+                {
+                    IQueryable<MapGalleryProduct> query = _appDbContext.mapGalleryProducts.AsQueryable();
+                    query = query.Where(g => g.ProductId == request.TypeId);
+                    foreach (MapGalleryProduct item in query)
+                    {
+                        _ = _appDbContext.mapGalleryProducts.Remove(item);
+                    }
+                }
+
                 // Remove the image from the database
                 _ = _appDbContext.Galleries.Remove(image);
                 _ = await _appDbContext.SaveChangesAsync();
@@ -318,5 +387,90 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 return response;
             }
         }
+
+        public async Task<BaseResponse> CreateImage(UploadPhotoRequestModel request)
+        {
+            BaseResponse response = new() { Success = false };
+
+            // Check if the file upload is null
+            if (request.FileUpload == null)
+            {
+                response.Message = GlobalConstants.FILE_UPLOAD_NOT_FOUND;
+                return response;
+            }
+
+            // Start a database transaction
+            using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction = await _appDbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // Upload the image to Cloudinary
+                CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await UploadImage(request.FileUpload, true);
+                if (uploadFileResult.Error != null)
+                {
+                    response.Message = uploadFileResult.Error.Message;
+                    return response;
+                }
+
+                // Create a new Gallery entity
+                Gallery gallery = new()
+                {
+                    PublicId = uploadFileResult.PublicId,
+                    Url = uploadFileResult.Url.ToString(),
+                    FileBelongsTo = request.Type,
+                    IsThumbnail = request.IsThumbnail,
+                };
+
+                // Add the new gallery entity to the database
+                _ = _appDbContext.Galleries.Add(gallery);
+                _ = await _appDbContext.SaveChangesAsync();
+
+                // Create and add a new MapGalleryProduct entity if the type is "product"
+                if (!string.IsNullOrEmpty(request.Type) && request.Type == "product")
+                {
+                    MapGalleryProduct mapGalleryProduct = new()
+                    {
+                        ProductId = request.TypeId,
+                        GalleryId = gallery.Id
+                    };
+                    _ = _appDbContext.mapGalleryProducts.Add(mapGalleryProduct);
+                    _ = await _appDbContext.SaveChangesAsync();
+                }
+
+                // Create and add a new MapGalleryStore entity if the type is "store"
+                if (!string.IsNullOrEmpty(request.Type) && request.Type == "store")
+                {
+                    MapGalleryStore mapGalleryStore = new()
+                    {
+                        StoreId = request.TypeId,
+                        GalleryId = gallery.Id
+                    };
+                    _ = _appDbContext.MapGalleryStores.Add(mapGalleryStore);
+                    _ = await _appDbContext.SaveChangesAsync();
+                }
+
+                // Commit the transaction
+                await transaction.CommitAsync();
+
+                // Return a success response
+                response.Message = GlobalConstants.UPLOAD_SUCCESSFULL;
+                response.Success = true;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Rollback the transaction in case of an error
+                await transaction.RollbackAsync();
+
+                // Log the exception (optional)
+                Console.WriteLine(ex);
+
+                // Return an error response
+                response.Message = GlobalConstants.UPLOAD_FAIL;
+                return response;
+            }
+
+        }
+
+
     }
 }

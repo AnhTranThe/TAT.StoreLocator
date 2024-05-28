@@ -1,4 +1,6 @@
-﻿namespace TAT.StoreLocator.Core.Models.Response.Store
+﻿using TAT.StoreLocator.Core.Models.Response.Review;
+
+namespace TAT.StoreLocator.Core.Models.Response.Store
 {
     public class StoreResponseModel
     {
@@ -15,15 +17,19 @@
 
         public RatingStore RatingStore { get; set; } = new RatingStore();
 
-        public List<MapGalleryStoreResponse> MapGalleryStores { get; set; } = new List<MapGalleryStoreResponse>();
+        public List<MapGalleryStoreResponseModel> MapGalleryStores { get; set; } = new List<MapGalleryStoreResponseModel>();
+
+        public List<ReviewResponseModel> Reviews { get; set; } = new List<ReviewResponseModel>();
     }
 
-    public class MapGalleryStoreResponse
+    public class MapGalleryStoreResponseModel
     {
         public string? GalleryId { get; set; }
+        public string? Key { get; set; } = string.Empty;
         public string? FileName { get; set; }
         public string? Url { get; set; }
         public bool IsThumbnail { get; set; }
+        public string? StoreId { get; set; }
     }
 
     public class AddressResponseModel

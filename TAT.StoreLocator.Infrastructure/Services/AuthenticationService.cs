@@ -63,14 +63,14 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     FullName = model.LastName + " " + model.FirstName,
                     Email = model.Email,
                     UserName = userName,
-                    AddressId = Guid.NewGuid().ToString()
+                    // AddressId = Guid.NewGuid().ToString()
                 };
-                Address newAddress = new()
-                {
-                    Id = newUser.AddressId // Use the same Id for Address as assigned to AddressId of User
-                };
+                //Address newAddress = new()
+                //{
+                //    Id = newUser.AddressId // Use the same Id for Address as assigned to AddressId of User
+                //};
 
-                _ = await _context.Addresses.AddAsync(newAddress);
+                //  _ = await _context.Addresses.AddAsync(newAddress);
                 _ = await _context.SaveChangesAsync(newUser.Id);
                 IdentityResult createUserResult = await _userManager.CreateAsync(newUser, model.Password?.Trim());
 

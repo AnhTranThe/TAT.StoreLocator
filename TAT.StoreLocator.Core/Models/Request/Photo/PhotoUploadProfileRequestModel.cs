@@ -2,7 +2,7 @@
 
 namespace TAT.StoreLocator.Core.Models.Request.Photo
 {
-    public class UploadPhotoRequestModel
+    public class PhotoUploadProfileRequestModel
     {
         public IFormFile? FileUpload { get; set; }
         public string? UserId { get; set; }

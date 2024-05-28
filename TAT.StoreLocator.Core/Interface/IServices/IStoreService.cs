@@ -16,7 +16,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId);
 
         //UpdateStore
-        Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request);
+        Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, StoreRequestModel request);
 
         ////DeleteStore
         Task<BaseResponse> DeleteStoreAsync(string storeId);
@@ -26,6 +26,6 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         /// </summary>
         /// <param name="district"></param>
         /// <returns></returns>
-        Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(string district, string ward, string province, string keyWord);
+        Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(GetNearStoreRequestModel getNearStoreRequest, BasePaginationRequest paginationRequest);
     }
 }

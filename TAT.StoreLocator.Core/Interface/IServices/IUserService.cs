@@ -17,7 +17,7 @@ namespace TAT.StoreLocator.Core.Interface.IServices
 
         Task<UpdateUserResponseModel> UpdateUserAsync(UpdateUserRequestModel request);
 
-        Task<BaseResponse> UpdateUserPhoto(UploadPhotoRequestModel request);
+        Task<BaseResponse> UpdateUserPhoto(PhotoUploadProfileRequestModel request);
 
         Task<AssignRoleResponseModel> RoleAssign(AssignRoleRequestModel request);
 

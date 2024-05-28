@@ -21,15 +21,14 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPost("create")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> CreateStore([FromForm] StoreRequestModel request)
+        public async Task<IActionResult> CreateStore([FromBody] StoreRequestModel request)
         {
             try
             {
                 Core.Models.Response.Store.CreateStoreResponseModel response = await _storeService.CreateStoreAsync(request);
 
                 return response == null
-                    ? StatusCode(500, "Failed to create store")
+                    ? BadRequest(response)
                     : Ok(response);
             }
             catch (Exception ex)
@@ -39,12 +38,12 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPut("update/{storeId}")]
-        public async Task<IActionResult> UpdateStore(string storeId, [FromBody] UpdateStoreRequestModel request)
+        public async Task<IActionResult> UpdateStore(string storeId, [FromBody] StoreRequestModel request)
         {
             try
             {
                 Core.Common.BaseResponseResult<Core.Models.Response.Store.StoreResponseModel> response = await _storeService.UpdateStoreAsync(storeId, request);
-                return response.Success ? Ok(response.Data) : (IActionResult)StatusCode(500, response.Message);
+                return response.Success ? Ok(response) : BadRequest(response);
             }
             catch (Exception ex)
             {

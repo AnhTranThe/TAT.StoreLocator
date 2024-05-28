@@ -8,6 +8,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Store;
+using TAT.StoreLocator.Core.Models.Response.Review;
 using TAT.StoreLocator.Core.Models.Response.Store;
 using TAT.StoreLocator.Core.Utils;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -41,70 +42,103 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     return response;
                 }
 
-                // Create new address entity if address details are provided
-                Address? newAddressEntity = null;
-                if (request.Address != null)
+                // Start a new transaction
+                using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction = await _appDbContext.Database.BeginTransactionAsync();
+                try
                 {
-                    newAddressEntity = new Address
+                    if (!string.IsNullOrEmpty(request.Province))
+                    {
+                        request.Province = CommonUtils.ReplaceProvincePatterns(request.Province);
+
+
+
+                    }
+                    if (!string.IsNullOrEmpty(request.District))
+                    {
+                        request.District = CommonUtils.ReplaceDistrictPatterns(request.District);
+
+                    }
+
+
+                    if (!string.IsNullOrEmpty(request.Ward))
+                    {
+                        request.Ward = CommonUtils.ReplaceWardPatterns(request.Ward);
+                    }
+
+                    Address newAddressEntity = new()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        RoadName = request.Address.RoadName,
-                        Province = request.Address.Province,
-                        District = request.Address.District,
-                        Ward = request.Address.Ward,
-                        PostalCode = request.Address.PostalCode,
-                        latitude = request.Address.Latitude,
-                        longitude = request.Address.Longitude
+                        RoadName = request.RoadName,
+                        Province = request.Province,
+                        District = request.District,
+                        Ward = request.Ward,
+                        PostalCode = request.PostalCode,
+                        latitude = request.Latitude,
+                        longitude = request.Longitude
                     };
                     _ = _appDbContext.Addresses.Add(newAddressEntity);
-                }
 
-                // Create new store entity
-                string newStoreId = Guid.NewGuid().ToString();
-                Store newStoreEntity = new()
-                {
-                    Id = newStoreId,
-                    Name = request.Name,
-                    PhoneNumber = request.PhoneNumber,
-                    Email = request.Email,
-                    AddressId = newAddressEntity?.Id,
-                    IsActive = true
-                };
-                if (request.files != null)
-                {
-                    foreach (IFormFile file in request.files)
+                    // Create new store entity
+                    string newStoreId = Guid.NewGuid().ToString();
+                    Store newStoreEntity = new()
                     {
-                        await UpdateStorePhotoAsync(newStoreId, file);
-                    }
-                }
+                        Id = newStoreId,
+                        Name = request.Name,
+                        PhoneNumber = request.PhoneNumber,
+                        Email = request.Email,
+                        AddressId = newAddressEntity.Id,
+                        IsActive = true
+                    };
 
-                // Add new store entity to context
-                _ = _appDbContext.Stores.Add(newStoreEntity);
-                // Save changes to the database
-                _ = await _appDbContext.SaveChangesAsync();
-
-                // Populate response
-                response.Id = newStoreId;
-                response.BaseResponse = new BaseResponse { Success = true, Message = "Store created successfully." };
-                response.StoreResponseModel = new StoreResponseModel
-                {
-                    Id = newStoreId,
-                    Name = request.Name,
-                    PhoneNumber = request.PhoneNumber,
-                    Email = request.Email,
-                    IsActive = request.IsActive,
-                    Address = newAddressEntity == null ? null : new AddressResponseModel
+                    // Handle file uploads if any
+                    if (request.files != null)
                     {
-                        Id = newAddressEntity.Id,
-                        RoadName = newAddressEntity.RoadName,
-                        Province = newAddressEntity.Province,
-                        District = newAddressEntity.District,
-                        Ward = newAddressEntity.Ward,
-                        PostalCode = newAddressEntity.PostalCode,
-                        Latitude = newAddressEntity.latitude,
-                        Longitude = newAddressEntity.longitude
+                        foreach (IFormFile file in request.files)
+                        {
+                            await UpdateStorePhotoAsync(newStoreId, file);
+                        }
                     }
-                };
+
+                    // Add new store entity to context
+                    _ = _appDbContext.Stores.Add(newStoreEntity);
+
+                    // Save changes to the database
+                    _ = await _appDbContext.SaveChangesAsync();
+
+                    // Commit the transaction
+                    await transaction.CommitAsync();
+
+                    // Populate response
+                    response.Id = newStoreId;
+                    response.BaseResponse = new BaseResponse { Success = true, Message = "Store created successfully." };
+                    response.StoreResponseModel = new StoreResponseModel
+                    {
+                        Id = newStoreId,
+                        Name = request.Name,
+                        PhoneNumber = request.PhoneNumber,
+                        Email = request.Email,
+                        IsActive = request.IsActive,
+                        Address = new AddressResponseModel
+                        {
+                            Id = newAddressEntity.Id,
+                            RoadName = newAddressEntity.RoadName,
+                            Province = newAddressEntity.Province,
+                            District = newAddressEntity.District,
+                            Ward = newAddressEntity.Ward,
+                            PostalCode = newAddressEntity.PostalCode,
+                            Latitude = newAddressEntity.latitude,
+                            Longitude = newAddressEntity.longitude
+                        }
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Rollback the transaction in case of an error
+                    await transaction.RollbackAsync();
+
+                    // Handle any exceptions that occur during the process
+                    response.BaseResponse = new BaseResponse { Success = false, Message = $"Error creating store: {ex.Message}" };
+                }
             }
             catch (Exception ex)
             {
@@ -147,9 +181,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.PageSize = paginationRequest.PageSize;
                 IQueryable<StoreResponseModel> query = from store in _appDbContext.Stores
                                                        join mapGalleryStore in _appDbContext.MapGalleryStores
-                                                           on store.Id equals mapGalleryStore.StoreId
+                                                           on store.Id equals mapGalleryStore.StoreId into galleryStores
+                                                       from galleryStore in galleryStores.DefaultIfEmpty() // Left join
                                                        join gallery in _appDbContext.Galleries
-                                                           on mapGalleryStore.GalleryId equals gallery.Id
+                                                           on galleryStore.GalleryId equals gallery.Id into galleries
+                                                       from gallery in galleries.DefaultIfEmpty() // Left join
                                                        select new StoreResponseModel
                                                        {
                                                            Id = store.Id,
@@ -173,7 +209,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                            UpdatedBy = store.UpdatedBy,
                                                            MapGalleryStores = _appDbContext.MapGalleryStores
                                                                .Where(mgs => mgs.StoreId == store.Id)
-                                                               .Select(mgs => new MapGalleryStoreResponse
+                                                               .Select(mgs => new MapGalleryStoreResponseModel
                                                                {
                                                                    GalleryId = mgs.GalleryId,
                                                                    FileName = gallery.FileName,
@@ -216,6 +252,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
+
         public async Task<BaseResponseResult<StoreResponseModel>> GetDetailStoreAsync(string storeId)
         {
             BaseResponseResult<StoreResponseModel> response = new();
@@ -223,23 +260,37 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Store? store = await _appDbContext.Stores
                     .Include(s => s.Address)
+                    .Include(s => s.Reviews!).ThenInclude(s => s.User)
                     .Include(s => s.MapGalleryStores!)
                         .ThenInclude(mgs => mgs.Gallery)  // Ensure Galleries are loaded
                     .FirstOrDefaultAsync(s => s.Id == storeId);
+
 
                 if (store != null)
                 {
                     StoreResponseModel storeResponseModel = _mapper.Map<StoreResponseModel>(store);
                     // Map galleries
                     storeResponseModel.MapGalleryStores = store.MapGalleryStores != null ? store.MapGalleryStores
-                        .Select(mgs => new MapGalleryStoreResponse
+                        .Select(mgs => new MapGalleryStoreResponseModel
                         {
                             GalleryId = mgs.GalleryId,
+                            Key = mgs.Gallery?.PublicId,
                             FileName = mgs.Gallery?.FileName,
                             Url = mgs.Gallery?.Url,
                             IsThumbnail = mgs.Gallery?.IsThumbnail ?? false
                         })
-                        .ToList() : new List<MapGalleryStoreResponse>();
+                        .ToList() : new List<MapGalleryStoreResponseModel>();
+                    storeResponseModel.Reviews = store.Reviews != null ? store.Reviews.Select(m => new ReviewResponseModel
+                    {
+                        Id = m.Id,
+                        Content = m.Content,
+                        RatingValue = m.RatingValue,
+                        Status = m.Status,
+                        UserId = m.UserId,
+                        StoreId = m.StoreId,
+                        UserEmail = m.User != null ? m.User.Email : string.Empty
+
+                    }).ToList() : new List<ReviewResponseModel>();
 
                     response.Success = true;
                     response.Data = storeResponseModel;
@@ -258,42 +309,56 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, UpdateStoreRequestModel request)
+        public async Task<BaseResponseResult<StoreResponseModel>> UpdateStoreAsync(string storeId, StoreRequestModel request)
         {
             BaseResponseResult<StoreResponseModel> response = new();
+
             try
             {
-                Store? store = await _appDbContext.Stores.FindAsync(storeId);
-                if (store == null)
+                // Validate storeId and request
+                if (string.IsNullOrEmpty(storeId) || request == null)
                 {
                     response.Success = false;
-                    response.Message = "Store not found";
+                    response.Message = "Invalid storeId or request.";
                     return response;
                 }
 
-                store.Name = request.Name;
-                store.Email = request.Email;
-                store.PhoneNumber = request.PhoneNumber;
-                store.IsActive = request.IsActive;
+                // Retrieve the existing store entity from the database
+                Store? existingStore = await _appDbContext.Stores
+                    .Include(s => s.Address) // Include related address entity
+                    .FirstOrDefaultAsync(s => s.Id == storeId);
 
+                if (existingStore == null)
+                {
+                    response.Success = false;
+                    response.Message = "Store not found.";
+                    return response;
+                }
+
+                // Update store properties
+                _ = _mapper.Map(request, existingStore); // Map request to existing store entity
+
+                // Update address properties
+                _ = _mapper.Map(request, existingStore.Address); // Map request to existing address entity
+
+                // Save the updated store entity back to the database
+                _ = _appDbContext.Stores.Update(existingStore);
                 _ = await _appDbContext.SaveChangesAsync();
 
-                StoreResponseModel updateStoreResponse = new()
-                {
-                    Id = store.Id,
-                    Name = store.Name,
-                    Email = store.Email,
-                    PhoneNumber = store.PhoneNumber,
-                };
+                // Construct and return the response
                 response.Success = true;
-                response.Data = updateStoreResponse;
+                response.Message = "Store updated successfully.";
+                response.Data = _mapper.Map<StoreResponseModel>(existingStore);
             }
             catch (Exception ex)
             {
+                // Handle any exceptions
                 response.Success = false;
-                response.Message = ex.Message;
+                response.Message = $"Error updating store: {ex.Message}";
             }
+
             return response;
+
         }
 
         public async Task<BaseResponse> DeleteStoreAsync(string storeId)
@@ -325,129 +390,209 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(string district, string ward, string province, string keyWord)
+        public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(GetNearStoreRequestModel getNearStoreRequest, BasePaginationRequest paginationRequest)
         {
-            BaseResponseResult<List<SimpleStoreResponse>> response = new();
-
-            if (district.IsNullOrEmpty() && province.IsNullOrEmpty() && ward.IsNullOrEmpty() && keyWord.IsNullOrEmpty())
+            BaseResponseResult<List<SimpleStoreResponse>> response = new() { Success = false };
+            try
             {
-                response.Success = false;
-                response.Message = GlobalConstants.NOT_STORE_NEAR;
-                response.Data = null;
-                return response;
-            }
+                if (getNearStoreRequest.District.IsNullOrEmpty()
+                    && getNearStoreRequest.Province.IsNullOrEmpty()
+                    && getNearStoreRequest.Ward.IsNullOrEmpty()
+                    && getNearStoreRequest.keyWord.IsNullOrEmpty()
+                    && getNearStoreRequest.Categories.IsNullOrEmpty())
+                {
+                    response.Message = GlobalConstants.NOT_STORE_NEAR;
+                    response.Data = null;
+                    return response;
+                }
+                // Query to get stores and their addresses
+                var storeQuery = from store in _appDbContext.Stores
+                                 join address in _appDbContext.Addresses on store.AddressId equals address.Id
 
-            // Query the stores whose addresses are in the nearby districts
-            var storeQuery = from store in _appDbContext.Stores
-                             join address in _appDbContext.Addresses
-                                 on store.AddressId equals address.Id
-                             select new
+                                 select new
+                                 {
+                                     Store = store,
+                                     Address = address
+                                 };
+                // Fetch products with galleries
+                var productQuery = from product in _appDbContext.Products
+                                   join gaProduct in _appDbContext.mapGalleryProducts on product.Id equals gaProduct.ProductId into prodGaProducts
+                                   from gaProduct in prodGaProducts.DefaultIfEmpty()
+                                   join gallery in _appDbContext.Galleries on gaProduct.GalleryId equals gallery.Id into gaProductGalleries
+                                   from gallery in gaProductGalleries.DefaultIfEmpty()
+                                   join childCategory in _appDbContext.Categories on product.CategoryId equals childCategory.Id into productCategories
+                                   from childCategory in productCategories.DefaultIfEmpty()
+                                   join parentCategory in _appDbContext.Categories on childCategory.ParentCategoryId equals parentCategory.Id into parentCategories
+                                   from parentCategory in parentCategories.DefaultIfEmpty()
+                                   select new
+                                   {
+                                       Product = product,
+                                       GalleryUrl = gallery != null ? gallery.Url : string.Empty,
+                                       ChildCategory = childCategory != null ? childCategory.Name : string.Empty,
+                                       ParentCategory = parentCategory != null ? parentCategory.Name : string.Empty,
+                                       ParentCategoryId = parentCategory != null ? parentCategory.ParentCategoryId : string.Empty
+                                   };
+                if (getNearStoreRequest.Categories != null)
+                {
+                    productQuery = productQuery.Where(x => getNearStoreRequest.Categories.Contains(x.ParentCategoryId));
+                }
+                // Fetch reviews for stores
+                IQueryable<ReviewResponseModel> reviewQuery = from review in _appDbContext.Reviews
+                                                              join user in _appDbContext.Users on review.UserId equals user.Id into reviewUsers
+                                                              from user in reviewUsers.DefaultIfEmpty()
+
+                                                              select new ReviewResponseModel
+                                                              {
+                                                                  Id = review.Id,
+                                                                  StoreId = review.StoreId,
+                                                                  Content = review.Content,
+                                                                  RatingValue = review.RatingValue,
+                                                                  Status = review.Status,
+                                                                  UserId = review.UserId,
+                                                                  UserEmail = user != null ? user.Email : string.Empty
+                                                              };
+                // Fetch Images for stores
+                IQueryable<MapGalleryStoreResponseModel> imageQuery = from image in _appDbContext.Galleries
+                                                                      join mapGalleryStore in _appDbContext.MapGalleryStores on image.Id equals mapGalleryStore.GalleryId
+
+                                                                      select new MapGalleryStoreResponseModel
+                                                                      {
+                                                                          GalleryId = image.Id,
+                                                                          Key = image.PublicId,
+                                                                          FileName = image.FileName,
+                                                                          Url = image.Url,
+                                                                          IsThumbnail = image.IsThumbnail,
+                                                                          StoreId = mapGalleryStore.StoreId
+                                                                      };
+                var storesWithAddresses = await storeQuery.ToListAsync();
+                var productsWithGalleries = await productQuery.ToListAsync();
+                List<MapGalleryStoreResponseModel> imageWithStores = await imageQuery.ToListAsync();
+                List<ReviewResponseModel> reviews = await reviewQuery.ToListAsync();
+
+                // Step 3: Combine results in-memory
+                List<SimpleStoreResponse> query = storesWithAddresses.Select(s => new SimpleStoreResponse
+                {
+                    Id = s.Store.Id.ToString(), // Assuming store.Id is a Guid or similar type
+                    Name = s.Store.Name,
+                    Email = s.Store.Email,
+                    PhoneNumber = s.Store.PhoneNumber,
+                    Address = new AddressResponseModel
+                    {
+                        RoadName = s.Address.RoadName,
+                        Ward = s.Address.Ward,
+                        Province = s.Address.Province,
+                        Latitude = s.Address.latitude,
+                        Longitude = s.Address.longitude,
+                        PostalCode = s.Address.PostalCode,
+                        District = s.Address.District
+                    },
+                    Products = productsWithGalleries
+                                .Where(p => p.Product.StoreId == s.Store.Id)
+                                .Select(p => new SimpleProductResponse
+                                {
+                                    Id = p.Product.Id.ToString(),
+                                    Name = p.Product.Name,
+                                    Image = p.GalleryUrl
+                                }).ToList(),
+                    Reviews = reviews
+                        .Where(r => r.StoreId == s.Store.Id)
+                        .Select(r => new ReviewResponseModel
+                        {
+                            Id = r.Id,
+                            StoreId = r.StoreId,
+                            Content = r.Content,
+                            RatingValue = r.RatingValue,
+                            Status = r.Status,
+                            UserId = r.UserId,
+                            UserEmail = r.UserEmail
+                        }).ToList(),
+                    Images = imageWithStores.Where(r => r.StoreId == s.Store.Id)
+                             .Select(i => new MapGalleryStoreResponseModel
                              {
-                                 Store = store,
-                                 Address = address
-                             };
+                                 GalleryId = i.GalleryId,
+                                 StoreId = i.StoreId,
+                                 Url = i.Url,
+                                 FileName = i.FileName,
+                                 Key = i.Key,
+                             }).ToList()
+                }).ToList();
 
-            var storesWithAddresses = storeQuery.ToList();
-
-            // Step 2: Fetch products with galleries
-            var productQuery = from product in _appDbContext.Products
-                               join gaProduct in _appDbContext.mapGalleryProducts
-                                   on product.Id equals gaProduct.ProductId into prodGaProducts
-                               from gaProduct in prodGaProducts.DefaultIfEmpty()
-                               join gallery in _appDbContext.Galleries
-                                   on gaProduct.GalleryId equals gallery.Id into gaProductGalleries
-                               from gallery in gaProductGalleries.DefaultIfEmpty()
-                               select new
-                               {
-                                   Product = product,
-                                   GalleryUrl = gallery != null ? gallery.Url : string.Empty
-                               };
-
-            var productsWithGalleries = productQuery.ToList();
-
-            // Step 3: Combine results in-memory
-            List<SimpleStoreResponse> query = storesWithAddresses.Select(s => new SimpleStoreResponse
-            {
-                Id = s.Store.Id.ToString(), // Assuming store.Id is a Guid or similar type
-                Name = s.Store.Name,
-                Email = s.Store.Email,
-                PhoneNumber = s.Store.PhoneNumber,
-                Address = new AddressResponseModel
+                // Apply filters
+                if (!string.IsNullOrEmpty(getNearStoreRequest.Province))
                 {
-                    RoadName = s.Address.RoadName,
-                    Ward = s.Address.Ward,
-                    Province = s.Address.Province,
-                    Latitude = s.Address.latitude,
-                    Longitude = s.Address.longitude,
-                    PostalCode = s.Address.PostalCode,
-                    District = s.Address.District
-                },
-                Products = productsWithGalleries
-                            .Where(p => p.Product.StoreId == s.Store.Id)
-                            .Select(p => new SimpleProductResponse
-                            {
-                                Id = p.Product.Id.ToString(),
-                                Name = p.Product.Name,
-                                Image = p.GalleryUrl
-                            }).ToList()
-            }).ToList();
+                    string province = CommonUtils.vietnameseReplace(getNearStoreRequest.Province
+                      .Replace("city", "", StringComparison.OrdinalIgnoreCase)
+                      .Replace("thanh pho", "", StringComparison.OrdinalIgnoreCase)
+                      .Replace("tinh", "", StringComparison.OrdinalIgnoreCase)).ToUpper().Trim();
 
-            if (!province.IsNullOrEmpty())
-            {
-                province = CommonUtils.RemoveDiacritics(province).ToUpper();
-                query = query.Where(x => province.Contains(x.Address != null ? x.Address.Province ?? "" : "")).ToList();
-            }
-
-            if (!district.IsNullOrEmpty())
-            {
-                if (district.StartsWith("Quận"))
+                    query = query.Where(x => !string.IsNullOrEmpty(x.Address?.Province) &&
+                                   CommonUtils.vietnameseReplace(x.Address.Province).ToUpper().Contains(province)).ToList();
+                }
+                if (!string.IsNullOrEmpty(getNearStoreRequest.District))
                 {
-                    district = district.Replace("Quận", "Q.");
+                    string district = CommonUtils.vietnameseReplace(getNearStoreRequest.District
+                          .Replace("quan", "", StringComparison.OrdinalIgnoreCase)
+                          .Replace("q.", "", StringComparison.OrdinalIgnoreCase)
+                          .Replace("district", "", StringComparison.OrdinalIgnoreCase)
+                          .Replace("h.", "", StringComparison.OrdinalIgnoreCase)
+                          .Replace("huyen", "", StringComparison.OrdinalIgnoreCase))
+                          .Replace("thanh pho", "", StringComparison.OrdinalIgnoreCase).ToUpper().Trim();
+                    List<string> nearbyDistricts = await GetNearDistrict(district);
+                    if (!nearbyDistricts.Contains(district))
+                    {
+                        nearbyDistricts.Add(district);
+                    }
+                    query = query.Where(x => nearbyDistricts.Exists(nearbyDistrict =>
+                                     CommonUtils.vietnameseReplace(x.Address?.District ?? "").ToUpper() == nearbyDistrict.ToUpper())).ToList();
+                }
+                if (!string.IsNullOrEmpty(getNearStoreRequest.Ward))
+                {
+
+                    string ward = CommonUtils.vietnameseReplace(getNearStoreRequest.Ward
+                                  .Replace("phuong", "", StringComparison.OrdinalIgnoreCase)
+                                  .Replace("p.", "", StringComparison.OrdinalIgnoreCase)
+                                  .Replace("ward", "", StringComparison.OrdinalIgnoreCase))
+                                 .ToUpper().Trim();
+
+                    query = query.Where(x => !string.IsNullOrEmpty(x.Address?.Ward) &&
+                                 CommonUtils.vietnameseReplace(x.Address.Ward).ToUpper().Contains(ward)).ToList();
+                }
+                if (!string.IsNullOrEmpty(getNearStoreRequest.keyWord))
+                {
+                    string keyword = CommonUtils.vietnameseReplace(getNearStoreRequest.keyWord).ToUpper();
+                    List<SimpleStoreResponse> filteredStores = query.Where(store => store.Products.Exists(product => !string.IsNullOrEmpty(product.Name) && CommonUtils.vietnameseReplace(product.Name).ToUpper().Contains(keyword))).ToList();
+
+                    // If no products match the keyword, search by store name
+                    if (!filteredStores.Any())
+                    {
+                        filteredStores = query
+                            .Where(store => !string.IsNullOrEmpty(store.Name)
+                            && CommonUtils.vietnameseReplace(store.Name).ToUpper().Contains(keyword)).ToList();
+                    }
+                    query = filteredStores;
                 }
 
-                if (district.StartsWith("Huyện"))
+                List<SimpleStoreResponse> nearestStores = query
+                     .Skip((paginationRequest.PageIndex - 1) * paginationRequest.PageSize)
+                     .Take(paginationRequest.PageSize).ToList();
+                if (nearestStores.Any())
                 {
-                    district = district.Replace("Huyện", "H.");
+                    response.Code = System.Net.HttpStatusCode.OK.ToString();
+                    response.Message = GlobalConstants.SUCCESSFULL;
+                    response.Data = nearestStores;
+                    response.Success = true;
                 }
-
-                List<string> list = await GetNearDistrict(district);
-                query = query.Where(x => list.Contains(x.Address != null ? x.Address.District ?? "" : "")).ToList();
-            }
-
-            if (!ward.IsNullOrEmpty())
-            {
-                if (ward.StartsWith("Quận"))
+                else
                 {
-                    ward = ward.Replace("Quận", "Q.");
+                    response.Success = false;
+                    response.Message = GlobalConstants.NOT_STORE_NEAR;
                 }
-
-                if (ward.StartsWith("Huyện"))
-                {
-                    ward = ward.Replace("Huyện", "H.");
-                }
-
-                List<string> list = await GetNearDistrict(ward);
-                query = query.Where(x => list.Contains(x.Address != null ? x.Address.Ward ?? "" : "")).ToList();
             }
-
-            if (!keyWord.IsNullOrEmpty())
+            catch (Exception ex)
             {
-                query = query.Where(store => store.Products.Any(product => product.Name != null && product.Name.Contains(keyWord))).ToList();
-            }
-
-            List<SimpleStoreResponse> nearestStores = query.ToList(); // Make sure it's a List
-
-            if (nearestStores != null && nearestStores.Any())
-            {
-                response.Code = System.Net.HttpStatusCode.OK.ToString();
-                response.Message = GlobalConstants.SUCCESSFULL;
-                response.Data = nearestStores;
-                response.Success = true;
-            }
-            else
-            {
+                // Handle any exceptions
                 response.Success = false;
-                response.Message = GlobalConstants.NOT_STORE_NEAR;
+                response.Message = $"Error retrieving nearest stores: {ex.Message}";
             }
 
             return response;
@@ -455,32 +600,32 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
         private async Task<List<string>> GetNearDistrict(string district)
         {
-            district = CommonUtils.RemoveDiacritics(district).ToUpper(); // Chuyển đổi chuỗi đầu vào thành chữ hoa
+            district = CommonUtils.vietnameseReplace(district).ToUpper(); // Chuyển đổi chuỗi đầu vào thành chữ hoa
 
             return district switch
             {
                 "1" => await Task.FromResult(new List<string> { "1", "3", "4", "5", "Binh Thanh", "Phu Nhuan" }),
                 "2" => await Task.FromResult(new List<string> { "2", "Binh Thanh", "9", "Thu Duc", "4", "7" }),
                 "3" => await Task.FromResult(new List<string> { "1", "3", "10", "Phu Nhuan", "Tan Binh" }),
-                "4" => await Task.FromResult(new List<string> { "1", "7", "8", "2" }),
+                "4" => await Task.FromResult(new List<string> { "1", "7", "8", "2", "4" }),
                 "5" => await Task.FromResult(new List<string> { "1", "5", "6", "10", "11", "8" }),
                 "6" => await Task.FromResult(new List<string> { "5", "6", "11", "Binh Tan", "8" }),
                 "7" => await Task.FromResult(new List<string> { "2", "4", "8", "Nha Be", "Binh Chanh" }),
-                "8" => await Task.FromResult(new List<string> { "4", "5", "6", "7", "Binh Tan", "Binh Chanh" }),
-                "9" => await Task.FromResult(new List<string> { "2", "Thu Duc" }),
+                "8" => await Task.FromResult(new List<string> { "4", "5", "6", "7", "Binh Tan", "Binh Chanh", "8" }),
+                "9" => await Task.FromResult(new List<string> { "2", "Thu Duc", "9" }),
                 "10" => await Task.FromResult(new List<string> { "3", "5", "10", "11", "Tan Binh" }),
                 "11" => await Task.FromResult(new List<string> { "5", "6", "10", "11", "Tan Binh", "Binh Tan" }),
-                "12" => await Task.FromResult(new List<string> { "Go Vap", "Binh Thanh", "Thu Duc", "Tan Binh", "Hoc Mon" }),
-                "BINH THANH" => await Task.FromResult(new List<string> { "1", "2", "Go Vap", "Phu Nhuan", "Thu Duc" }),
-                "TAN BINH" => await Task.FromResult(new List<string> { "3", "10", "11", "Phu Nhuan", "Tan Phu" }),
-                "TAN PHU" => await Task.FromResult(new List<string> { "Tan Binh", "Binh Tan", "11" }),
-                "PHU NHUAN" => await Task.FromResult(new List<string> { "1", "3", "Binh Thanh", "Tan Binh" }),
+                "12" => await Task.FromResult(new List<string> { "Go Vap", "Binh Thanh", "Thu Duc", "Tan Binh", "Hoc Mon", "12" }),
+                "BINH THANH" => await Task.FromResult(new List<string> { "1", "2", "Go Vap", "Phu Nhuan", "Thu Duc", "BINH THANH" }),
+                "TAN BINH" => await Task.FromResult(new List<string> { "3", "10", "11", "Phu Nhuan", "Tan Phu", "TAN BINH" }),
+                "TAN PHU" => await Task.FromResult(new List<string> { "Tan Binh", "Binh Tan", "11", "TAN PHU" }),
+                "PHU NHUAN" => await Task.FromResult(new List<string> { "1", "3", "Binh Thanh", "Tan Binh", "PHU NHUAN" }),
                 "THU DUC" => await Task.FromResult(new List<string> { "2", "9", "Binh Thanh", "12" }),
-                "BINH TAN" => await Task.FromResult(new List<string> { "6", "8", "Tan Phu", "Binh Chanh" }),
+                "BINH TAN" => await Task.FromResult(new List<string> { "6", "8", "Tan Phu", "Binh Chanh", "BINH TAN" }),
                 "HOC MON" => await Task.FromResult(new List<string> { "12", "Cu Chi", "Binh Tan" }),
-                "CU CHI" => await Task.FromResult(new List<string> { "Hoc Mon", "Binh Chanh" }),
-                "BINH CHANH" => await Task.FromResult(new List<string> { "7", "8", "Binh Tan", "Nha Be", "Cu Chi" }),
-                "NHA BE" => await Task.FromResult(new List<string> { "7", "Binh Chanh" }),
+                "CU CHI" => await Task.FromResult(new List<string> { "Hoc Mon", "Binh Chanh", "CU CHI" }),
+                "BINH CHANH" => await Task.FromResult(new List<string> { "7", "8", "Binh Tan", "Nha Be", "Cu Chi", "BINH CHANH" }),
+                "NHA BE" => await Task.FromResult(new List<string> { "7", "Binh Chanh", "NHA BE" }),
                 _ => await Task.FromResult(new List<string>())
             };
         }

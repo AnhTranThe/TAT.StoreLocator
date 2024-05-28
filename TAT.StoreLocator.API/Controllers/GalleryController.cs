@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Photo;
+using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 
 namespace TAT.StoreLocator.API.Controllers
@@ -52,8 +53,31 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
+
+
+        [HttpPost("add")]
+        public async Task<ActionResult> Add([FromBody] UploadPhotoRequestModel request)
+        {
+            try
+            {
+
+                if (request.ListFilesUpload == null)
+                {
+                    return BadRequest("File upload not found");
+                }
+                BaseResponse Response = await _photoService.CreateImage(request);
+
+                return !Response.Success ? BadRequest(Response.Message) : Ok(Response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
         [HttpPut("update/{Id}")]
-        public async Task<IActionResult> Update(string Id, [FromBody] PhotoRequestModel request)
+        public async Task<IActionResult> Update(string Id, [FromBody] UpdatePhotoRequestModel request)
         {
 
             try
@@ -76,31 +100,18 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpDelete("delete/{Id}")]
-        public async Task<IActionResult> Delete(string Id)
+        [HttpDelete("delete")]
+        public async Task<IActionResult> Delete(DeleteFileRequest request)
         {
-
             try
             {
-                if (string.IsNullOrEmpty(Id))
-                {
-                    return BadRequest(new BaseResponse
-                    {
-                        Success = false,
-                        Message = "Invalid request data."
-                    });
-                }
-
-                BaseResponse response = await _photoService.RemoveImage(Id);
-                return !response.Success ? BadRequest(response) : Ok(response);
+                CloudinaryDotNet.Actions.DeletionResult? response = await _photoService.DeleteDbAndCloudAsyncResult(request.GalleryId, request.FileBelongTo, request.PublicId);
+                return response == null ? BadRequest("Delete Fail") : Ok(response.Result);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
-
-
-
     }
 }

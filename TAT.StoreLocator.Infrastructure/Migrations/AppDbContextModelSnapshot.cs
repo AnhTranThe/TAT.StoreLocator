@@ -519,9 +519,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("AddressId")
-                        .HasColumnType("text");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -600,9 +597,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId")
-                        .IsUnique();
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -851,16 +845,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Navigation("Address");
                 });
 
-            modelBuilder.Entity("TAT.StoreLocator.Core.Entities.User", b =>
-                {
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Address", "Address")
-                        .WithOne("User")
-                        .HasForeignKey("TAT.StoreLocator.Core.Entities.User", "AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Address");
-                });
-
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Wishlist", b =>
                 {
                     b.HasOne("TAT.StoreLocator.Core.Entities.User", "User")
@@ -875,8 +859,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Address", b =>
                 {
                     b.Navigation("Store");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Category", b =>
