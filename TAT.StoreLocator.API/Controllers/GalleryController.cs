@@ -56,7 +56,8 @@ namespace TAT.StoreLocator.API.Controllers
 
 
         [HttpPost("add")]
-        public async Task<ActionResult> Add([FromBody] UploadPhotoRequestModel request)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> Add([FromForm] UploadPhotoRequestModel request)
         {
             try
             {

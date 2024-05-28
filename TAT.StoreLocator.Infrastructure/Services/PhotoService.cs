@@ -2,6 +2,7 @@
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
@@ -392,60 +393,63 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             BaseResponse response = new() { Success = false };
 
-            // Check if the file upload is null
-            if (request.FileUpload == null)
+            if (request.ListFilesUpload.Count == 0)
             {
-                response.Message = GlobalConstants.FILE_UPLOAD_NOT_FOUND;
+                response.Message = "Upload files empty";
                 return response;
             }
 
             // Start a database transaction
-            using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction = await _appDbContext.Database.BeginTransactionAsync();
+            using IDbContextTransaction transaction = await _appDbContext.Database.BeginTransactionAsync();
             try
             {
-                // Upload the image to Cloudinary
-                CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await UploadImage(request.FileUpload, true);
-                if (uploadFileResult.Error != null)
+                foreach (IFormFile file in request.ListFilesUpload)
                 {
-                    response.Message = uploadFileResult.Error.Message;
-                    return response;
-                }
+                    CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await UploadImage(file, true);
 
-                // Create a new Gallery entity
-                Gallery gallery = new()
-                {
-                    PublicId = uploadFileResult.PublicId,
-                    Url = uploadFileResult.Url.ToString(),
-                    FileBelongsTo = request.Type,
-                    IsThumbnail = request.IsThumbnail,
-                };
-
-                // Add the new gallery entity to the database
-                _ = _appDbContext.Galleries.Add(gallery);
-                _ = await _appDbContext.SaveChangesAsync();
-
-                // Create and add a new MapGalleryProduct entity if the type is "product"
-                if (!string.IsNullOrEmpty(request.Type) && request.Type == "product")
-                {
-                    MapGalleryProduct mapGalleryProduct = new()
+                    // Upload the image to Cloudinary
+                    if (uploadFileResult.Error != null)
                     {
-                        ProductId = request.TypeId,
-                        GalleryId = gallery.Id
-                    };
-                    _ = _appDbContext.mapGalleryProducts.Add(mapGalleryProduct);
-                    _ = await _appDbContext.SaveChangesAsync();
-                }
+                        response.Message = uploadFileResult.Error.Message;
+                        return response;
+                    }
 
-                // Create and add a new MapGalleryStore entity if the type is "store"
-                if (!string.IsNullOrEmpty(request.Type) && request.Type == "store")
-                {
-                    MapGalleryStore mapGalleryStore = new()
+                    // Create a new Gallery entity
+                    Gallery gallery = new()
                     {
-                        StoreId = request.TypeId,
-                        GalleryId = gallery.Id
+                        PublicId = uploadFileResult.PublicId,
+                        Url = uploadFileResult.Url.ToString(),
+                        FileBelongsTo = request.Type,
+                        IsThumbnail = request.IsThumbnail,
                     };
-                    _ = _appDbContext.MapGalleryStores.Add(mapGalleryStore);
+
+                    // Add the new gallery entity to the database
+                    _ = _appDbContext.Galleries.Add(gallery);
                     _ = await _appDbContext.SaveChangesAsync();
+
+                    // Create and add a new MapGalleryProduct entity if the type is "product"
+                    if (!string.IsNullOrEmpty(request.Type) && request.Type == "product")
+                    {
+                        MapGalleryProduct mapGalleryProduct = new()
+                        {
+                            ProductId = request.TypeId,
+                            GalleryId = gallery.Id
+                        };
+                        _ = _appDbContext.mapGalleryProducts.Add(mapGalleryProduct);
+                        _ = await _appDbContext.SaveChangesAsync();
+                    }
+
+                    // Create and add a new MapGalleryStore entity if the type is "store"
+                    if (!string.IsNullOrEmpty(request.Type) && request.Type == "store")
+                    {
+                        MapGalleryStore mapGalleryStore = new()
+                        {
+                            StoreId = request.TypeId,
+                            GalleryId = gallery.Id
+                        };
+                        _ = _appDbContext.MapGalleryStores.Add(mapGalleryStore);
+                        _ = await _appDbContext.SaveChangesAsync();
+                    }
                 }
 
                 // Commit the transaction
@@ -468,7 +472,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 response.Message = GlobalConstants.UPLOAD_FAIL;
                 return response;
             }
-
         }
 
 

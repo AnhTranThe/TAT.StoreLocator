@@ -393,8 +393,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
         public async Task<BaseResponseResult<List<SimpleStoreResponse>>> GetTheNearestStore(GetNearStoreRequestModel getNearStoreRequest, BasePaginationRequest paginationRequest)
         {
 
-
-
             BaseResponseResult<List<SimpleStoreResponse>> response = new() { Success = false };
 
             try
