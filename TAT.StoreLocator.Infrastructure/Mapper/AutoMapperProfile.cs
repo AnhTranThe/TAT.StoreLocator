@@ -4,6 +4,7 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Models.Request.Address;
 using TAT.StoreLocator.Core.Models.Request.Review;
+using TAT.StoreLocator.Core.Models.Request.Store;
 using TAT.StoreLocator.Core.Models.Request.User;
 using TAT.StoreLocator.Core.Models.Response.Authentication;
 using TAT.StoreLocator.Core.Models.Response.Product;
@@ -83,6 +84,26 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                         Longitude = src.Address.longitude
                     } : null));
 
+
+            _ = CreateMap<StoreRequestModel, Store>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src)) // Map Address property conditionally
+                ;
+            _ = CreateMap<StoreRequestModel, Address>()
+    .ForMember(dest => dest.RoadName, opt => opt.MapFrom(src => src.RoadName))
+    .ForMember(dest => dest.Province, opt => opt.MapFrom(src => src.Province))
+    .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District))
+    .ForMember(dest => dest.PostalCode, opt => opt.MapFrom(src => src.PostalCode))
+    .ForMember(dest => dest.latitude, opt => opt.MapFrom(src => src.Latitude))
+    .ForMember(dest => dest.longitude, opt => opt.MapFrom(src => src.Longitude))
+
+    ;
+
+
+
             _ = CreateMap<MapGalleryStore, MapGalleryStoreResponseModel>()
               .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.Gallery != null ?
                   src.Gallery.FileName : string.Empty))
@@ -91,7 +112,7 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
               .ForMember(dest => dest.IsThumbnail, opt => opt.MapFrom(src => src.Gallery != null &&
                   src.Gallery.IsThumbnail));
 
-            _ = CreateMap<CreateReviewRequestModel, Review>()
+            _ = CreateMap<ReviewRequestModel, Review>()
 
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
@@ -120,11 +141,7 @@ namespace TAT.StoreLocator.Infrastructure.Mapper
                     Quantity = src.Product.Quantity,
                 }));
 
-            _ = CreateMap<UpdateReviewRequestModel, Review>()
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
-                .ForMember(dest => dest.RatingValue, opt => opt.MapFrom(src => src.RatingValue))
 
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
             _ = CreateMap<Review, ReviewResponseModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))

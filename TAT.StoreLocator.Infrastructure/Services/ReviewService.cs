@@ -21,7 +21,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<BaseResponse> CreateReviewAsync(CreateReviewRequestModel request)
+        public async Task<BaseResponse> CreateReviewAsync(ReviewRequestModel request)
         {
             IQueryable<Review> existingReviewQuery = _appDbContext.Reviews.AsQueryable();
 
@@ -75,7 +75,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request)
+        public async Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, ReviewRequestModel request)
         {
             BaseResponseResult<ReviewResponseModel> response = new() { Success = false };
 
@@ -113,11 +113,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 ReviewResponseModel updatedReviewResponse = _mapper.Map<ReviewResponseModel>(review);
 
                 response.Success = true;
+                response.Message = GlobalConstants.UPDATE_SUCCESSFULL;
                 response.Data = updatedReviewResponse;
             }
             catch (Exception ex)
             {
-                response.Success = false;
+
                 response.Message = ex.Message;
             }
 

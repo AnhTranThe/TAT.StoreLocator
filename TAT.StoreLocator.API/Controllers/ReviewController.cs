@@ -19,7 +19,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateReview([FromBody] CreateReviewRequestModel request)
+        public async Task<IActionResult> CreateReview([FromBody] ReviewRequestModel request)
         {
 
             try
@@ -35,12 +35,12 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPut("update/{reviewId}")]
-        public async Task<IActionResult> UpdateReview(string reviewId, [FromBody] UpdateReviewRequestModel request)
+        public async Task<IActionResult> UpdateReview(string reviewId, [FromBody] ReviewRequestModel request)
         {
             try
             {
                 BaseResponseResult<Core.Models.Response.Review.ReviewResponseModel> response = await _reviewService.UpdateReviewAsync(reviewId, request);
-                return response.Success ? Ok(response.Data) : (IActionResult)StatusCode(500, response.Message);
+                return response.Success ? Ok(response) : BadRequest(response);
             }
             catch (Exception ex)
             {

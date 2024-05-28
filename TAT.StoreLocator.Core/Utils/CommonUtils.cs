@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using TAT.StoreLocator.Core.Helpers;
 
 namespace TAT.StoreLocator.Core.Utils
@@ -107,6 +108,62 @@ namespace TAT.StoreLocator.Core.Utils
             }
             return str.ToUpper();
         }
+
+
+        public static string vietnameseNotUpperReplace(string str)
+        {
+            for (int i = 1; i < GlobalConstants.VietNamChar.Length; i++)
+            {
+                for (int j = 0; j < GlobalConstants.VietNamChar[i].Length; j++)
+                {
+                    str = str.Replace(GlobalConstants.VietNamChar[i][j], GlobalConstants.VietNamChar[0][i - 1]);
+                }
+            }
+            return str;
+        }
+
+        public static string ReplaceProvincePatterns(string province)
+        {
+            if (string.IsNullOrEmpty(province))
+            {
+                return province;
+            }
+
+            string pattern = @"\b(?:city|thanh\s*pho|tinh)\b";
+            string cleanedProvince = Regex.Replace(province, pattern, "", RegexOptions.IgnoreCase).Trim();
+
+            return vietnameseNotUpperReplace(cleanedProvince);
+        }
+
+
+        public static string ReplaceDistrictPatterns(string district)
+        {
+            if (string.IsNullOrEmpty(district))
+            {
+                return district;
+            }
+
+            // string pattern = @"\b(quan|q\.|district|h\.|huyen|thanh pho)\b";
+            string pattern = @"\b(?:quan|q\.|district|h\.|huyen|thanh pho)\b";
+            string cleanedDistrict = Regex.Replace(district, pattern, "", RegexOptions.IgnoreCase).Trim();
+
+            return vietnameseNotUpperReplace(cleanedDistrict);
+        }
+
+        public static string ReplaceWardPatterns(string ward)
+        {
+            if (string.IsNullOrEmpty(ward))
+            {
+                return ward;
+            }
+            string pattern = @"\b(?:phuong|p\.|ward)\b";
+            // string pattern = @"\b(phuong|p\.|ward)\b";
+            string cleanedWard = Regex.Replace(ward, pattern, "", RegexOptions.IgnoreCase).Trim();
+
+            return vietnameseNotUpperReplace(cleanedWard);
+        }
+
+
 
         public static string? NormalizeEmail(string email)
         {

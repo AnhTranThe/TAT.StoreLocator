@@ -40,7 +40,6 @@ namespace TAT.StoreLocator.Test.ServiceTest.ReviewServiceTest
 
             using (AppDbContext dbContext = new(dbContextOptions))
             {
-                string userId = "user1";
                 string productId = "product1";
 
                 _ = dbContext.Products.Add(new Product { Id = productId, Name = "Product 1" });

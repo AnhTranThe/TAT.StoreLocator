@@ -7,10 +7,10 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     public interface IReviewService
     {
         // Create
-        Task<BaseResponse> CreateReviewAsync(CreateReviewRequestModel request);
+        Task<BaseResponse> CreateReviewAsync(ReviewRequestModel request);
 
         //Update
-        Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, UpdateReviewRequestModel request);
+        Task<BaseResponseResult<ReviewResponseModel>> UpdateReviewAsync(string reviewId, ReviewRequestModel request);
 
         // GetReviewByUserId
         Task<BasePaginationResult<ReviewResponseModel>> GetReviewsByUserIdAsync(BaseReviewFilterRequest filterRequest, BasePaginationRequest paginationRequest);

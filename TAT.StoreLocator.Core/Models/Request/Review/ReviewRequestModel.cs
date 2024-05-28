@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using static TAT.StoreLocator.Core.Helpers.Enums;
 
 namespace TAT.StoreLocator.Core.Models.Request.Review
 {
-    public class CreateReviewRequestModel
+    public class ReviewRequestModel
     {
         [Required]
         public string? TypeId { get; set; }
@@ -17,5 +18,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Review
 
         [Required]
         public int RatingValue { get; set; }
+
+        public EReviewStatus Status { get; set; } = EReviewStatus.Approved;
     }
 }
