@@ -19,7 +19,7 @@ namespace TAT.StoreLocator.API.Controllers
             _productService = productService;
         }
 
-        [HttpPost("addProduct")]
+        [HttpPost("add")]
         public async Task<ActionResult> AddProduct([FromBody] ProductRequestModel request)
         {
             try
@@ -40,7 +40,7 @@ namespace TAT.StoreLocator.API.Controllers
         }
 
         [HttpPut("update/{Id}")]
-        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] UpdateProductRequestModel request)
+        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductRequestModel request)
         {
             if (request == null || string.IsNullOrEmpty(Id))
             {

@@ -478,6 +478,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     PhoneNumber = s.Store.PhoneNumber,
                     Address = new AddressResponseModel
                     {
+                        Id = s.Address.Id,
                         RoadName = s.Address.RoadName,
                         Ward = s.Address.Ward,
                         Province = s.Address.Province,
@@ -492,7 +493,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                 {
                                     Id = p.Product.Id.ToString(),
                                     Name = p.Product.Name,
-                                    Image = p.GalleryUrl
+                                    Image = p.GalleryUrl,
+                                    StoreId = p.Product.StoreId
                                 }).ToList(),
                     Reviews = reviews
                         .Where(r => r.StoreId == s.Store.Id)

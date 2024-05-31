@@ -192,7 +192,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         /// <param name="Id"></param>
         /// <param name="request"></param>
         /// <returns> BaseResponse </returns>
-        public async Task<BaseResponse> UpdateProduct(string Id, UpdateProductRequestModel request)
+        public async Task<BaseResponse> UpdateProduct(string Id, ProductRequestModel request)
         {
             BaseResponse response = new() { Success = false };
 
@@ -244,7 +244,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        private static void UpdateProductProperties(Product product, UpdateProductRequestModel request)
+        private static void UpdateProductProperties(Product product, ProductRequestModel request)
         {
             if (!string.IsNullOrEmpty(request.Name))
             {
@@ -382,13 +382,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     _ = _dbContext.Products.Add(product);
 
 
-                    if (request.UploadPhoto?.ListFilesUpload != null)
-                    {
-                        foreach (IFormFile file in request.UploadPhoto.ListFilesUpload)
-                        {
-                            await AddPhotoProductAsync(product.Id, file);
-                        }
-                    }
+                    //if (request.UploadPhoto?.ListFilesUpload != null)
+                    //{
+                    //    foreach (IFormFile file in request.UploadPhoto.ListFilesUpload)
+                    //    {
+                    //        await AddPhotoProductAsync(product.Id, file);
+                    //    }
+                    //}
 
                     _ = await _dbContext.SaveChangesAsync();
                     await transaction.CommitAsync();

@@ -43,6 +43,6 @@ namespace TAT.StoreLocator.Core.Interface.IServices
         /// <param name="Id"></param>
         /// <param name=" request "></param>
         /// <returns> boolean </returns>
-        Task<BaseResponse> UpdateProduct(string Id, UpdateProductRequestModel request);
+        Task<BaseResponse> UpdateProduct(string Id, ProductRequestModel request);
     }
 }

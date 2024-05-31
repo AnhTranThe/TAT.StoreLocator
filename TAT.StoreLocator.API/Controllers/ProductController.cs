@@ -39,8 +39,8 @@ namespace TAT.StoreLocator.API.Controllers
             }
         }
 
-        [HttpGet("getListProducts")]
-        [AllowAnonymous]
+        [HttpGet("getall")]
+
         public async Task<IActionResult> GetListProduct([FromQuery] BasePaginationRequest request)
         {
             request ??= new BasePaginationRequest();

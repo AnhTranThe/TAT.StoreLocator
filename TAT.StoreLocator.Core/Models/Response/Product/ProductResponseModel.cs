@@ -13,7 +13,6 @@ namespace TAT.StoreLocator.Core.Models.Response.Product
         public string? Content { get; set; }
         public string? Note { get; set; }
         public string? Slug { get; set; }
-
         public decimal Price { get; set; }
         public decimal Discount { get; set; }
         public string? MetaTitle { get; set; }
@@ -23,7 +22,6 @@ namespace TAT.StoreLocator.Core.Models.Response.Product
         public string? SKU { get; set; }
         public bool IsActive { get; set; } = true;
         public int ProductViewCount { get; set; }
-
         public string? StoreId { get; set; }
         public StoreOfProductResponseModel? Store { get; set; }
         public string? CategoryId { set; get; }
