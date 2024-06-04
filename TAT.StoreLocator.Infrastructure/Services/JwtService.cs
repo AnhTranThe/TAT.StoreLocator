@@ -101,11 +101,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            //byte[] key = new byte[32]; // 256 bits
-            //using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-            //{
-            //    rng.GetBytes(key);
-            //}
+
             SymmetricSecurityKey secretKey = new(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key));
             SigningCredentials creds = new(secretKey, SecurityAlgorithms.HmacSha256);
             JwtSecurityToken token = new(
@@ -210,22 +206,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 : principal;
         }
 
-        //public ClaimsPrincipal? GetPrincipalFromExpiredTokenv2(string token)
-        //{
-        //    TokenValidationParameters tokenValidationParameters = new()
-        //    {
-        //        ValidateAudience = false,
-        //        ValidateIssuer = false,
-        //        ValidateIssuerSigningKey = true,
-        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtTokenSettings.Key)),
-        //        ValidateLifetime = false
-        //    };
 
-        //    JwtSecurityTokenHandler tokenHandler = new();
-        //    ClaimsPrincipal principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-        //    return securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)
-        //        ? throw new SecurityTokenException("Invalid token")
-        //        : principal;
-        //}
+
+
     }
 }

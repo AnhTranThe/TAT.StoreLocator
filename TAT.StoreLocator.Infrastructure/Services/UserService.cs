@@ -20,25 +20,22 @@ namespace TAT.StoreLocator.Infrastructure.Services
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
-        private readonly ILogger _logger;
+        private readonly ILoggerService _logger;
         private readonly AppDbContext _dbContext;
-        private readonly IPhotoService _photoService;
         private readonly IMapper _mapper;
-
         public UserService(UserManager<User> userManager,
-        ILogger logger,
+        ILoggerService logger,
         AppDbContext dbContext,
-        IPhotoService photoService,
         IMapper mapper,
         IOptions<JwtTokenSettings> jwtTokenSettings)
         {
             _userManager = userManager;
             _logger = logger;
             _dbContext = dbContext;
-            _photoService = photoService;
             _mapper = mapper;
-        }
 
+
+        }
         public async Task<BaseResponse> Delete(string id)
         {
             BaseResponse response = new()
@@ -69,6 +66,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             BasePaginationResult<UserResponseModel> response = new();
 
             IQueryable<User> query = _userManager.Users;
+
 
             int totalRow = await query.CountAsync();
             List<UserResponseModel> data = await query.Skip((request.PageIndex - 1) * request.PageSize)
@@ -124,6 +122,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
 
             return response;
+
         }
 
         public async Task<UpdateUserResponseModel> UpdateUserAsync(UpdateUserRequestModel request)
@@ -138,6 +137,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 try
                 {
+
                     User user = await _userManager.FindByIdAsync(request.RequestId);
                     if (user == null)
                     {
@@ -150,18 +150,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     User mapperUser = _mapper.Map(request, user);
                     _ = _dbContext.Users.Update(mapperUser);
 
-                    if (request.NewFile != null && request.NewFile.Length > 0 && _dbContext.Galleries != null)
-                    {
-                        PhotoUploadProfileRequestModel uploadPhotoRequestModel = new()
-                        {
-                            FileUpload = request.NewFile,
-                            UserId = request.RequestId,
-                        };
-                        _ = await UpdateUserPhoto(uploadPhotoRequestModel);
-                    }
 
                     //// Update or create address
-                    //if (_dbContext != null && _dbContext.Addresses != null)
+                    //if (_dbContext.Addresses != null)
                     //{
                     //    Address? address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == user.AddressId);
                     //    if (address == null)
@@ -196,63 +187,72 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public async Task<BaseResponse> UpdateUserPhoto(PhotoUploadProfileRequestModel request)
-        {
-            BaseResponse response = new()
-            {
-                Success = false
-            };
-            using (IDbContextTransaction transaction = _dbContext.Database.BeginTransaction())
-            {
-                try
-                {
-                    User user = await _userManager.FindByIdAsync(request.UserId);
-                    if (user == null)
-                    {
-                        response.Message = GlobalConstants.MessageUserNotFound;
-                        return response;
-                    }
+        //public async Task<BaseResponse> UpdateUserPhoto(UploadPhotoRequestModel request)
+        //{
+        //    BaseResponse response = new()
+        //    {
+        //        Success = false
+        //    };
+        //    using (IDbContextTransaction transaction = _dbContext.Database.BeginTransaction())
+        //    {
+        //        try
+        //        {
+        //            User user = await _userManager.FindByIdAsync(request.UserId);
+        //            if (user == null)
+        //            {
+        //                response.Message = GlobalConstants.MessageUserNotFound;
+        //                return response;
+        //            }
 
-                    if (request.FileUpload != null && request.FileUpload.Length > 0 && _dbContext != null && _dbContext.Galleries != null)
-                    {
-                        Gallery gallery = await _dbContext.Galleries.FirstOrDefaultAsync(p => p.UserId == user.Id) ?? new Gallery
-                        {
-                            User = new User { Id = user.Id }
-                        };
-                        CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await _photoService.UploadImage(request.FileUpload, true);
-                        if (uploadFileResult.Error != null)
-                        {
-                            response.Message = uploadFileResult.Error.Message;
+        //            if (request.FileUpload != null && request.FileUpload.Length > 0 && _dbContext != null && _dbContext.Galleries != null)
+        //            {
 
-                            return response;
-                        }
-                        CloudinaryDotNet.Actions.DeletionResult? deleteOldFileResult = await _photoService.DeleteImageCloudinary(gallery.PublicId ?? "");
-                        if (deleteOldFileResult != null && deleteOldFileResult.Error != null)
-                        {
-                            response.Message = deleteOldFileResult.Error.Message;
+        //                Gallery gallery = await _dbContext.Galleries.FirstOrDefaultAsync(p => p.UserId == user.Id) ?? new Gallery
+        //                {
+        //                    User = new User { Id = user.Id }
+        //                };
+        //                CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await _photoService.UploadImage(request.FileUpload, true);
+        //                if (uploadFileResult.Error != null)
+        //                {
 
-                            return response;
-                        }
+        //                    response.Message = uploadFileResult.Error.Message;
 
-                        gallery.PublicId = uploadFileResult.PublicId;
-                        gallery.Url = uploadFileResult.SecureUrl.AbsoluteUri;
+        //                    return response;
 
-                        _ = await _dbContext.SaveChangesAsync(user.Id);
-                        transaction.Commit();
-                        response.Success = true;
-                        response.Message = "Photo updated successfully";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    response.Message = $"An error occurred: {ex.Message}";
-                    _logger.LogError(ex);
-                }
-            }
+        //                }
+        //                CloudinaryDotNet.Actions.DeletionResult? deleteOldFileResult = await _photoService.DeleteImage(gallery.PublicId ?? "");
+        //                if (deleteOldFileResult != null && deleteOldFileResult.Error != null)
+        //                {
+        //                    response.Message = deleteOldFileResult.Error.Message;
 
-            return response;
-        }
+        //                    return response;
+        //                }
+
+        //                gallery.PublicId = uploadFileResult.PublicId;
+        //                gallery.Url = uploadFileResult.SecureUrl.AbsoluteUri;
+
+
+        //                _ = await _dbContext.SaveChangesAsync(user.Id);
+        //                transaction.Commit();
+        //                response.Success = true;
+        //                response.Message = "Photo updated successfully";
+
+        //            }
+
+
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            transaction.Rollback();
+        //            response.Message = $"An error occurred: {ex.Message}";
+        //            _logger.LogError(ex);
+        //        }
+        //    }
+
+
+        //    return response;
+
+        //}
 
         public async Task<BasePaginationResult<UserResponseModel>> SearchUserAsync(SearchUserPagingRequestModel request)
         {
@@ -283,6 +283,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
             response.Data = data;
 
             return response;
+
+
         }
 
         public async Task<BaseResponse> ChangePasswordAsync(ChangePasswordRequestModel request)
@@ -311,9 +313,11 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 {
                     response.Message = "Error while changing password";
                     return response;
+
                 }
                 response.Success = true;
                 response.Message = "Change password success";
+
             }
             catch (Exception ex)
             {
@@ -354,6 +358,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
+
         public async Task<AssignRoleResponseModel> RoleAssign(AssignRoleRequestModel request)
         {
             AssignRoleResponseModel response = new();
@@ -361,6 +366,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Success = false
             };
+
 
             User user = await _userManager.FindByIdAsync(request.UserId);
             if (user == null)
@@ -395,6 +401,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
+
+
         public async Task<BaseResponse> ChangeStatusUser(ChangeStatusUserRequestModel request)
         {
             BaseResponse response = new()
@@ -409,6 +417,8 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 return response;
             }
 
+
+
             user.IsActive = request.IsActive;
 
             IdentityResult result = await _userManager.UpdateAsync(user);
@@ -417,10 +427,16 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 response.Message = "Can not change status user ${user.Email}";
                 return response;
+
             }
 
             response.Success = true;
             return response;
+        }
+
+        public Task<BaseResponse> UpdateUserPhoto(PhotoUploadProfileRequestModel request)
+        {
+            throw new NotImplementedException();
         }
     }
 }

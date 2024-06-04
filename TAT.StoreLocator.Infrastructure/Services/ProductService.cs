@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
-using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Product;
 using TAT.StoreLocator.Core.Models.Response.Category;
@@ -19,12 +18,10 @@ namespace TAT.StoreLocator.Infrastructure.Services
     public class ProductService : IProductService
     {
         private readonly IPhotoService _photoService;
-        private readonly ILogger _logger;
         private readonly AppDbContext _dbContext;
 
-        public ProductService(ILogger logger, AppDbContext dbContext, IPhotoService photoService)
+        public ProductService(AppDbContext dbContext, IPhotoService photoService)
         {
-            _logger = logger;
             _dbContext = dbContext;
             _photoService = photoService;
         }
@@ -59,7 +56,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                                                        IsActive = p.IsActive,
                                                        ProductViewCount = p.ProductViewCount,
                                                        CategoryId = p.CategoryId,
-                                                       Category = p.Category != null ? new CategoryProductResponseModel
+                                                       Category = p.Category != null ? new CategoryResponseModel
                                                        {
                                                            Id = p.Category.Id,
                                                            Name = p.Category.Name,
@@ -105,10 +102,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
             return response;
         }
 
-        public Task<BasePaginationResult<ProductResponseModel>> SearchProductAsync(SearchProductPagingRequestModel request)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// getProductList
@@ -151,7 +144,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                     CategoryId = product.CategoryId,
                     StoreId = product.StoreId,
-                    Category = product.Category != null ? new CategoryProductResponseModel
+                    Category = product.Category != null ? new CategoryResponseModel
                     {
                         Id = product.Category.Id,
                         Name = product.Category.Name,
@@ -216,14 +209,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     UpdateProductProperties(product, request);
 
 
-                    /*if (request.UploadPhoto?.FileUpload != null)
-                    {
-                        foreach (IFormFile file in request.UploadPhoto.FileUpload)
-                        {
-                            await AddPhotoProductAsync(product.Id, file);
-                        }
-                    }
-                    _ = await _dbContext.SaveChangesAsync();*/
+
                     await transaction.CommitAsync();
 
                     response.Success = true;
@@ -382,13 +368,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     _ = _dbContext.Products.Add(product);
 
 
-                    //if (request.UploadPhoto?.ListFilesUpload != null)
-                    //{
-                    //    foreach (IFormFile file in request.UploadPhoto.ListFilesUpload)
-                    //    {
-                    //        await AddPhotoProductAsync(product.Id, file);
-                    //    }
-                    //}
+
 
                     _ = await _dbContext.SaveChangesAsync();
                     await transaction.CommitAsync();

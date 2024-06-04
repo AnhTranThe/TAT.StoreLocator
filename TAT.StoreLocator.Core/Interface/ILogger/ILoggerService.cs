@@ -1,6 +1,6 @@
 ﻿namespace TAT.StoreLocator.Core.Interface.ILogger
 {
-    public interface ILogger
+    public interface ILoggerService
     {
         /// <summary>
         /// LogError

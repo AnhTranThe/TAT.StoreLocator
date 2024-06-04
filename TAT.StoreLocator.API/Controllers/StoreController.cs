@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Request.Store;
 using TAT.StoreLocator.Core.Models.Response.Store;
@@ -14,11 +15,17 @@ namespace TAT.StoreLocator.API.Controllers
     {
         //Depency Injection
         private readonly IStoreService _storeService;
+        private readonly ILoggerService _loggerService;
+
+
+
 
         //Constructor
-        public StoreController(IStoreService storeService)
+        public StoreController(IStoreService storeService, ILoggerService loggerService)
         {
             _storeService = storeService;
+            _loggerService = loggerService;
+
         }
 
         [HttpGet("getAll")]
@@ -28,9 +35,8 @@ namespace TAT.StoreLocator.API.Controllers
             try
             {
                 BasePaginationResult<StoreResponseModel> response = await _storeService.GetAllStoreAsync(paginationRequest);
+                _loggerService.LogInfo(response.Data.Count.ToString());
                 return Ok(response);
-
-
             }
             catch (Exception ex)
             {

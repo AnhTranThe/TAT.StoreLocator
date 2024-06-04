@@ -15,7 +15,7 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
             using IServiceScope scope = host.Services.CreateScope();
             IServiceProvider serviceProvider = scope.ServiceProvider;
             AppDbContext? context = serviceProvider.GetService<AppDbContext>();
-            ILogger? logger = serviceProvider.GetService<ILogger>();
+            ILoggerService? logger = serviceProvider.GetService<ILoggerService>();
             try
             {
                 if (context != null)

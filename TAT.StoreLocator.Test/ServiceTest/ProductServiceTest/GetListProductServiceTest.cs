@@ -1,13 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Common;
 using TAT.StoreLocator.Core.Entities;
-using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Response.Product;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
@@ -22,7 +16,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
         public async Task GetListProduct_ReturnsCorrectProductList()
         {
             ////Arrange
-            var expectedProduct = new List<ProductResponseModel>
+            List<ProductResponseModel> expectedProduct = new()
             {
                 new ProductResponseModel
                 {
@@ -38,34 +32,34 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                  }
          };
 
-            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            DbContextOptions<AppDbContext> dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: "GetListProduct_TestDatabase")
                 .Options;
 
-            using var dbContextMock = new AppDbContext(dbContextOptions);
+            using AppDbContext dbContextMock = new(dbContextOptions);
 
             // Add mock data to the in-memory database
-            foreach (var product in expectedProduct)
+            foreach (ProductResponseModel product in expectedProduct)
             {
-                dbContextMock.Products.Add(new Product
+                _ = dbContextMock.Products.Add(new Product
                 {
-                    Id = product.Id,
+                    Id = product.Id!,
                     Name = product.Name,
                     Description = product.Description,
                 });
             }
-            await dbContextMock.SaveChangesAsync();
+            _ = await dbContextMock.SaveChangesAsync();
 
-            var productService = new ProductService(Mock.Of<ILogger>(), dbContextMock, Mock.Of<IPhotoService>());
+            ProductService productService = new(dbContextMock, Mock.Of<IPhotoService>());
 
-            var paginationRequest = new BasePaginationRequest
+            BasePaginationRequest paginationRequest = new()
             {
                 PageSize = 10,
                 PageIndex = 1,
             };
 
             // Act
-            var result = await productService.GetListProductAsync(paginationRequest);
+            BasePaginationResult<ProductResponseModel> result = await productService.GetListProductAsync(paginationRequest);
 
             // Assert
             Assert.NotNull(result);

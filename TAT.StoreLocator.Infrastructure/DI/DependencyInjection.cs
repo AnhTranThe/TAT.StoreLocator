@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using log4net;
+using log4net.Appender;
+using log4net.Layout;
+using log4net.Repository.Hierarchy;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +35,9 @@ namespace TAT.StoreLocator.Infrastructure.DI
                 .AllowAnyMethod()
                 .AllowAnyHeader());
             });
+            #region Logging 
+            ConfigureLog4Net(config.GetSection("Logging:Log4Net"));
+            #endregion
 
             #endregion Cors
 
@@ -116,10 +123,9 @@ namespace TAT.StoreLocator.Infrastructure.DI
 
             _ = services.AddScoped(typeof(IJwtService), typeof(JwtService));
             _ = services.AddScoped(typeof(IUserService), typeof(UserService));
-            _ = services.AddTransient(typeof(ILogger), typeof(LoggerService));
+            _ = services.AddTransient(typeof(ILoggerService), typeof(LoggerService));
             _ = services.AddTransient(typeof(IPhotoService), typeof(PhotoService));
             _ = services.AddScoped(typeof(IAuthenticationService), typeof(AuthenticationService));
-            _ = services.AddScoped(typeof(IProfileService), typeof(ProfileService));
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();
             _ = services.AddTransient<UserManager<User>, UserManager<User>>();
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
@@ -148,5 +154,64 @@ namespace TAT.StoreLocator.Infrastructure.DI
 
             return services;
         }
+
+        private static void ConfigureLog4Net(IConfigurationSection log4NetConfig)
+        {
+            Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
+
+            Logger rootLogger = hierarchy.Root;
+            rootLogger.Level = log4net.Core.Level.All;
+
+            IConfigurationSection appenders = log4NetConfig.GetSection("Appenders");
+            foreach (IConfigurationSection? appenderSection in appenders.GetChildren())
+            {
+                Type? appenderType = Type.GetType(appenderSection.GetValue<string>("Type"));
+                if (appenderType == null)
+                {
+                    continue;
+                }
+
+                AppenderSkeleton? appender = (AppenderSkeleton)Activator.CreateInstance(appenderType)!;
+                if (appender == null)
+                {
+                    continue;
+                }
+
+                if (appender is RollingFileAppender rollingFileAppender)
+                {
+                    rollingFileAppender.File = appenderSection.GetValue<string>("File");
+                    rollingFileAppender.DatePattern = appenderSection.GetValue<string>("DatePattern");
+                    rollingFileAppender.StaticLogFileName = appenderSection.GetValue<bool>("StaticLogFileName");
+                    rollingFileAppender.AppendToFile = appenderSection.GetValue<bool>("AppendToFile");
+                    rollingFileAppender.RollingStyle = (RollingFileAppender.RollingMode)Enum.Parse(typeof(RollingFileAppender.RollingMode), appenderSection.GetValue<string>("RollingStyle"));
+                    rollingFileAppender.MaxSizeRollBackups = appenderSection.GetValue<int>("MaxSizeRollBackups");
+                    rollingFileAppender.MaximumFileSize = appenderSection.GetValue<string>("MaximumFileSize");
+
+                    Type? layoutType = Type.GetType(appenderSection.GetSection("Layout").GetValue<string>("Type"));
+                    if (layoutType != null)
+                    {
+                        SerializedLayout? layout = (SerializedLayout)Activator.CreateInstance(layoutType)!;
+                        Type? decoratorType = Type.GetType(appenderSection.GetSection("Layout:Decorator").GetValue<string>("Type"));
+                        if (decoratorType != null)
+                        {
+                            log4net.Layout.Decorators.StandardTypesDecorator? decorator = (log4net.Layout.Decorators.StandardTypesDecorator)Activator.CreateInstance(decoratorType)!;
+                            layout.AddDecorator(decorator);
+                        }
+                        layout.ActivateOptions();
+                        rollingFileAppender.Layout = layout;
+                    }
+
+                    rollingFileAppender.ActivateOptions();
+                }
+
+                hierarchy.Root.AddAppender(appender);
+            }
+
+            hierarchy.Configured = true;
+
+        }
+
+
+
     }
 }

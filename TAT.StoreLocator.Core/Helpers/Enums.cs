@@ -50,14 +50,7 @@ namespace TAT.StoreLocator.Core.Helpers
             Default
         }
 
-        //#region UploadFile properties
-        //[JsonConverter(typeof(JsonStringEnumConverter))]
-        //public enum EUploadFileStatus
-        //{
-        //    Delete,
-        //    Active,
-        //}
-        //#endregion
+
 
         #region TagType
 

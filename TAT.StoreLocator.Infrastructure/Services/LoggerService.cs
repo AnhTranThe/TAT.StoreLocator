@@ -3,7 +3,7 @@ using TAT.StoreLocator.Core.Interface.ILogger;
 
 namespace TAT.StoreLocator.Infrastructure.Services
 {
-    public class LoggerService : ILogger
+    public class LoggerService : ILoggerService
     {
         private readonly ILog _logger;
 

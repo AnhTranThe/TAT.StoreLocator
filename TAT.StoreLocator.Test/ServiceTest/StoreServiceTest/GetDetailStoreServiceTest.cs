@@ -1,52 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using Moq;
-using AutoMapper;
-using TAT.StoreLocator.Infrastructure.Persistence.EF;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using TAT.StoreLocator.Core.Entities;
-using log4net.Repository.Hierarchy;
-using TAT.StoreLocator.Infrastructure.Services;
-using TAT.StoreLocator.Core.Interface.IServices;
-using TAT.StoreLocator.Core.Models.Response.Store;
-using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
+using Moq;
+using TAT.StoreLocator.Core.Entities;
+using TAT.StoreLocator.Core.Models.Response.Store;
+using TAT.StoreLocator.Infrastructure.Persistence.EF;
+using TAT.StoreLocator.Infrastructure.Services;
+using Xunit;
 
 namespace TAT.StoreLocator.Test.ServiceTest.StoreServiceTest
 {
-    public  class GetDetailStoreServiceTest
+    public class GetDetailStoreServiceTest
     {
         [Fact]
         public async Task GetDetailStoreAsync_ReturnsStoreResponseModel()
         {
             // Arrange
-            var storeId = "store1";
-            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            string storeId = "store1";
+            DbContextOptions<AppDbContext> dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: "GetDetailStoreAsync_TestDatabase")
                 .Options;
 
-            using ( var dbContext = new AppDbContext(dbContextOptions))
+            using (AppDbContext dbContext = new(dbContextOptions))
             {
-                dbContext.Stores.Add(new Store { Id = storeId , Name = "Test Store" });
-               await dbContext.SaveChangesAsync();
+                _ = dbContext.Stores.Add(new Store { Id = storeId, Name = "Test Store" });
+                _ = await dbContext.SaveChangesAsync();
             }
 
-            using ( var dbContext = new AppDbContext(dbContextOptions))
+            using (AppDbContext dbContext = new(dbContextOptions))
             {
-                var store = new Store { Id = storeId, Name = "Test Store" };
+                Store store = new() { Id = storeId, Name = "Test Store" };
 
-                var mapperMock = new Mock<IMapper>();
-                mapperMock.Setup(m => m.Map<StoreResponseModel>(It.IsAny<Store>()))
-                        .Returns<Store>((s) => new StoreResponseModel { Id = s.Id , Name = s.Name });// Configure mapper to return a valid StoreRespo
-                var loggerMock = new Mock<ILogger<StoreService>>();
-                var service = new StoreService(dbContext, mapperMock.Object,null,loggerMock.Object);
-               
+                Mock<IMapper> mapperMock = new();
+                _ = mapperMock.Setup(m => m.Map<StoreResponseModel>(It.IsAny<Store>()))
+                        .Returns<Store>((s) => new StoreResponseModel { Id = s.Id, Name = s.Name });// Configure mapper to return a valid StoreRespo
+                Mock<ILogger<StoreService>> loggerMock = new();
+                StoreService service = new(dbContext, mapperMock.Object, null, loggerMock.Object);
+
                 // Act
-                var result = await service.GetDetailStoreAsync(storeId);
+                Core.Common.BaseResponseResult<StoreResponseModel> result = await service.GetDetailStoreAsync(storeId);
 
                 // Assert
                 Assert.NotNull(result);

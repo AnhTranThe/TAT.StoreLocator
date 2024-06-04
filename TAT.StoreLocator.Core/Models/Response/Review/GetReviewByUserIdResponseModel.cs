@@ -7,8 +7,6 @@ namespace TAT.StoreLocator.Core.Models.Response.Review
         public BasePaginationRequest PaginationRequest { get; set; } = new BasePaginationRequest();
         public BaseResponse BaseResponse { get; set; } = new BaseResponse();
         public List<ReviewResponseModel> ReviewResponseModel { get; set; } = new List<ReviewResponseModel>();
-
-        //public ReviewResponseModel ReviewResponseModel { get; set; }   = new ReviewResponseModel();
         public int TotalCount { get; set; }
     }
 }

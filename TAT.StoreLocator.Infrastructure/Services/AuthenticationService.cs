@@ -20,26 +20,30 @@ namespace TAT.StoreLocator.Infrastructure.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IMapper _mapper;
-        private readonly ILogger _logger;
+        private readonly ILoggerService _logger;
         private readonly AppDbContext _context;
 
-        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, ILogger logger, IMapper mapper, AppDbContext context)
+        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, ILoggerService logger, IMapper mapper, AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _mapper = mapper;
             _context = context;
-        }
 
+
+        }
         public async Task<RegisterResponseModel> RegisterUserAsync(RegisterRequestModel model)
         {
+
+
             RegisterResponseModel response = new();
             BaseResponse baseResponse = response.BaseResponse;
             baseResponse.Success = false;
 
             try
             {
+
                 User existedUser = await _userManager.FindByEmailAsync(model.Email);
                 if (existedUser != null)
                 {
@@ -63,14 +67,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     FullName = model.LastName + " " + model.FirstName,
                     Email = model.Email,
                     UserName = userName,
-                    // AddressId = Guid.NewGuid().ToString()
-                };
-                //Address newAddress = new()
-                //{
-                //    Id = newUser.AddressId // Use the same Id for Address as assigned to AddressId of User
-                //};
 
-                //  _ = await _context.Addresses.AddAsync(newAddress);
+
+                };
+
+
+
                 _ = await _context.SaveChangesAsync(newUser.Id);
                 IdentityResult createUserResult = await _userManager.CreateAsync(newUser, model.Password?.Trim());
 
@@ -86,19 +88,22 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     return response;
                 }
 
+
                 response.UserResponseModel = _mapper.Map<UserResponseModel>(newUser);
                 baseResponse.Success = true;
                 baseResponse.Message = "Register success";
+
             }
             catch (Exception ex)
             {
                 baseResponse.Message = $"An error occurred while check existed the entity: {ex.Message}";
                 _logger.LogError(ex);
+
             }
 
             return response;
-        }
 
+        }
         public async Task<LoginResponseModel> LoginUserAsync(LoginRequestModel model)
         {
             LoginResponseModel response = new();
@@ -120,7 +125,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     {
                         // Invalid password
                         baseResponse.Message = "Invalid password";
-                        throw new Exception(message: "Invalid password");
+                        return response;
                     }
 
                     response.UserResponseModel = _mapper.Map<UserResponseModel>(user);
@@ -139,7 +144,9 @@ namespace TAT.StoreLocator.Infrastructure.Services
                     response.claims = claims;
                     baseResponse.Success = true;
                     baseResponse.Message = "Login success";
+
                 }
+
             }
             catch (Exception ex)
             {
@@ -148,6 +155,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             }
 
             return response;
+
         }
 
         public async Task<BaseResponse> LogoutUserAsync(string UserId)
@@ -168,13 +176,20 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
                 await _signInManager.SignOutAsync();
 
+
                 response.Success = true;
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex);
+
             }
             return response;
+
+
         }
+
+
     }
 }

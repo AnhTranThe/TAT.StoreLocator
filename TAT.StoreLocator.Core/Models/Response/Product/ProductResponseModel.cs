@@ -25,7 +25,7 @@ namespace TAT.StoreLocator.Core.Models.Response.Product
         public string? StoreId { get; set; }
         public StoreOfProductResponseModel? Store { get; set; }
         public string? CategoryId { set; get; }
-        public CategoryProductResponseModel? Category { get; set; }
+        public CategoryResponseModel? Category { get; set; }
         public List<GalleryResponseModel>? GalleryResponseModels { get; set; }
         public List<ReviewResponseModel>? Reviews { get; set; }
     }

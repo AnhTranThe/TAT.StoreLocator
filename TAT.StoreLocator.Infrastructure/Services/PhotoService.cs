@@ -20,8 +20,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
     {
         private readonly Cloudinary _cloudinary;
         private readonly AppDbContext _appDbContext;
-
-
         public PhotoService(IOptions<CloudinarySettings> config, AppDbContext appDbContext)
         {
             Account account = new(config.Value.CloudName, config.Value.ApiKey, config.Value.ApiSecret);
@@ -393,7 +391,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             BaseResponse response = new() { Success = false };
 
-            if (request.ListFilesUpload.Count == 0)
+            if (request.ListFilesUpload!.Count == 0)
             {
                 response.Message = "Upload files empty";
                 return response;
@@ -403,7 +401,7 @@ namespace TAT.StoreLocator.Infrastructure.Services
             using IDbContextTransaction transaction = await _appDbContext.Database.BeginTransactionAsync();
             try
             {
-                foreach (IFormFile file in request.ListFilesUpload)
+                foreach (IFormFile file in request.ListFilesUpload!)
                 {
                     CloudinaryDotNet.Actions.ImageUploadResult uploadFileResult = await UploadImage(file, true);
 

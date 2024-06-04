@@ -143,7 +143,7 @@ namespace TAT.StoreLocator.Core.Utils
                 return district;
             }
 
-            // string pattern = @"\b(quan|q\.|district|h\.|huyen|thanh pho)\b";
+
             string pattern = @"\b(?:quan|q\.|district|h\.|huyen|thanh pho)\b";
             string cleanedDistrict = Regex.Replace(district, pattern, "", RegexOptions.IgnoreCase).Trim();
 
@@ -157,7 +157,7 @@ namespace TAT.StoreLocator.Core.Utils
                 return ward;
             }
             string pattern = @"\b(?:phuong|p\.|ward)\b";
-            // string pattern = @"\b(phuong|p\.|ward)\b";
+
             string cleanedWard = Regex.Replace(ward, pattern, "", RegexOptions.IgnoreCase).Trim();
 
             return vietnameseNotUpperReplace(cleanedWard);
@@ -178,7 +178,7 @@ namespace TAT.StoreLocator.Core.Utils
             catch (FormatException)
             {
                 // If the provided email address is not in a valid format, return null or throw an exception
-                return null; // or throw new ArgumentException("Invalid email address.");
+                return null;
             }
         }
 
@@ -201,18 +201,20 @@ namespace TAT.StoreLocator.Core.Utils
 
         public static string NormalSearch(string text)
         {
+            if (string.IsNullOrEmpty(text))
+            {
+                return string.Empty; // Return an empty string if the input is null or empty
+            }
+
             // Loại bỏ dấu tiếng Việt và chuyển đổi về chữ thường
             string normalizedText = vietnameseReplace(text).ToLowerInvariant();
-            // Loại bỏ các ký tự không phải chữ cái hoặc số
-            StringBuilder resultBuilder = new();
-            foreach (char c in normalizedText)
-            {
-                if (char.IsLetterOrDigit(c))
-                {
-                    _ = resultBuilder.Append(c);
-                }
-            }
-            return resultBuilder.ToString();
+
+            string result = new(normalizedText.Where(char.IsLetterOrDigit).ToArray());
+
+            return result;
+
+
+
         }
 
         public static string GenerateRandomPhoneNumber()

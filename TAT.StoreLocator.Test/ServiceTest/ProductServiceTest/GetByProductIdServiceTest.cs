@@ -1,12 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Moq;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TAT.StoreLocator.Core.Entities;
-using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
-using TAT.StoreLocator.Core.Models.Response.Category;
 using TAT.StoreLocator.Core.Models.Response.Gallery;
 using TAT.StoreLocator.Core.Models.Response.Product;
 using TAT.StoreLocator.Core.Models.Response.Review;
@@ -23,8 +18,8 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
         public async Task GetById_ReturnsCorrectProduct()
         {
             // Arrange
-            var Id = "product1";
-            var expectedProduct = new ProductResponseModel
+            string Id = "product1";
+            ProductResponseModel expectedProduct = new()
             {
                 Id = Id,
                 Name = "Product 1",
@@ -42,7 +37,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                 IsActive = true,
                 ProductViewCount = 500,
                 CategoryId = "category1",
-                Category = new CategoryProductResponseModel
+                Category = new Core.Models.Response.Category.CategoryResponseModel
                 {
                     Id = "category1",
                     Name = "Category 1",
@@ -57,8 +52,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                 },
                 GalleryResponseModels = new List<GalleryResponseModel>
                 {
-                    new GalleryResponseModel
-                    {
+                    new() {
                         Id = "gallery1",
                         FileName = "image1.jpg",
                         Url = "http://example.com/image1.jpg",
@@ -68,8 +62,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                 },
                 Reviews = new List<ReviewResponseModel>
                 {
-                    new ReviewResponseModel
-                    {
+                    new() {
                         Id = "review1",
                         Content = "Great product!",
                         RatingValue = 5,
@@ -78,12 +71,12 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                 }
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            DbContextOptions<AppDbContext> dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: "GetById_ReturnsCorrectProduct_TestDatabase")
                 .Options;
 
-            using var dbContextMock = new AppDbContext(dbContextOptions);
-            dbContextMock.Products.Add(new Product
+            using AppDbContext dbContextMock = new(dbContextOptions);
+            _ = dbContextMock.Products.Add(new Product
             {
                 Id = Id,
                 Name = "Product 1",
@@ -104,8 +97,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                 StoreId = "store1",
                 MapGalleryProducts = new List<MapGalleryProduct>
                 {
-                    new MapGalleryProduct
-                    {
+                    new() {
                         Gallery = new Gallery
                         {
                             Id = "gallery1",
@@ -118,8 +110,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                 },
                 Reviews = new List<Review>
                 {
-                    new Review
-                    {
+                    new() {
                         Id = "review1",
                         Content = "Great product!",
                         RatingValue = 5,
@@ -128,31 +119,31 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
                 }
             });
 
-            dbContextMock.Categories.Add(new Category
+            _ = dbContextMock.Categories.Add(new Category
             {
                 Id = "category1",
                 Name = "Category 1",
                 Description = "Description of Category 1"
             });
 
-            dbContextMock.Stores.Add(new Store
+            _ = dbContextMock.Stores.Add(new Store
             {
                 Id = "store1",
                 Name = "Store 1",
                 Email = "store1@example.com"
             });
 
-            await dbContextMock.SaveChangesAsync(); // Wait for the data to be saved
+            _ = await dbContextMock.SaveChangesAsync(); // Wait for the data to be saved
 
-            var productService = new ProductService(Mock.Of<ILogger>(), dbContextMock, Mock.Of<IPhotoService>());
+            ProductService productService = new(dbContextMock, Mock.Of<IPhotoService>());
 
             // Act
-            var result = await productService.GetById(Id);
+            Core.Common.BaseResponseResult<ProductResponseModel> result = await productService.GetById(Id);
 
             // Assert
             Assert.True(result.Success);
             Assert.NotNull(result.Data);
-            Assert.Equal(expectedProduct.Id, result.Data.Id);
+            Assert.Equal(expectedProduct.Id, result.Data!.Id);
             Assert.Equal(expectedProduct.Name, result.Data.Name);
             Assert.Equal(expectedProduct.Description, result.Data.Description);
             Assert.Equal(expectedProduct.Content, result.Data.Content);
@@ -168,25 +159,25 @@ namespace TAT.StoreLocator.Test.ServiceTest.ProductServiceTest
             Assert.Equal(expectedProduct.IsActive, result.Data.IsActive);
             Assert.Equal(expectedProduct.ProductViewCount, result.Data.ProductViewCount);
             Assert.NotNull(result.Data.Category);
-            Assert.Equal(expectedProduct.Category.Id, result.Data.Category.Id);
+            Assert.Equal(expectedProduct.Category.Id, result.Data.Category!.Id);
             Assert.Equal(expectedProduct.Category.Name, result.Data.Category.Name);
             Assert.Equal(expectedProduct.Category.Description, result.Data.Category.Description);
             Assert.NotNull(result.Data.Store);
-            Assert.Equal(expectedProduct.Store.Id, result.Data.Store.Id);
+            Assert.Equal(expectedProduct.Store.Id, result.Data.Store!.Id);
             Assert.Equal(expectedProduct.Store.Name, result.Data.Store.Name);
             Assert.Equal(expectedProduct.Store.Email, result.Data.Store.Email);
             Assert.NotNull(result.Data.GalleryResponseModels);
-            Assert.Equal(expectedProduct.GalleryResponseModels.First().Id, result.Data.GalleryResponseModels.First().Id);
-            Assert.Equal(expectedProduct.GalleryResponseModels.First().FileName, result.Data.GalleryResponseModels.First().FileName);
-            Assert.Equal(expectedProduct.GalleryResponseModels.First().Url, result.Data.GalleryResponseModels.First().Url);
-            Assert.Equal(expectedProduct.GalleryResponseModels.First().FileBelongsTo, result.Data.GalleryResponseModels.First().FileBelongsTo);
-            Assert.Equal(expectedProduct.GalleryResponseModels.First().IsThumbnail, result.Data.GalleryResponseModels.First().IsThumbnail);
+            Assert.Equal(expectedProduct.GalleryResponseModels.FirstOrDefault()!.Id, result.Data.GalleryResponseModels!.FirstOrDefault()!.Id);
+            Assert.Equal(expectedProduct.GalleryResponseModels.FirstOrDefault()!.FileName, result.Data.GalleryResponseModels!.FirstOrDefault()!.FileName);
+            Assert.Equal(expectedProduct.GalleryResponseModels.FirstOrDefault()!.Url, result.Data.GalleryResponseModels!.FirstOrDefault()!.Url);
+            Assert.Equal(expectedProduct.GalleryResponseModels.FirstOrDefault()!.FileBelongsTo, result.Data.GalleryResponseModels!.FirstOrDefault()!.FileBelongsTo);
+            Assert.Equal(expectedProduct.GalleryResponseModels.FirstOrDefault()!.IsThumbnail, result.Data.GalleryResponseModels!.FirstOrDefault()!.IsThumbnail);
             Assert.NotNull(result.Data.Reviews);
-            Assert.Equal(expectedProduct.Reviews.First().Id, result.Data.Reviews.First().Id);
-            Assert.Equal(expectedProduct.Reviews.First().Content, result.Data.Reviews.First().Content);
-            Assert.Equal(expectedProduct.Reviews.First().RatingValue, result.Data.Reviews.First().RatingValue);
-            Assert.Equal(expectedProduct.Reviews.First().Status, result.Data.Reviews.First().Status);
-            Assert.Equal(expectedProduct.Reviews.First().UserId, result.Data.Reviews.First().UserId);
+            Assert.Equal(expectedProduct.Reviews.FirstOrDefault()!.Id, result.Data.Reviews!.FirstOrDefault()!.Id);
+            Assert.Equal(expectedProduct.Reviews.FirstOrDefault()!.Content, result.Data.Reviews!.FirstOrDefault()!.Content);
+            Assert.Equal(expectedProduct.Reviews.FirstOrDefault()!.RatingValue, result.Data.Reviews!.FirstOrDefault()!.RatingValue);
+            Assert.Equal(expectedProduct.Reviews.FirstOrDefault()!.Status, result.Data.Reviews!.FirstOrDefault()!.Status);
+            Assert.Equal(expectedProduct.Reviews.FirstOrDefault()!.UserId, result.Data.Reviews!.FirstOrDefault()!.UserId);
         }
     }
 }

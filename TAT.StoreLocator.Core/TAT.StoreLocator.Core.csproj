@@ -26,6 +26,7 @@
     <Folder Include="Models\Request\Profile\" />
     <Folder Include="Models\Request\UserRole\" />
     <Folder Include="Models\Response\Mapping\" />
+    <Folder Include="Models\Response\Wishlist\" />
   </ItemGroup>
 
 </Project>

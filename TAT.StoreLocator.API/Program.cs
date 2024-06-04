@@ -1,5 +1,3 @@
-using log4net;
-using log4net.Config;
 using Microsoft.OpenApi.Models;
 using TAT.StoreLocator.API.MiddleWares;
 using TAT.StoreLocator.Core.DI;
@@ -14,15 +12,18 @@ namespace TAT.StoreLocator.API
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            #region Logging
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+          .SetBasePath(Directory.GetCurrentDirectory())
+          .AddJsonFile("appsettings.json")
+          .Build();
 
-            _ = XmlConfigurator.Configure(new FileInfo("log4net.config"));
-            _ = builder.Services.AddSingleton(LogManager.GetLogger(typeof(Program)));
+            //_ = XmlConfigurator.Configure(new FileInfo("log4net.config"));
+            //_ = builder.Services.AddSingleton(LogManager.GetLogger(typeof(Program)));
 
-            #endregion Logging
+
 
             _ = builder.Services.AddCore();
-            _ = builder.Services.AddInfrastructure(builder.Configuration);
+            _ = builder.Services.AddInfrastructure(configuration);
             _ = builder.Services.AddAutoMapper(typeof(Program));
 
             _ = builder.Services.AddControllers();

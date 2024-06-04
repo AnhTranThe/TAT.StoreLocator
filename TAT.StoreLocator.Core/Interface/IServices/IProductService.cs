@@ -6,8 +6,6 @@ namespace TAT.StoreLocator.Core.Interface.IServices
 {
     public interface IProductService
     {
-        Task<BasePaginationResult<ProductResponseModel>> SearchProductAsync(SearchProductPagingRequestModel request);
-
         /// <summary>
         /// GetProductById
         /// </summary>

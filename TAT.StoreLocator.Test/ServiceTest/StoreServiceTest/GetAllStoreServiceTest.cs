@@ -1,17 +1,15 @@
 ﻿
-using Xunit;
-using Moq;
-using TAT.StoreLocator.Infrastructure.Services;
-using TAT.StoreLocator.Core.Entities;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using TAT.StoreLocator.Core.Common;
-using TAT.StoreLocator.Infrastructure.Persistence.EF;
-using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Response.Store;
+using TAT.StoreLocator.Infrastructure.Persistence.EF;
+using TAT.StoreLocator.Infrastructure.Services;
+using Xunit;
 
 namespace TAT.StoreLocator.Test.ServiceTest.StoreServiceTest
 {
@@ -21,7 +19,7 @@ namespace TAT.StoreLocator.Test.ServiceTest.StoreServiceTest
         public async Task GetAllStore_Returns_Valid_Result()
         {
             // Arrange
-            var expectedStores = new List<StoreResponseModel>
+            List<StoreResponseModel> expectedStores = new()
             {
                 new StoreResponseModel
                 {
@@ -35,18 +33,18 @@ namespace TAT.StoreLocator.Test.ServiceTest.StoreServiceTest
                 }
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            DbContextOptions<AppDbContext> dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: "GetListStore_TestDatabase")
                 .Options;
 
-            using var dbContextMock = new AppDbContext(dbContextOptions);
+            using AppDbContext dbContextMock = new(dbContextOptions);
 
             // Add mock data to the in-memory database
-            foreach (var store in expectedStores)
+            foreach (StoreResponseModel store in expectedStores)
             {
-                dbContextMock.Stores.Add(new Store
+                _ = dbContextMock.Stores.Add(new Store
                 {
-                    Id = store.Id,
+                    Id = store.Id!,
                     Name = store.Name,
                     Email = "example@example.com", // Thêm giá trị cho Email và các cột khác tương ứng
                     PhoneNumber = "123456789",
@@ -56,24 +54,24 @@ namespace TAT.StoreLocator.Test.ServiceTest.StoreServiceTest
                     UpdatedAt = DateTimeOffset.UtcNow
                 });
             }
-            await dbContextMock.SaveChangesAsync();
+            _ = await dbContextMock.SaveChangesAsync();
 
             // Mock IMapper
-            var mapperConfig = new MapperConfiguration(cfg =>
+            MapperConfiguration mapperConfig = new(cfg =>
             {
-                cfg.CreateMap<Store, StoreResponseModel>();
+                _ = cfg.CreateMap<Store, StoreResponseModel>();
             });
-            var mapper = mapperConfig.CreateMapper();
+            IMapper mapper = mapperConfig.CreateMapper();
 
             // Mock IPhotoService
-            var photoServiceMock = new Mock<IPhotoService>();
+            Mock<IPhotoService> photoServiceMock = new();
 
             // Mock ILogger
-            var loggerMock = new Mock<ILogger<StoreService>>();
+            Mock<ILogger<StoreService>> loggerMock = new();
 
-            var storeService = new StoreService(dbContextMock, mapper, photoServiceMock.Object, loggerMock.Object);
+            StoreService storeService = new(dbContextMock, mapper, photoServiceMock.Object, loggerMock.Object);
 
-            var paginationRequest = new BasePaginationRequest
+            BasePaginationRequest paginationRequest = new()
             {
                 PageSize = 10,
                 PageIndex = 1,
@@ -81,15 +79,14 @@ namespace TAT.StoreLocator.Test.ServiceTest.StoreServiceTest
             };
 
             // Act
-            var result = await storeService.GetAllStoreAsync(paginationRequest);
+            BasePaginationResult<StoreResponseModel> result = await storeService.GetAllStoreAsync(paginationRequest);
 
             // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Data);
 
             // Kiểm tra kết quả trả về chỉ chứa các cửa hàng có tên chứa chuỗi tìm kiếm
-            Assert.True(result.Data.All(store => store.Name.Contains(paginationRequest.SearchString)));
+            Assert.True(result.Data.TrueForAll(store => store.Name!.Contains(paginationRequest.SearchString)));
         }
     }
 }
-    
