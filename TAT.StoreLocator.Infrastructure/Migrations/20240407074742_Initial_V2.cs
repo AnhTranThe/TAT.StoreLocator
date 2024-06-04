@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -9,17 +8,17 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "Locations");
 
-            migrationBuilder.AddColumn<decimal>(
+            _ = migrationBuilder.AddColumn<decimal>(
                 name: "latitude",
                 table: "Addresses",
                 type: "numeric",
                 nullable: false,
                 defaultValue: 0m);
 
-            migrationBuilder.AddColumn<decimal>(
+            _ = migrationBuilder.AddColumn<decimal>(
                 name: "longitude",
                 table: "Addresses",
                 type: "numeric",
@@ -29,15 +28,15 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "latitude",
                 table: "Addresses");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "longitude",
                 table: "Addresses");
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "Locations",
                 columns: table => new
                 {
@@ -52,8 +51,8 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Locations", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_Locations", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_Locations_Addresses_AddressId",
                         column: x => x.AddressId,
                         principalTable: "Addresses",
@@ -61,7 +60,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Locations_AddressId",
                 table: "Locations",
                 column: "AddressId",

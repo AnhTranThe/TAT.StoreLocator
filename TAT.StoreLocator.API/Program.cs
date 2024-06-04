@@ -4,7 +4,7 @@ using Microsoft.OpenApi.Models;
 using TAT.StoreLocator.API.MiddleWares;
 using TAT.StoreLocator.Core.DI;
 using TAT.StoreLocator.Infrastructure.DI;
-
+using TAT.StoreLocator.Infrastructure.Persistence.Seeding;
 
 namespace TAT.StoreLocator.API
 {
@@ -15,16 +15,15 @@ namespace TAT.StoreLocator.API
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             #region Logging
+
             _ = XmlConfigurator.Configure(new FileInfo("log4net.config"));
             _ = builder.Services.AddSingleton(LogManager.GetLogger(typeof(Program)));
 
+            #endregion Logging
 
-            #endregion
             _ = builder.Services.AddCore();
             _ = builder.Services.AddInfrastructure(builder.Configuration);
             _ = builder.Services.AddAutoMapper(typeof(Program));
-
-
 
             _ = builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -66,14 +65,18 @@ namespace TAT.StoreLocator.API
             // Configure the HTTP request pipeline.
             //if (app.Environment.IsDevelopment())
             //{
-            //    await SeedData.InitializeAsync(app);
+            //    _ = SeedData.InitializeAsync(app);
             //    _ = app.UseSwagger();
             //    _ = app.UseSwaggerUI();
             //}
 
-
+            _ = SeedData.InitializeAsync(app);
             _ = app.UseSwagger();
             _ = app.UseSwaggerUI();
+
+
+            //_ = app.UseSwagger();
+            //_ = app.UseSwaggerUI();
             _ = app.UseStaticFiles();
             _ = app.UseCors("CorsPolicy");
             _ = app.UseHttpsRedirection();

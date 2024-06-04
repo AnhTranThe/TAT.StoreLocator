@@ -10,14 +10,12 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.EF
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
+            .AddJsonFile("di_appsettings.json")
             .Build();
             DbContextOptionsBuilder<AppDbContext> optionsBuilder = new();
             string connStr = configuration.GetConnectionString("DefaultConnection");
             _ = optionsBuilder.UseNpgsql(connStr);
             return new AppDbContext(optionsBuilder.Options);
-
         }
-
     }
 }

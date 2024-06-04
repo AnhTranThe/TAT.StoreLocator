@@ -12,7 +12,5 @@ namespace TAT.StoreLocator.Core.Models.Request.Authentication
 
         [Display(Name = "Xác nhận mật khẩu")]
         public string? ConfirmNewPassword { get; set; }
-
-
     }
 }

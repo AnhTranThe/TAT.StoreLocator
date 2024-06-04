@@ -14,13 +14,13 @@ namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class ProfileService : IProfileService
     {
-
         private readonly ILogger _logger;
         private readonly AppDbContext _dbContext;
 
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
         protected IHttpContextAccessor _httpContextAccessor;
+
         public ProfileService(UserManager<User> userManager,
          ILogger logger,
          AppDbContext dbContext,
@@ -35,12 +35,14 @@ namespace TAT.StoreLocator.Infrastructure.Services
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
         }
+
         protected string GetGuidUserIdLogin()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-            string hello = user.FindFirstValue(UserClaims.Id);
-            return hello;
+                ClaimsPrincipal? user = _httpContextAccessor.HttpContext?.User;
+                string hello = user.FindFirstValue(UserClaims.Id);
+                return hello;
         }
+            
 
         public async Task<BaseResponseResult<UserResponseModel>> GetByProfile()
         {
@@ -48,41 +50,40 @@ namespace TAT.StoreLocator.Infrastructure.Services
             {
                 Success = false
             };
-            var loginId = GetGuidUserIdLogin();
+            string loginId = GetGuidUserIdLogin();
             try
             {
                 User user = await _userManager.FindByIdAsync(loginId.ToString());
-                if (user == null)
+                    if (user == null)
+                    {
+                        response.Success = false;
+                        response.Message = GlobalConstants.MessageUserNotFound;
+                        return response;
+                    }
+
+                    IList<string> roles = await _userManager.GetRolesAsync(user);
+
+                    UserResponseModel userResponse = new()
+                    {
+                        Id = user.Id,
+                        Email = user.Email,
+                        UserName = user.UserName,
+                        Roles = roles.ToList() // Convert roles to a list
+                    };
+
+                    response.Data = userResponse;
+                    response.Success = true;
+                    response.Message = "User found";
+                }
+                catch (Exception ex)
                 {
                     response.Success = false;
-                    response.Message = GlobalConstants.MessageUserNotFound;
-                    return response;
+                    response.Message = $"An error occurred: {ex.Message}";
+                    // Log the exception if needed
                 }
 
-                IList<string> roles = await _userManager.GetRolesAsync(user);
-
-                UserResponseModel userResponse = new()
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    UserName = user.UserName,
-                    Roles = roles.ToList() // Convert roles to a list
-                };
-
-                response.Data = userResponse;
-                response.Success = true;
-                response.Message = "User found";
+                return response;
             }
-            catch (Exception ex)
-            {
-                response.Success = false;
-                response.Message = $"An error occurred: {ex.Message}";
-                // Log the exception if needed
-            }
-
-            return response;
-
         }
-
-    }
 }
+//}

@@ -7,9 +7,9 @@ namespace TAT.StoreLocator.Core.Interface.IServices
     public interface IAuthenticationService
     {
         Task<RegisterResponseModel> RegisterUserAsync(RegisterRequestModel model);
+
         Task<LoginResponseModel> LoginUserAsync(LoginRequestModel model);
+
         Task<BaseResponse> LogoutUserAsync(string UserId);
-
-
     }
 }

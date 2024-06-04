@@ -3,6 +3,6 @@
     public class NewToken
     {
         public string? NewAccessToken { get; set; }
-        public string? RefreshToken { get; set; }
+        public string? NewRefreshToken { get; set; }
     }
 }

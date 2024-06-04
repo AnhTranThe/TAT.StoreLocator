@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using TAT.StoreLocator.Core.Common;
+using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.IServices;
 using TAT.StoreLocator.Core.Models.Token.Request;
@@ -14,19 +16,23 @@ namespace TAT.StoreLocator.Infrastructure.Services
 {
     public class JwtService : IJwtService
     {
-
         private readonly JwtTokenSettings _jwtTokenSettings;
         protected IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
 
         public JwtService(IOptions<JwtTokenSettings> jwtTokenSettings,
 
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            UserManager<User> userManager)
 
         {
             _jwtTokenSettings = jwtTokenSettings.Value;
 
             _httpContextAccessor = httpContextAccessor;
+
+            _userManager = userManager;
         }
+
         public string GenerateAccessToken(IEnumerable<Claim> claims)
         {
             SymmetricSecurityKey secretKey = new(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key));
@@ -74,7 +80,84 @@ namespace TAT.StoreLocator.Infrastructure.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        public BaseResponseResult<NewToken> RefreshToken(RefreshTokenRequest tokenModel)
+
+        public async Task<string> GenerateAccessTokenV2(string userName)
+        {
+            User user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                throw new ArgumentException(GlobalConstants.USER_NOT_FOUND);
+            }
+
+            IList<string> roles = await _userManager.GetRolesAsync(user);
+            Claim[] claims = new[]
+         {
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim(UserClaims.Id, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(UserClaims.FirstName, user.FirstName??""),
+                    new Claim(UserClaims.Roles, string.Join(";", roles)),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            //byte[] key = new byte[32]; // 256 bits
+            //using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            //{
+            //    rng.GetBytes(key);
+            //}
+            SymmetricSecurityKey secretKey = new(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key));
+            SigningCredentials creds = new(secretKey, SecurityAlgorithms.HmacSha256);
+            JwtSecurityToken token = new(
+            issuer: _jwtTokenSettings.Issuer,
+            audience: _jwtTokenSettings.Issuer,
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(_jwtTokenSettings.ExpireInMinutes),
+            signingCredentials: creds);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<string> GenerateRefreshTokenV2(string userName)
+        {
+            User user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                throw new ArgumentException(GlobalConstants.USER_NOT_FOUND);
+            }
+
+            IList<string> roles = await _userManager.GetRolesAsync(user);
+            Claim[] claims = new[]
+         {
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim(UserClaims.Id, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(UserClaims.FirstName, user.FirstName??""),
+                    new Claim(UserClaims.Roles, string.Join(";", roles)),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim("refresh", "true")
+            };
+
+            //byte[] key = new byte[32]; // 256 bits
+            //using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            //{
+            //    rng.GetBytes(key);
+            //}
+            //  SymmetricSecurityKey securityKey = new(key);
+            SymmetricSecurityKey secretKey = new(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key));
+
+            SigningCredentials creds = new(secretKey, SecurityAlgorithms.HmacSha256);
+
+            JwtSecurityToken token = new(
+                issuer: _jwtTokenSettings.Issuer,
+                audience: _jwtTokenSettings.Issuer,
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(_jwtTokenSettings.ExpireInMinutes),
+                signingCredentials: creds);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<BaseResponseResult<NewToken>> RefreshToken(RefreshTokenRequest tokenRequest)
         {
             BaseResponseResult<NewToken> result = new()
             {
@@ -82,45 +165,29 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 Message = string.Empty,
                 Data = null,
             };
-            if (tokenModel is null)
+
+            ClaimsPrincipal principal = GetPrincipalFromExpiredToken(tokenRequest.AccessToken);
+            string? username = principal.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(username))
             {
-                result.Message = "Invalid client request";
+                result.Message = GlobalConstants.USERNAME_NOT_FOUND;
                 return result;
             }
-
-            string? accessToken = tokenModel.AccessToken;
-            string? refreshToken = tokenModel.RefreshToken;
-
-            ClaimsPrincipal? principal = GetPrincipalFromExpiredToken(accessToken ?? "");
-            if (principal == null)
+            User user = await _userManager.FindByNameAsync(username);
+            if (user == null)
             {
-                result.Message = "Invalid access token or refresh token";
+                result.Message = GlobalConstants.USER_NOT_FOUND;
                 return result;
             }
-            // Get the expiration claim from the token
-            Claim? expirationClaim = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp);
-            if (expirationClaim == null || !long.TryParse(expirationClaim.Value, out long expirationEpoch))
-            {
-                result.Message = "Expiration claim not found or invalid";
-                return result;
-            }
-            // Convert the expiration time from epoch time to DateTime
-            DateTime expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationEpoch).UtcDateTime;
-
-            // Compare the expiration time with the current time
-            if (expirationDateTime <= DateTime.UtcNow)
-            {
-                result.Message = "Access token has expired";
-                return result;
-            }
-
-            string newAccessToken = GenerateAccessToken(principal.Claims.ToList());
+            string newAccessToken = await GenerateAccessTokenV2(username);
+            string newRefreshToken = await GenerateRefreshTokenV2(username);
             result.Success = true;
             result.Message = "Refresh token successfully";
             result.Data = new NewToken()
             {
                 NewAccessToken = newAccessToken,
-                RefreshToken = refreshToken,
+                NewRefreshToken = newRefreshToken,
             };
             return result;
         }
@@ -129,13 +196,12 @@ namespace TAT.StoreLocator.Infrastructure.Services
         {
             TokenValidationParameters tokenValidationParameters = new()
             {
-                ValidateAudience = true, //you might want to validate the audience and issuer depending on your use case
-                ValidateIssuer = true,
+                ValidateAudience = false, //you might want to validate the audience and issuer depending on your use case
+                ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtTokenSettings.Key)),
                 ValidateLifetime = false //here we are saying that we don't care about the token's expiration date
             };
-
 
             JwtSecurityTokenHandler tokenHandler = new();
             ClaimsPrincipal principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
@@ -143,7 +209,6 @@ namespace TAT.StoreLocator.Infrastructure.Services
                 ? throw new SecurityTokenException("Invalid token")
                 : principal;
         }
-
 
         //public ClaimsPrincipal? GetPrincipalFromExpiredTokenv2(string token)
         //{
@@ -162,10 +227,5 @@ namespace TAT.StoreLocator.Infrastructure.Services
         //        ? throw new SecurityTokenException("Invalid token")
         //        : principal;
         //}
-
-
     }
-
-
 }
-

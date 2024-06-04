@@ -4,7 +4,6 @@ using TAT.StoreLocator.Core.Entities;
 
 namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
 {
-
     public class ProductConfiguration : IEntityTypeConfiguration<Product>
     {
         public void Configure(EntityTypeBuilder<Product> builder)

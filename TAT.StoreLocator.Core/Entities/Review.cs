@@ -10,7 +10,9 @@ namespace TAT.StoreLocator.Core.Entities
     {
         [Required(ErrorMessage = "Review content must contain at least 2 characters")]
         public string? Content { get; set; }
+
         public int RatingValue { get; set; }
+
         [Required]
         public EReviewStatus Status { get; set; } = EReviewStatus.Pending;
 
@@ -18,6 +20,9 @@ namespace TAT.StoreLocator.Core.Entities
 
         public string? ProductId { get; set; }
         public Product? Product { get; set; }
+
+        public string? StoreId { get; set; }
+        public Store? Store { get; set; }
 
         public string? UserId { get; set; }
         public User? User { get; set; }

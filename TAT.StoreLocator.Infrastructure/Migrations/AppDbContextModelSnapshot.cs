@@ -195,7 +195,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ParentCategoryId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Slug")
@@ -423,6 +422,9 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<string>("StoreId")
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -435,6 +437,8 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("StoreId");
 
                     b.HasIndex("UserId");
 
@@ -484,7 +488,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -514,9 +518,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
-
-                    b.Property<string>("AddressId")
-                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -597,9 +598,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId")
-                        .IsUnique();
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -633,7 +631,8 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Wishlists");
                 });
@@ -698,9 +697,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.HasOne("TAT.StoreLocator.Core.Entities.Category", "ParentCategory")
                         .WithMany("ChildrenCategories")
-                        .HasForeignKey("ParentCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ParentCategoryId");
 
                     b.Navigation("Gallery");
 
@@ -821,12 +818,19 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("TAT.StoreLocator.Core.Entities.Store", "Store")
+                        .WithMany("Reviews")
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("TAT.StoreLocator.Core.Entities.User", "User")
                         .WithMany("Reviews")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Product");
+
+                    b.Navigation("Store");
 
                     b.Navigation("User");
                 });
@@ -841,21 +845,11 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Navigation("Address");
                 });
 
-            modelBuilder.Entity("TAT.StoreLocator.Core.Entities.User", b =>
-                {
-                    b.HasOne("TAT.StoreLocator.Core.Entities.Address", "Address")
-                        .WithOne("User")
-                        .HasForeignKey("TAT.StoreLocator.Core.Entities.User", "AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Address");
-                });
-
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Wishlist", b =>
                 {
                     b.HasOne("TAT.StoreLocator.Core.Entities.User", "User")
-                        .WithMany("Wishlists")
-                        .HasForeignKey("UserId")
+                        .WithOne("Wishlist")
+                        .HasForeignKey("TAT.StoreLocator.Core.Entities.Wishlist", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -865,8 +859,6 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Address", b =>
                 {
                     b.Navigation("Store");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Category", b =>
@@ -903,6 +895,8 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
                     b.Navigation("MapStoreWishlists");
 
                     b.Navigation("Products");
+
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.User", b =>
@@ -911,7 +905,7 @@ namespace TAT.StoreLocator.Infrastructure.Migrations
 
                     b.Navigation("Reviews");
 
-                    b.Navigation("Wishlists");
+                    b.Navigation("Wishlist");
                 });
 
             modelBuilder.Entity("TAT.StoreLocator.Core.Entities.Wishlist", b =>

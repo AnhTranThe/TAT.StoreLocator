@@ -7,6 +7,7 @@ namespace TAT.StoreLocator.Core.Models.Request.Category
     {
         [Required]
         public string? Id { get; set; }
+
         [Required]
         public string? Name { get; set; }
 
@@ -14,7 +15,5 @@ namespace TAT.StoreLocator.Core.Models.Request.Category
         public IFormFile? Image { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ParentCategoryId { get; set; }
-
-
     }
 }

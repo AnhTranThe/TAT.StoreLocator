@@ -6,6 +6,7 @@ namespace TAT.StoreLocator.Core.Models.Response.Role
     {
         [Required]
         public string? RoleId { get; set; }
+
         [Required]
         public string? RoleName { get; set; }
     }

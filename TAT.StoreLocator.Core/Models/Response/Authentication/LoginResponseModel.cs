@@ -9,7 +9,5 @@ namespace TAT.StoreLocator.Core.Models.Response.Authentication
         public BaseResponse BaseResponse { get; set; } = new BaseResponse();
         public UserResponseModel UserResponseModel { get; set; } = new UserResponseModel();
         public Claim[] claims { get; set; } = new Claim[] { };
-
-
     }
 }

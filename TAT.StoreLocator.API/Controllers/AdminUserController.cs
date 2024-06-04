@@ -8,16 +8,16 @@ using TAT.StoreLocator.Core.Models.Response.User;
 
 namespace TAT.StoreLocator.API.Controllers
 {
-    [Route("api/admin/[controller]")]
+    [Route("api/admin/user")]
     [ApiController]
     [Authorize(Roles = GlobalConstants.RoleAdminName)]
     public class AdminUserController : ControllerBase
     {
         private readonly IUserService _userService;
+
         public AdminUserController(IUserService userService)
         {
             _userService = userService;
-
         }
 
         [HttpGet("GetListUser")]
@@ -32,34 +32,26 @@ namespace TAT.StoreLocator.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
-
             }
         }
-
 
         [HttpPost("SearchUser")]
         public async Task<IActionResult> SearchUser(SearchUserPagingRequestModel request)
         {
             try
             {
-
                 BasePaginationResult<UserResponseModel> UserLs = await _userService.SearchUserAsync(request);
                 return Ok(UserLs);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
-
             }
-
         }
-
 
         [HttpGet("get-user-by-id/{userId}")]
         public async Task<IActionResult> GetUserById(string userId)
         {
-
-
             try
             {
                 if (string.IsNullOrWhiteSpace(userId))
@@ -73,12 +65,9 @@ namespace TAT.StoreLocator.API.Controllers
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, ex.Message);
-
             }
         }
-
 
         [HttpGet("DeleteUser")]
         public async Task<IActionResult> DeleteUser()
@@ -93,9 +82,6 @@ namespace TAT.StoreLocator.API.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-
         }
-
-
     }
 }

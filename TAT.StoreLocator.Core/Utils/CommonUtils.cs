@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using TAT.StoreLocator.Core.Helpers;
 
 namespace TAT.StoreLocator.Core.Utils
@@ -84,17 +85,18 @@ namespace TAT.StoreLocator.Core.Utils
                 fileBytes = memoryStream.ToArray();
             }
             return fileBytes;
-
         }
 
         public static string GetClaimUserName(this ClaimsPrincipal claims)
         {
             return claims.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
         }
+
         public static string GetClaimUserId(this ClaimsPrincipal claims)
         {
             return claims.FindFirst(UserClaims.Id)?.Value ?? "";
         }
+
         public static string vietnameseReplace(string str)
         {
             for (int i = 1; i < GlobalConstants.VietNamChar.Length; i++)
@@ -106,6 +108,62 @@ namespace TAT.StoreLocator.Core.Utils
             }
             return str.ToUpper();
         }
+
+
+        public static string vietnameseNotUpperReplace(string str)
+        {
+            for (int i = 1; i < GlobalConstants.VietNamChar.Length; i++)
+            {
+                for (int j = 0; j < GlobalConstants.VietNamChar[i].Length; j++)
+                {
+                    str = str.Replace(GlobalConstants.VietNamChar[i][j], GlobalConstants.VietNamChar[0][i - 1]);
+                }
+            }
+            return str;
+        }
+
+        public static string ReplaceProvincePatterns(string province)
+        {
+            if (string.IsNullOrEmpty(province))
+            {
+                return province;
+            }
+
+            string pattern = @"\b(?:city|thanh\s*pho|tinh)\b";
+            string cleanedProvince = Regex.Replace(province, pattern, "", RegexOptions.IgnoreCase).Trim();
+
+            return vietnameseNotUpperReplace(cleanedProvince);
+        }
+
+
+        public static string ReplaceDistrictPatterns(string district)
+        {
+            if (string.IsNullOrEmpty(district))
+            {
+                return district;
+            }
+
+            // string pattern = @"\b(quan|q\.|district|h\.|huyen|thanh pho)\b";
+            string pattern = @"\b(?:quan|q\.|district|h\.|huyen|thanh pho)\b";
+            string cleanedDistrict = Regex.Replace(district, pattern, "", RegexOptions.IgnoreCase).Trim();
+
+            return vietnameseNotUpperReplace(cleanedDistrict);
+        }
+
+        public static string ReplaceWardPatterns(string ward)
+        {
+            if (string.IsNullOrEmpty(ward))
+            {
+                return ward;
+            }
+            string pattern = @"\b(?:phuong|p\.|ward)\b";
+            // string pattern = @"\b(phuong|p\.|ward)\b";
+            string cleanedWard = Regex.Replace(ward, pattern, "", RegexOptions.IgnoreCase).Trim();
+
+            return vietnameseNotUpperReplace(cleanedWard);
+        }
+
+
 
         public static string? NormalizeEmail(string email)
         {
@@ -122,6 +180,39 @@ namespace TAT.StoreLocator.Core.Utils
                 // If the provided email address is not in a valid format, return null or throw an exception
                 return null; // or throw new ArgumentException("Invalid email address.");
             }
+        }
+
+        public static string RemoveDiacritics(string text)
+        {
+            string normalizedString = text.Normalize(NormalizationForm.FormD);
+            StringBuilder stringBuilder = new();
+
+            foreach (char c in normalizedString)
+            {
+                UnicodeCategory unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    _ = stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        public static string NormalSearch(string text)
+        {
+            // Loại bỏ dấu tiếng Việt và chuyển đổi về chữ thường
+            string normalizedText = vietnameseReplace(text).ToLowerInvariant();
+            // Loại bỏ các ký tự không phải chữ cái hoặc số
+            StringBuilder resultBuilder = new();
+            foreach (char c in normalizedText)
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    _ = resultBuilder.Append(c);
+                }
+            }
+            return resultBuilder.ToString();
         }
 
         public static string GenerateRandomPhoneNumber()
@@ -166,10 +257,10 @@ namespace TAT.StoreLocator.Core.Utils
 
             return dateOfBirth;
         }
+
         public static DateTimeOffset ToDatetimeOffsetFromUtc(this DateTime date)
         {
             return new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc));
         }
-
     }
 }

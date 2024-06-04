@@ -8,10 +8,8 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<Category> builder)
         {
-
-            _ = builder.HasOne(x => x.ParentCategory).WithMany(x => x.ChildrenCategories).HasForeignKey(x => x.ParentCategoryId).OnDelete(DeleteBehavior.Cascade);
+            //_ = builder.HasOne(x => x.ParentCategory).WithMany(x => x.ChildrenCategories).HasForeignKey(x => x.ParentCategoryId).OnDelete(DeleteBehavior.NoAction);
             _ = builder.HasOne(x => x.Gallery).WithOne(x => x.Category).HasForeignKey<Category>(x => x.GalleryId).OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 }

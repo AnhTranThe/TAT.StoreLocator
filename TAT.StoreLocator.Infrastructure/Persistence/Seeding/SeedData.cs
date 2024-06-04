@@ -10,10 +10,8 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
 {
     public static class SeedData
     {
-
         public static async Task InitializeAsync(IHost host)
         {
-
             using IServiceScope scope = host.Services.CreateScope();
             IServiceProvider serviceProvider = scope.ServiceProvider;
             AppDbContext? context = serviceProvider.GetService<AppDbContext>();
@@ -24,7 +22,6 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                 {
                     PasswordHasher<User> passwordHasher = new();
 
-
                     if (!context.Roles.Any())
                     {
                         await context.Roles.AddRangeAsync(
@@ -33,40 +30,36 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                                 Id = GlobalConstants.RoleAdminId,
                                 Name = "Admin",
                                 NormalizedName = "ADMIN",
-
                             },
                             new Role()
                             {
                                 Id = GlobalConstants.RoleUserId,
                                 Name = "User",
                                 NormalizedName = "USER",
-
                             }
 
                             );
                         _ = await context.SaveChangesAsync();
                     }
-                    if (context.Addresses != null && !context.Addresses.Any())
+                    //if (context.Addresses != null && !context.Addresses.Any())
 
-                    {
-                        // Create address entities
-                        List<Address> addresses = new()
-                        {
-                            new Address
-                            {
-                                Id = GlobalConstants.AddressAdminId
+                    //{
+                    //    // Create address entities
+                    //    List<Address> addresses = new()
+                    //    {
+                    //        new Address
+                    //        {
+                    //            Id = GlobalConstants.AddressAdminId
+                    //        },
+                    //        new Address
+                    //        {
+                    //            Id = GlobalConstants.AddressUserId
+                    //        }
+                    //    };
+                    //    await context.Addresses.AddRangeAsync(addresses);
 
-                            },
-                            new Address
-                            {
-                                Id = GlobalConstants.AddressUserId
-                            }
-                        };
-                        await context.Addresses.AddRangeAsync(addresses);
-
-                        _ = await context.SaveChangesAsync();
-
-                    }
+                    //    _ = await context.SaveChangesAsync();
+                    //}
 
                     if (!context.Users.Any())
                     {
@@ -86,10 +79,8 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             IsActive = true,
                             SecurityStamp = Guid.NewGuid().ToString(),
                             LockoutEnabled = false,
-                            AddressId = GlobalConstants.AddressAdminId,
 
                         },
-
 
                         new User
                         {
@@ -103,45 +94,35 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             IsActive = true,
                             SecurityStamp = Guid.NewGuid().ToString(),
                             LockoutEnabled = false,
-                            AddressId = GlobalConstants.AddressUserId,
 
                         }
                         };
                         foreach (User user in UserLs)
                         {
                             user.PasswordHash = passwordHasher.HashPassword(user, "Admin@123");
-
                         }
-
 
                         await context.Users.AddRangeAsync(UserLs);
 
                         _ = await context.SaveChangesAsync();
-
-
                     }
 
                     if (!context.UserRoles.Any())
                     {
-
                         await context.UserRoles.AddRangeAsync(
                             new IdentityUserRole<string>()
                             {
                                 RoleId = GlobalConstants.RoleAdminId,
                                 UserId = GlobalConstants.AdminId,
-
-
                             },
                             new IdentityUserRole<string>()
                             {
                                 RoleId = GlobalConstants.RoleUserId,
                                 UserId = GlobalConstants.UserId,
-
                             }
 
                             );
                         _ = await context.SaveChangesAsync();
-
                     }
 
                     if (!context.Products.Any())
@@ -165,6 +146,27 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                         _ = await context.SaveChangesAsync();
                     }
 
+                    //if (context.Wishlist != null && !context.Wishlist.Any())
+
+                    //{
+                    //    // Create address entities
+                    //    List<Wishlist> wishlists = new()
+                    //    {
+                    //        new Wishlist
+                    //        {
+                    //            UserId = GlobalConstants.UserId
+
+                    //        },
+                    //        new Wishlist
+                    //        {
+                    //            UserId = GlobalConstants.AdminId
+                    //        }
+                    //    };
+                    //    await context.Wishlist.AddRangeAsync(wishlists);
+
+                    //    _ = await context.SaveChangesAsync();
+
+                    //}
 
                     if (!context.Galleries.Any())
                     {
@@ -182,30 +184,19 @@ namespace TAT.StoreLocator.Infrastructure.Persistence.Seeding
                             Url = "test2",
                             PublicId = "test2",
                         }
-
-
                     };
 
                         await context.Galleries.AddRangeAsync(gallery);
                         _ = await context.SaveChangesAsync();
                     }
-
-
                 }
 
                 logger?.LogInfo("Data initialization completed successfully.");
-
-
             }
             catch (Exception ex)
             {
                 logger?.LogError(ex);
             }
-
         }
-
-
     }
 }
-
-

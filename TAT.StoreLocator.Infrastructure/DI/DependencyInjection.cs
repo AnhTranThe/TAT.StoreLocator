@@ -11,23 +11,19 @@ using TAT.StoreLocator.Core.Entities;
 using TAT.StoreLocator.Core.Helpers;
 using TAT.StoreLocator.Core.Interface.ILogger;
 using TAT.StoreLocator.Core.Interface.IServices;
-using TAT.StoreLocator.Infrastructure.Management;
 using TAT.StoreLocator.Infrastructure.Mapper;
 using TAT.StoreLocator.Infrastructure.Persistence.EF;
 using TAT.StoreLocator.Infrastructure.Services;
-
 
 namespace TAT.StoreLocator.Infrastructure.DI
 {
     public static class DependencyInjection
 
     {
-
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
         {
-
-
             #region Cors
+
             _ = services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
@@ -35,27 +31,26 @@ namespace TAT.StoreLocator.Infrastructure.DI
                 .AllowAnyMethod()
                 .AllowAnyHeader());
             });
-            #endregion
+
+            #endregion Cors
 
             #region SQL Connection
+
             _ = services.AddDbContext<AppDbContext>(options =>
             {
                 _ = options.UseNpgsql(config.GetConnectionString("DefaultConnection"));
             });
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-            #endregion
+            #endregion SQL Connection
 
             #region authentication and JWt
 
             //Authen and author
             _ = services.Configure<JwtTokenSettings>(config.GetSection("JwtTokenSettings"));
 
-
-
             _ = services.AddIdentity<User, Role>(opt => { opt.Password.RequireNonAlphanumeric = false; })
                .AddEntityFrameworkStores<AppDbContext>();
-
 
             _ = services.Configure<IdentityOptions>(options =>
             {
@@ -77,7 +72,6 @@ namespace TAT.StoreLocator.Infrastructure.DI
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = true;
             });
-
 
             _ = services.AddAuthentication(o =>
             {
@@ -116,13 +110,14 @@ namespace TAT.StoreLocator.Infrastructure.DI
             });
             _ = services.AddAuthorization();
 
-            #endregion
+            #endregion authentication and JWt
 
             #region Services
+
             _ = services.AddScoped(typeof(IJwtService), typeof(JwtService));
             _ = services.AddScoped(typeof(IUserService), typeof(UserService));
             _ = services.AddTransient(typeof(ILogger), typeof(LoggerService));
-            _ = services.AddTransient(typeof(IPhotoService), typeof(PhotoManagement));
+            _ = services.AddTransient(typeof(IPhotoService), typeof(PhotoService));
             _ = services.AddScoped(typeof(IAuthenticationService), typeof(AuthenticationService));
             _ = services.AddScoped(typeof(IProfileService), typeof(ProfileService));
             _ = services.AddTransient<SignInManager<User>, SignInManager<User>>();
@@ -130,25 +125,28 @@ namespace TAT.StoreLocator.Infrastructure.DI
             _ = services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
             //huy_dev
             _ = services.AddScoped(typeof(IProductService), typeof(ProductService));
+            _ = services.AddScoped(typeof(ICategoryService), typeof(CategoryService));
+            _ = services.AddScoped(typeof(IWishlistService), typeof(WishlistService));
 
             //PhucThinh-dev
             _ = services.AddScoped(typeof(IStoreService), typeof(StoreService));
             _ = services.AddScoped(typeof(IReviewService), typeof(ReviewService));
-            #endregion
+
+            #endregion Services
 
             #region Mapper
+
             _ = services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
-
-            #endregion
+            #endregion Mapper
 
             #region Cloudinary
-            _ = services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
-            #endregion
 
+            _ = services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+
+            #endregion Cloudinary
 
             return services;
         }
-
     }
 }
