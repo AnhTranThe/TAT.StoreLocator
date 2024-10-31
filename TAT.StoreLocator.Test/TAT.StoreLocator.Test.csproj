@@ -20,7 +20,7 @@
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.16.0.82469">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
